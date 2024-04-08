@@ -244,7 +244,7 @@ def learn(lang):
         fr.write('\n')
         fc.write('concrete Cat'+lang_code+' of Cat = open Res'+lang_code+' in {\n')
         fc.write('\n')
-        fd.write('concrete Dict'+lang_code+' of Dict'+lang_code+'Abs = Cat'+lang_code+' ** open Res'+lang_code+' {\n')
+        fd.write('concrete Dict'+lang_code+' of Dict'+lang_code+'Abs = Cat'+lang_code+' ** open Res'+lang_code+' in {\n')
         fd.write('\n')
         fa.write('abstract Dict'+lang_code+'Abs = Cat ** {\n')
         fa.write('\n')
