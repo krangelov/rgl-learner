@@ -64,16 +64,11 @@ param_order = [
   'mutation'
 ]
 
-iso3 = {
-    "mk": "Mkd",
-    "sq": "Alb",
-    "id": "Ind"
-}
 
 ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template']
 
 class GFType:
-    def printParamDefs(self,f,defs):
+    def printParamDefs(self,f,pdefs):
         pass
 
 @dataclass(frozen=True)
@@ -87,26 +82,42 @@ class GFStr(GFType):
 @dataclass(frozen=True)
 class GFParam(GFType):
     name: str
-    
+    constructors: tuple[str]
+
     def __repr__(self):
         return self.name
 
-    def renderOper(self,indent,vars):
-        return vars.pop(0)
+    def printParamDefs(self,f,pdefs):
+        pdef = "param "+self.name+" = "+" | ".join(self.constructors)+" ;\n"
+        if pdef not in pdefs:
+            f.write(pdef)
+            pdefs.add(pdef)
+
+    def __or__(self, other):
+        if type(other) is not GFParam:
+            raise "Parameter types can only be unified with other parameter types"
+        if self.name != other.name:
+            raise "Parameter types can only be unified if their names match"
+
+        constructors = list(self.constructors)
+        for c in other.constructors:
+            if c not in constructors:
+                constructors.append(c)
+
+        return GFParam(self.name,constructors)
 
 @dataclass(frozen=True)
 class GFTable(GFType):
-    param_type: GFType
-    param_cons: tuple[str]
+    arg_type: GFType
     res_type: GFType
 
     def __repr__(self):
-        return self.param_type.__repr__() + " => " + self.res_type.__repr__()
+        return self.arg_type.__repr__() + " => " + self.res_type.__repr__()
 
     def renderOper(self,indent,vars):
         s = 'table {\n'
         first = True
-        for pcon in self.param_cons:
+        for pcon in self.arg_type.constructors:
             if not first:
                 s += ' ;\n'
             s += ' '*(indent+2)+pcon+' => '+self.res_type.renderOper(indent+len(pcon)+6,vars)
@@ -115,10 +126,25 @@ class GFTable(GFType):
         return s
 
     def printParamDefs(self,f,pdefs):
-        pdef = "param "+str(self.param_type)+" = "+" | ".join(self.param_cons)+" ;\n"
-        if pdef not in pdefs:
-            f.write(pdef)
-            pdefs.add(pdef)
+        self.arg_type.printParamDefs(f,pdefs)
+        self.res_type.printParamDefs(f,pdefs)
+
+    def __or__(self, other):
+        if type(other) is not GFTable:
+            raise "Tables can only be unified with other tables"
+
+        index1 = param_order.index(self.arg_type.name)
+        index2 = param_order.index(other.arg_type.name)
+        
+        if index1 == index2:
+            return GFTable(self.arg_type | other.arg_type,
+                           self.res_type | other.res_type)
+        elif index1 < index2:
+            return GFTable(self.arg_type,
+                           self.res_type | other)   
+        else:
+            return GFTable(other.arg_type,
+                           self | other.res_type)
 
 
 @dataclass(frozen=True)
@@ -133,7 +159,7 @@ class GFRecord(GFType):
                 s = s + "; "
             s = s + lbl+": "+ty.__repr__()
         return "{"+s+"}"
-        
+
     def renderOper(self,indent,vars):
         s  = '{ '
         ind = 0
@@ -146,9 +172,25 @@ class GFRecord(GFType):
         s += '\n' + ' '*indent + '}'
         return s
 
-    def printParamDefs(self,f,defs):
+    def printParamDefs(self,f,pdefs):
         for lbl,ty in self.fields:
-           ty.printParamDefs(f,defs)
+           ty.printParamDefs(f,pdefs)
+
+    def __or__(self, other):
+        if type(other) is not GFRecord:
+            raise "Records can only be unified with other records"
+
+        fields = {}
+        for lbl,ty in self.fields:
+            other_ty = other.fields.get(lbl)
+            if other_ty:
+                ty |= other_ty
+            fields[lbl] = ty
+        for lbl,ty in other.fields.items():
+            if lbl not in self.fields:
+                fields[lbl] = ty
+
+        return GFRecord(fields)
 
 def getTypeOf(o):
     if type(o) is str:
@@ -162,20 +204,20 @@ def getTypeOf(o):
             if param == None:
                 table = None
             else:
-                param_con, param_type = param
+                param_con, arg_type = param
                 pcons.append(param_con)
             val_type = getTypeOf(val)
             if table != None:
-                old_type = table.get(param_type)
+                old_type = table.get(arg_type)
                 if old_type and old_type != val_type:
                     table = None
                 else:
-                    table[param_type] = val_type
+                    table[arg_type] = val_type
             record.append((tag,val_type))
 
         if table and len(table) == 1:
-            param_type,val_type = table.popitem()
-            return GFTable(GFParam(param_type),tuple(pcons),val_type)
+            arg_type,val_type = table.popitem()
+            return GFTable(GFParam(arg_type,tuple(pcons)),val_type)
         else:
             return GFRecord(tuple(record))
 
@@ -185,35 +227,45 @@ def get_order(tag):
     except:
         return 10000000
 
+lin_types = {}
+# the file should come from https://kaikki.org/dictionary/rawdata.html
+
+iso3 = {
+    "mk": "Mkd",
+    "sq": "Alb",
+    "id": "Ind"
+}
+
 def learn(lang):
-    lin_types = {}
-    with open(f'data/{lang}/lexicon.pickle','rb') as f:
-        for record in pickle.load(f):
-            table = {}
-            word  = record["word"]
-            forms = []
-            for form in record.get("forms",[]):
-                w    = form["form"]
-                tags = form.get("tags",[])
-                tags = [tag for tag in tags if tag not in ignore_tags]
-                tags = sorted(tags,key=get_order)
+    with open(f"data/{lang}/lexicon.pickle", "rb") as f:
+        lexicon=pickle.load(f)
 
-                if not tags:
-                    continue
+    for record in lexicon:
+        table = {}
+        word  = record["word"]
+        forms = []
+        for form in record.get("forms",[]):
+            w    = form["form"]
+            tags = form.get("tags",[])
+            tags = [tag for tag in tags if tag not in ignore_tags]
+            tags = sorted(tags,key=get_order)
 
-                t = table
-                for tag in tags[:-1]:
-                    t1 = t.setdefault(tag,{})
-                    if type(t1) is str:
-                        t1 = {None: t1}
-                        t[tag] = t1
-                    t = t1
+            if not tags:
+                continue
 
-                t[tags[-1]] = w
-                forms.append(w)
-            if table:
-                typ = getTypeOf(table)
-                lin_types.setdefault(record.get("pos"),{}).setdefault(typ,[]).append((word,forms))
+            t = table
+            for tag in tags[:-1]:
+                t1 = t.setdefault(tag,{})
+                if type(t1) is str:
+                    t1 = {None: t1}
+                    t[tag] = t1
+                t = t1
+
+            t[tags[-1]] = w
+            forms.append(w)
+        if table:
+            typ = getTypeOf(table)
+            lin_types.setdefault(record.get("pos"),{}).setdefault(typ,[]).append((word,forms))
 
     pdefs = set()
     lang_code = iso3.get(lang,lang)
@@ -234,7 +286,17 @@ def learn(lang):
             if not cat_name:
                 continue
 
-            fc.write('lin '+cat_name+tag2cat[tag]+' = '+tag.title()+' ;\n')
+            fc.write('lincat '+cat_name+' = '+tag.title()+' ;\n')
+
+            unified_type = None
+            for typ in types:
+                if unified_type:
+                    unified_type |= typ
+                else:
+                    unified_type = typ
+
+            unified_type.printParamDefs(fr,pdefs)
+            fr.write('oper '+tag.title()+' = '+str(unified_type)+' ; -- \n')
 
             for i,(typ,lexemes) in enumerate(sorted(types.items(),key=lambda x: -len(x[1]))):
                 type_name = tag.title()+str(i+1)
