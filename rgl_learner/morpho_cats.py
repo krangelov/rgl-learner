@@ -1,5 +1,6 @@
 import pickle
 from dataclasses import dataclass
+import rgl_learner.plugins as plugins
 
 tag2cat = {
   'noun': 'N',
@@ -93,19 +94,6 @@ class GFParam(GFType):
             f.write(pdef)
             pdefs.add(pdef)
 
-    def __or__(self, other):
-        if type(other) is not GFParam:
-            raise "Parameter types can only be unified with other parameter types"
-        if self.name != other.name:
-            raise "Parameter types can only be unified if their names match"
-
-        constructors = list(self.constructors)
-        for c in other.constructors:
-            if c not in constructors:
-                constructors.append(c)
-
-        return GFParam(self.name,constructors)
-
 @dataclass(frozen=True)
 class GFTable(GFType):
     arg_type: GFType
@@ -128,23 +116,6 @@ class GFTable(GFType):
     def printParamDefs(self,f,pdefs):
         self.arg_type.printParamDefs(f,pdefs)
         self.res_type.printParamDefs(f,pdefs)
-
-    def __or__(self, other):
-        if type(other) is not GFTable:
-            raise "Tables can only be unified with other tables"
-
-        index1 = param_order.index(self.arg_type.name)
-        index2 = param_order.index(other.arg_type.name)
-        
-        if index1 == index2:
-            return GFTable(self.arg_type | other.arg_type,
-                           self.res_type | other.res_type)
-        elif index1 < index2:
-            return GFTable(self.arg_type,
-                           self.res_type | other)   
-        else:
-            return GFTable(other.arg_type,
-                           self | other.res_type)
 
 
 @dataclass(frozen=True)
@@ -176,21 +147,6 @@ class GFRecord(GFType):
         for lbl,ty in self.fields:
            ty.printParamDefs(f,pdefs)
 
-    def __or__(self, other):
-        if type(other) is not GFRecord:
-            raise "Records can only be unified with other records"
-
-        fields = {}
-        for lbl,ty in self.fields:
-            other_ty = other.fields.get(lbl)
-            if other_ty:
-                ty |= other_ty
-            fields[lbl] = ty
-        for lbl,ty in other.fields.items():
-            if lbl not in self.fields:
-                fields[lbl] = ty
-
-        return GFRecord(fields)
 
 def getTypeOf(o):
     if type(o) is str:
@@ -221,29 +177,34 @@ def getTypeOf(o):
         else:
             return GFRecord(tuple(record))
 
+def getFormsOf(o):
+    forms = []
+    def append_forms(o):
+        nonlocal forms
+        if type(o) is str:
+            forms.append(o)
+        else:
+            for tag,val in o.items():
+                append_forms(val)
+    append_forms(o)
+    return forms
+
 def get_order(tag):
     try:
         return param_order.index(params.get(tag,(None,tag))[1])
     except:
         return 10000000
 
-lin_types = {}
-# the file should come from https://kaikki.org/dictionary/rawdata.html
-
-iso3 = {
-    "mk": "Mkd",
-    "sq": "Alb",
-    "id": "Ind"
-}
-
 def learn(lang):
     with open(f"data/{lang}/lexicon.pickle", "rb") as f:
         lexicon=pickle.load(f)
 
+    plugin = plugins[lang]
+
+    lin_types = {}
     for record in lexicon:
         table = {}
         word  = record["word"]
-        forms = []
         for form in record.get("forms",[]):
             w    = form["form"]
             tags = form.get("tags",[])
@@ -262,13 +223,19 @@ def learn(lang):
                 t = t1
 
             t[tags[-1]] = w
-            forms.append(w)
+
         if table:
-            typ = getTypeOf(table)
+            cat_name = tag2cat.get(record.get("pos"))
+            if not cat_name:
+                continue
+            plugin.patch_inflection(cat_name,table)
+
+            typ   = getTypeOf(table)
+            forms = getFormsOf(table)
             lin_types.setdefault(record.get("pos"),{}).setdefault(typ,[]).append((word,forms))
 
     pdefs = set()
-    lang_code = iso3.get(lang,lang)
+    lang_code = plugin.iso3
     with open('Res'+lang_code+'.gf','w') as fr, \
          open('Cat'+lang_code+'.gf','w') as fc, \
          open('Dict'+lang_code+'.gf','w') as fd, \
@@ -288,18 +255,8 @@ def learn(lang):
 
             fc.write('lincat '+cat_name+' = '+tag.title()+' ;\n')
 
-            unified_type = None
-            for typ in types:
-                if unified_type:
-                    unified_type |= typ
-                else:
-                    unified_type = typ
-
-            unified_type.printParamDefs(fr,pdefs)
-            fr.write('oper '+tag.title()+' = '+str(unified_type)+' ; -- \n')
-
             for i,(typ,lexemes) in enumerate(sorted(types.items(),key=lambda x: -len(x[1]))):
-                type_name = tag.title()+str(i+1)
+                type_name = tag.title()+(str(i) if i else "")
                 n_forms = len(lexemes[0][1])
 
                 typ.printParamDefs(fr,pdefs)
