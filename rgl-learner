@@ -3,11 +3,14 @@
 import sys
 import rgl_learner.wiktionary
 import rgl_learner.morpho_cats
+import rgl_learner.unimorph
 
 if len(sys.argv) == 3 and sys.argv[1] == "wiktionary":
     rgl_learner.wiktionary.extract(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "morpho-cats":
     rgl_learner.morpho_cats.learn(sys.argv[2])
+elif len(sys.argv) == 3 and sys.argv[1] == "unimorph":
+    rgl_learner.unimorph.learn(sys.argv[2])
 else:
     print(f"Synopsis: {sys.argv[0]} wiktionary  <lang-code>")
     print(f"          {sys.argv[0]} morpho-cats <lang-code>")
