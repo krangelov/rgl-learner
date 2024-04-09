@@ -2,57 +2,6 @@ import pickle
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
 
-tag2cat = {
-  'noun': 'N',
-  'verb': 'V',
-  'adj': 'A',
-  'name': 'PN',
-  'pron': 'Pron',
-  'adv': 'Adv',
-  'det': 'Det'
-  }
-
-params = {
-  'definite': ('Def','Species'),
-  'indefinite': ('Indef','Species'),
-  'singular': ('Sg','Number'),
-  'plural': ('Pl','Number'),
-  'nominative': ('Nom','Case'),
-  'accusative': ('Acc','Case'),
-  'dative': ('Dat','Case'),
-  'genitive': ('Gen','Case'),
-  'vocative': ('Voc','Case'),
-  'partitive': ('Part','Case'),
-  'inessive': ('Iness','Case'),
-  'elative': ('Elat','Case'),
-  'illative': ('Illat','Case'),
-  'adessive': ('Adess','Case'),
-  'ablative': ('Ablat','Case'),
-  'allative': ('Allat','Case'),
-  'essive': ('Ess','Case'),
-  'translative': ('Transl','Case'),
-  'instructive': ('Instr','Case'),
-  'abessive': ('Abess','Case'),
-  'comitative': ('Comit','Case'),
-  'possessive': ('Poss','Case'),
-  'locative': ('Loc','Case'),
-  'copulative': ('Cop','Case'),
-  'unspecified': ('Unspecified','Distance'),
-  'proximal': ('Proximal','Distance'),
-  'distal': ('Distal','Distance'),
-  'first-person': ('P1','Person'),
-  'second-person': ('P2','Person'),
-  'third-person': ('P3','Person'),
-  'imperfective': ('Imperf','Tense'),
-  'imperfect': ('Imperfect','Tense'),
-  'aorist': ('Aorist','Tense'),
-  'perfect': ('Perf','Tense'),
-  'present': ('Pres','Tense'),
-  'masculine': ('Masc','Gender'),
-  'feminine': ('Fem','Gender'),
-  'neuter': ('Neuter','Gender'),
-}
-
 param_order = [
   'Species',
   'Distance',
@@ -64,9 +13,6 @@ param_order = [
   'Person',
   'mutation'
 ]
-
-
-ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template']
 
 class GFType:
     def printParamDefs(self,f,pdefs):
@@ -148,7 +94,7 @@ class GFRecord(GFType):
            ty.printParamDefs(f,pdefs)
 
 
-def getTypeOf(o):
+def getTypeOf(source_plugin,o):
     if type(o) is str:
         return GFStr()
     else:
@@ -156,13 +102,13 @@ def getTypeOf(o):
         record = []
         pcons  = []
         for tag,val in o.items():
-            param = params.get(tag)
+            param = source_plugin.params.get(tag)
             if param == None:
                 table = None
             else:
                 param_con, arg_type = param
                 pcons.append(param_con)
-            val_type = getTypeOf(val)
+            val_type = getTypeOf(source_plugin,val)
             if table != None:
                 old_type = table.get(arg_type)
                 if old_type and old_type != val_type:
@@ -189,17 +135,18 @@ def getFormsOf(o):
     append_forms(o)
     return forms
 
-def get_order(tag):
+def get_order(source_plugin,tag):
     try:
-        return param_order.index(params.get(tag,(None,tag))[1])
+        return param_order.index(source_plugin.params.get(tag,(None,tag))[1])
     except:
         return 10000000
 
-def learn(lang):
+def learn(source,lang):
     with open(f"data/{lang}/lexicon.pickle", "rb") as f:
         lexicon=pickle.load(f)
 
-    plugin = plugins[lang]
+    source_plugin = plugins[source]
+    lang_plugin   = plugins[source,lang]
 
     lin_types = {}
     for record in lexicon:
@@ -208,8 +155,8 @@ def learn(lang):
         for form in record.get("forms",[]):
             w    = form["form"]
             tags = form.get("tags",[])
-            tags = [tag for tag in tags if tag not in ignore_tags]
-            tags = sorted(tags,key=get_order)
+            tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
+            tags = sorted(tags,key=lambda tag: get_order(source_plugin,tag))
 
             if not tags:
                 continue
@@ -225,17 +172,17 @@ def learn(lang):
             t[tags[-1]] = w
 
         if table:
-            cat_name = tag2cat.get(record.get("pos"))
+            cat_name = source_plugin.tag2cat.get(record.get("pos"))
             if not cat_name:
                 continue
-            plugin.patch_inflection(cat_name,table)
+            lang_plugin.patch_inflection(cat_name,table)
 
-            typ   = getTypeOf(table)
+            typ   = getTypeOf(source_plugin,table)
             forms = getFormsOf(table)
             lin_types.setdefault(record.get("pos"),{}).setdefault(typ,[]).append((word,forms))
 
     pdefs = set()
-    lang_code = plugin.iso3
+    lang_code = lang_plugin.iso3
     with open('Res'+lang_code+'.gf','w') as fr, \
          open('Cat'+lang_code+'.gf','w') as fc, \
          open('Dict'+lang_code+'.gf','w') as fd, \
@@ -249,7 +196,7 @@ def learn(lang):
         fa.write('abstract Dict'+lang_code+'Abs = Cat ** {\n')
         fa.write('\n')
         for tag, types in lin_types.items():
-            cat_name = tag2cat.get(tag)
+            cat_name = source_plugin.tag2cat.get(tag)
             if not cat_name:
                 continue
 
