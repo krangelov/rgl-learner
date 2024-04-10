@@ -38,6 +38,7 @@ params = {
   'possessive': ('Poss','Case'),
   'locative': ('Loc','Case'),
   'copulative': ('Cop','Case'),
+  'instrumental': ('Cop','Case'),
   'unspecified': ('Unspecified','Distance'),
   'proximal': ('Proximal','Distance'),
   'distal': ('Distal','Distance'),
