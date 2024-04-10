@@ -153,12 +153,9 @@ def learn(source,lang):
     lang_plugin   = plugins[source,lang]
 
     lin_types = {}
-    for record in lexicon:
+    for word, pos, forms in lexicon:
         table = {}
-        word  = record["word"]
-        for form in record.get("forms",[]):
-            w    = form["form"]
-            tags = form.get("tags",[])
+        for w,tags in forms:
             tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
             tags = sorted(tags,key=lambda tag: get_order(source_plugin,tag))
 
@@ -176,14 +173,14 @@ def learn(source,lang):
             t[tags[-1]] = w
 
         if table:
-            cat_name = source_plugin.tag2cat.get(record.get("pos"))
+            cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:
                 continue
             lang_plugin.patch_inflection(cat_name,table)
 
             typ   = getTypeOf(source_plugin,table)
             forms = getFormsOf(table)
-            lin_types.setdefault(record.get("pos"),{}).setdefault(typ,[]).append((word,forms))
+            lin_types.setdefault(pos,{}).setdefault(typ,[]).append((word,forms))
 
     pdefs = set()
     lang_code = lang_plugin.iso3
