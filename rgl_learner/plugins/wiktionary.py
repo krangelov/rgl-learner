@@ -55,7 +55,7 @@ params = {
   'neuter': ('Neuter','Gender'),
 }
 
-ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template']
+ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction']
 
 def extract(lang):
     lexicon = []

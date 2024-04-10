@@ -3,12 +3,15 @@ from dataclasses import dataclass
 import rgl_learner.plugins as plugins
 
 param_order = [
+  'comparative',
+  'superlative',
   'Species',
   'Distance',
   'Case',
   'count-form',
-  'multiword-construction',
+  'pluperfect',
   'Tense',
+  'imperative',
   'Number',
   'Person',
   'mutation'
@@ -96,7 +99,7 @@ class GFRecord(GFType):
 
 def getTypeOf(source_plugin,o):
     if type(o) is str:
-        return GFStr()
+        return (GFStr(),[o])
     else:
         table  = {}
         record = []
@@ -104,40 +107,34 @@ def getTypeOf(source_plugin,o):
         params = source_plugin.params
         params_keys = list(params.keys())
         for tag,val in o.items():
+            val_type, forms = getTypeOf(source_plugin,val)
+
             param = source_plugin.params.get(tag)
             if param == None:
                 table = None
             else:
                 param_con, arg_type = param
-                pcons.append((param_con,params_keys.index(tag) or 10000))
-            val_type = getTypeOf(source_plugin,val)
+                pcons.append((param_con,params_keys.index(tag) or 10000,forms))
+
             if table != None:
                 old_type = table.get(arg_type)
                 if old_type and old_type != val_type:
                     table = None
                 else:
                     table[arg_type] = val_type
-            record.append((tag,val_type))
+            record.append((tag,val_type,forms))
 
         if table and len(table) == 1:
             arg_type,val_type = table.popitem()
             pcons.sort(key=lambda p: p[1])
-            pcons = [pcon for pcon, _ in pcons]
-            return GFTable(GFParam(arg_type,tuple(pcons)),val_type)
+            forms = sum([forms for _, _, forms in pcons], [])
+            pcons = tuple([pcon for pcon, _, _  in pcons])
+            return GFTable(GFParam(arg_type,pcons),val_type), forms
         else:
-            return GFRecord(tuple(record))
-
-def getFormsOf(o):
-    forms = []
-    def append_forms(o):
-        nonlocal forms
-        if type(o) is str:
-            forms.append(o)
-        else:
-            for tag,val in o.items():
-                append_forms(val)
-    append_forms(o)
-    return forms
+            record.sort(key=lambda p: p[0] or "Z")
+            forms = sum([forms for _, _, forms in record], [])
+            fields = tuple([(tag, val_type) for tag, val_type, _  in record])
+            return GFRecord(fields), forms
 
 def get_order(source_plugin,tag):
     try:
@@ -154,6 +151,9 @@ def learn(source,lang):
 
     lin_types = {}
     for word, pos, forms in lexicon:
+        if lang_plugin.filter_lemma(word,pos):
+            continue
+
         table = {}
         for w,tags in forms:
             tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
@@ -173,26 +173,28 @@ def learn(source,lang):
             t[tags[-1]] = w
 
         if table:
+            pos = lang_plugin.patchPOS(pos,table)
             cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:
                 continue
             lang_plugin.patch_inflection(cat_name,table)
 
-            typ   = getTypeOf(source_plugin,table)
-            forms = getFormsOf(table)
-            lin_types.setdefault(pos,{}).setdefault(typ,[]).append((word,forms))
+            if table:
+                typ, forms = getTypeOf(source_plugin,table)
+                lin_types.setdefault(pos,{}).setdefault(typ,[]).append((word,forms))
 
     pdefs = set()
     lang_code = lang_plugin.iso3
     with open('Res'+lang_code+'.gf','w') as fr, \
          open('Cat'+lang_code+'.gf','w') as fc, \
          open('Dict'+lang_code+'.gf','w') as fd, \
-         open('Dict'+lang_code+'Abs.gf','w') as fa:
+         open('Dict'+lang_code+'Abs.gf','w') as fa, \
+         open('lexicon.tsv','w') as tsv:
         fr.write('resource Res'+lang_code+' = {\n')
         fr.write('\n')
         fc.write('concrete Cat'+lang_code+' of Cat = open Res'+lang_code+' in {\n')
         fc.write('\n')
-        fd.write('concrete Dict'+lang_code+' of Dict'+lang_code+'Abs = Cat'+lang_code+' ** open Res'+lang_code+' in {\n')
+        fd.write('concrete Dict'+lang_code+' of Dict'+lang_code+'Abs = Cat'+lang_code+' ** open Res'+lang_code+', Prelude in {\n')
         fd.write('\n')
         fa.write('abstract Dict'+lang_code+'Abs = Cat ** {\n')
         fa.write('\n')
@@ -225,9 +227,21 @@ def learn(source,lang):
                 fr.write('          '+typ.renderOper(10,vars)+" ;\n")
                 fr.write('\n')
 
+                # make them unique
+                d = {}
                 for lexeme,forms in lexemes:
-                    fa.write('fun \''+lexeme+'_'+cat_name+'\' : '+cat_name+' ;\n')
-                    fd.write('lin \''+lexeme+'_'+cat_name+'\' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')
+                    d.setdefault(lexeme,[]).append(forms)
+
+                for lexeme,forms_list in d.items():
+                    for i,forms in enumerate(forms_list):
+                        if len(forms_list) == 1:
+                            ident = lexeme+'_'+cat_name
+                        else:
+                            ident = lexeme+'_'+str(i+1)+'_'+cat_name
+
+                        fa.write('fun \''+ident+'\' : '+cat_name+' ;\n')
+                        fd.write('lin \''+ident+'\' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')
+                        tsv.write(lexeme+'_'+cat_name+'\t'+'\t'.join(forms)+'\n')
 
             fr.write('\n')
         fa.write('\n')

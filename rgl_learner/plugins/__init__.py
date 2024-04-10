@@ -12,6 +12,10 @@ class PluginWrapper:
         if fn:
             return fn(*args)
 
+    def filter_lemma(self,*args):
+        fn = self.module.get("filter_lemma")
+        return fn and fn(*args)
+
     def __getattr__(self,name):
         return self.module[name]
 
