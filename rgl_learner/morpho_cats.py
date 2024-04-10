@@ -101,13 +101,15 @@ def getTypeOf(source_plugin,o):
         table  = {}
         record = []
         pcons  = []
+        params = source_plugin.params
+        params_keys = list(params.keys())
         for tag,val in o.items():
             param = source_plugin.params.get(tag)
             if param == None:
                 table = None
             else:
                 param_con, arg_type = param
-                pcons.append(param_con)
+                pcons.append((param_con,params_keys.index(tag) or 10000))
             val_type = getTypeOf(source_plugin,val)
             if table != None:
                 old_type = table.get(arg_type)
@@ -119,6 +121,8 @@ def getTypeOf(source_plugin,o):
 
         if table and len(table) == 1:
             arg_type,val_type = table.popitem()
+            pcons.sort(key=lambda p: p[1])
+            pcons = [pcon for pcon, _ in pcons]
             return GFTable(GFParam(arg_type,tuple(pcons)),val_type)
         else:
             return GFRecord(tuple(record))
