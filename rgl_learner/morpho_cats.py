@@ -160,11 +160,10 @@ def get_order(source_plugin,tag):
         return 10000000
 
 def learn(source,lang):
-    with open(f"data/{lang}/lexicon.pickle", "rb") as f:
-        lexicon=pickle.load(f)
-
     source_plugin = plugins[source]
     lang_plugin   = plugins[source,lang]
+
+    lexicon=source_plugin.extract(lang)
 
     lin_types = {}
     for word, pos, forms in lexicon:

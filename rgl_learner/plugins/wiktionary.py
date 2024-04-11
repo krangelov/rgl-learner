@@ -1,6 +1,7 @@
 import gzip
 import json
 import pickle
+import os.path
 from pathlib import Path
 
 tag2cat = {
@@ -58,21 +59,30 @@ params = {
 ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction']
 
 def extract(lang):
-    lexicon = []
-    with gzip.open('raw-wiktextract-data.json.gz','r') as f:
-        for line in f:
-            record = json.loads(line)
-            if record.get("lang_code")==lang:
-                word  = record["word"]
-                pos   = record.get("pos")
-                forms = []
-                for form in record.get("forms",[]):
-                    w    = form["form"]
-                    tags = form.get("tags",[])
-                    forms.append((w,tags))
-                lexicon.append((word,pos,forms))
-
     dir = "data/"+lang
     Path(dir).mkdir(parents=True, exist_ok=True)
-    with open(dir+"/lexicon.pickle", "wb") as f:
-        pickle.dump(lexicon,f)
+    fpath = dir+"/wiktionary.pickle"
+
+    if not os.path.exists(fpath):
+        print(f"Extracting data from raw-wiktextract-data.json.gz for {lang}.")
+        lexicon = []
+        with gzip.open('raw-wiktextract-data.json.gz','r') as f:
+            for line in f:
+                record = json.loads(line)
+                if record.get("lang_code")==lang:
+                    word  = record["word"]
+                    pos   = record.get("pos")
+                    forms = []
+                    for form in record.get("forms",[]):
+                        w    = form["form"]
+                        tags = form.get("tags",[])
+                        forms.append((w,tags))
+                    lexicon.append((word,pos,forms))
+
+        with open(fpath, "wb") as f:
+            pickle.dump(lexicon,f)
+    else:
+        with open(fpath, "rb") as f:
+            lexicon = pickle.load(lexicon,f)
+
+    return lexicon
