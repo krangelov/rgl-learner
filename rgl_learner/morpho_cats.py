@@ -30,18 +30,35 @@ class GFStr(GFType):
         return vars.pop(0)
 
 @dataclass(frozen=True)
-class GFParam(GFType):
+class GFParamType(GFType):
     name: str
-    constructors: tuple[str]
+    constructors: tuple # [GFParamConstr]
 
     def __repr__(self):
         return self.name
 
     def printParamDefs(self,f,pdefs):
-        pdef = "param "+self.name+" = "+" | ".join(self.constructors)+" ;\n"
+        pdef = "param "+self.name+" = "+" | ".join(str(constructor) for constructor in self.constructors)+" ;\n"
+        for constructor in self.constructors:
+            constructor.printParamDefs(f,pdefs)
         if pdef not in pdefs:
             f.write(pdef)
             pdefs.add(pdef)
+
+@dataclass(frozen=True)
+class GFParamConstr:
+    name: str
+    arg_types: tuple[GFType]
+
+    def __repr__(self):
+        if self.arg_types:
+            return self.name+' '.join(str(ty) for ty in self.arg_types)
+        else:
+            return self.name
+
+    def printParamDefs(self,f,pdefs):
+        for ty in self.arg_types:
+            ty.printParamDefs(f,pdefs)
 
 @dataclass(frozen=True)
 class GFTable(GFType):
@@ -57,7 +74,7 @@ class GFTable(GFType):
         for pcon in self.arg_type.constructors:
             if not first:
                 s += ' ;\n'
-            s += ' '*(indent+2)+pcon+' => '+self.res_type.renderOper(indent+len(pcon)+6,vars)
+            s += ' '*(indent+2)+pcon.name+' => '+self.res_type.renderOper(indent+len(pcon.name)+6,vars)
             first = False
         s += '\n' + ' '*indent + '}'
         return s
@@ -99,7 +116,7 @@ class GFRecord(GFType):
 
 def getTypeOf(source_plugin,o):
     if type(o) is str:
-        return (GFStr(),[o])
+        return GFStr(),[o]
     else:
         table  = {}
         record = []
@@ -127,13 +144,13 @@ def getTypeOf(source_plugin,o):
         if table and len(table) == 1:
             arg_type,val_type = table.popitem()
             pcons.sort(key=lambda p: p[1])
-            forms = sum([forms for _, _, forms in pcons], [])
-            pcons = tuple([pcon for pcon, _, _  in pcons])
-            return GFTable(GFParam(arg_type,pcons),val_type), forms
+            forms = sum((forms for _, _, forms in pcons), [])
+            pcons = tuple((GFParamConstr(pcon,()) for pcon, _, _  in pcons))
+            return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
             record.sort(key=lambda p: p[0] or "Z")
-            forms = sum([forms for _, _, forms in record], [])
-            fields = tuple([(tag, val_type) for tag, val_type, _  in record])
+            forms = sum((forms for _, _, forms in record), [])
+            fields = tuple(((tag, val_type) for tag, val_type, _  in record))
             return GFRecord(fields), forms
 
 def get_order(source_plugin,tag):

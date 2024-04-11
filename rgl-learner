@@ -3,7 +3,6 @@
 import sys
 import rgl_learner.plugins
 import rgl_learner.morpho_cats
-import rgl_learner.unimorph
 
 if len(sys.argv) == 3 and (sys.argv[1] == "wiktionary" or sys.argv[1] == "unimorph"):
     rgl_learner.plugins[sys.argv[1]].extract(sys.argv[2])
