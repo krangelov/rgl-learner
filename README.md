@@ -38,3 +38,9 @@ In the plugin you can define the following:
     where the keys are tags and the values are the actual forms. The role of the patch function is to remove forms that you don't want to have or to add more forms.
     You can add "-" for forms that must exist but you don't know them. After the patching all inflection tables must be uniform, i.e. all of them must have the same set of forms.
     
+## Paradigm extraction
+```Bash
+./rgl-learner parse-paradigm <lang-code>
+```
+
+This phase reads files produced during previous phase, i.e. ResXXX.gf and DictXXX.gf. It then tries to predict the inflection tables from existing forms and morphological annotation. The code is based on [the paradigm extractor by Marcus Forsberg and Mark Hulden](https://github.com/marfors/paradigmextract/tree/8ceb702ee20dfde452fea2f7db6810a0ebf961cb).

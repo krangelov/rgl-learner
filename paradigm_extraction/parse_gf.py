@@ -62,7 +62,7 @@ def parse_lexicon(lexicon, form_table):
             pos, forms = forms.split(maxsplit=1)
             pos = pos.replace("mk", "")
             all_forms = form_table[pos]
-            word2form = {form: all_forms[f"f{i+1}"] for i, form in enumerate(forms.strip(" ;").strip('"').split('" "')) if f"f{i+1}" in all_forms and form != "nonExist"}
+            word2form = {form.strip('"'): all_forms[f"f{i+1}"] for i, form in enumerate(forms.strip(" ;").split(' ')) if f"f{i+1}" in all_forms and form != "nonExist"}
             if pos in paradigms:
                 paradigms[pos].append((lemma, list(word2form.keys()), list(word2form.values())))
             else:

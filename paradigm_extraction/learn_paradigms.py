@@ -328,7 +328,7 @@ def collapse_tables(tables):
         for idx2, t2 in enumerate(tables):
             t2_lemma = t2[0]
             t2 = t2[1]
-            if idx2 != idx and vartable == t2[2]:
+            if idx2 != idx and (vartable == t2[2] or set(vartable).issubset(set(t2[2]))):
                 varstring.append(vars_to_string(t2[0][0], t2[3]))
                 lemmas.append(t2_lemma)
                 collapsedidx.update({idx2})
@@ -337,7 +337,7 @@ def collapse_tables(tables):
         splittags = split_tags(tags)
         formlist = list(zip(t[2], splittags))
         p = Paradigm(formlist, varstring, lemmas)
-        paradigms.append(p)
+        paradigms.append((str(p), len(lemmas)))
     return paradigms
 
 
@@ -378,7 +378,7 @@ def learnparadigms(inflectiontables):
         result = reduce(lambda x, y: x & y, wg)
         lcss = result.longestwords
         if not lcss: # Table has no LCS - no variables
-            vartables.append(([[table,table,table,[],0,0]], tagtable))
+            vartables.append((lemma, [[table,table,table,[],0,0]], tagtable))
             continue
 
         combos = []

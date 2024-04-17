@@ -1,4 +1,5 @@
-import sys
+import re
+from collections import defaultdict
 
 from .learn_paradigms import learnparadigms
 from .parse_gf import parse_gf_files
@@ -10,8 +11,8 @@ def find_n_morphemes(form):
 
 
 def write_paradigm(i, table, pos_tag):
-    morphemes = find_n_morphemes(table.split("\n")[0])
-    code = f"""mk{pos_tag}{i} : {len(morphemes) * "Str -> "}{pos_tag} ;\nmk{pos_tag}{i} {" ".join(morphemes)} = {{s = table {{\n"""
+    morphemes = find_n_morphemes(table.strip(" ;").split("\n")[0])
+    code = f"""mk{pos_tag}{i} : {len(morphemes) * "Str -> "} {pos_tag} ;\nmk{pos_tag}{i} {" ".join(morphemes)} = {{s = table {{\n"""
     code += table
     code += f"{19 * " "} }} ;\n\n }} ;"
     return code
@@ -30,18 +31,22 @@ def parse(lang):
     paradigms = parse_gf_files(".", langcode)
 
     print("Learning paradigms..")
-    tables = {}
+    tables = defaultdict(list)
     for pos, table in paradigms.items():
-        tables[pos] = list(map(str, learnparadigms(table)))
+        pos_tag = re.sub(r"\d*", "", pos)
+        paradigms = learnparadigms(table)
+        tables[pos_tag].extend(paradigms)
 
     print("Writing output files..")
     grammar_code = ""
     lexicon_code = ""
+    freq_table = []
     for pos_tag, table in tables.items():
-        for i, par in enumerate(table):
+        for i, (par, freq) in enumerate(table):
             formtable, words = par.split("\t")
             lexicon_code += write_lexicon(i, words, pos_tag)
             grammar_code += "\n\n" + write_paradigm(i, formtable, pos_tag)
+            freq_table.append(f"{pos_tag}{i}\t{freq}")
 
     with open(f"Dict{langcode}_tmp.gf", "w") as f:
         f.write(
@@ -53,4 +58,7 @@ def parse(lang):
         f.write(f"""concrete Paradigms{langcode} = {{\n""")
         f.write(grammar_code)
         f.write("}")
+
+    with open(f"freq_table_{langcode}.txt", "w") as f:
+        f.write("\n".join(freq_table))
 
