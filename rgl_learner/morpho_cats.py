@@ -250,6 +250,9 @@ def learn(source,lang):
 
                 for lexeme,forms_list in d.items():
                     for i,forms in enumerate(forms_list):
+                        if not table:
+                            continue
+
                         if len(forms_list) == 1:
                             ident = lexeme+'_'+cat_name
                         else:
