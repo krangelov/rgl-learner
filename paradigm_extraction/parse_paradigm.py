@@ -14,7 +14,7 @@ def write_paradigm(i, table, pos_tag):
     morphemes = find_n_morphemes(table.strip(" ;").split("\n")[0])
     code = f"""mk{pos_tag}{i} : {len(morphemes) * "Str -> "} {pos_tag} ;\nmk{pos_tag}{i} {" ".join(morphemes)} = {{s = table {{\n"""
     code += table
-    code += f"{19 * " "} }} ;\n\n }} ;"
+    code += f'{19 * " "} }} ;\n\n }} ;'
     return code
 
 
