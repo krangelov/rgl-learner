@@ -83,6 +83,6 @@ def extract(lang):
             pickle.dump(lexicon,f)
     else:
         with open(fpath, "rb") as f:
-            lexicon = pickle.load(lexicon,f)
+            lexicon = pickle.load(f)
 
     return lexicon
