@@ -1,5 +1,5 @@
 # rgl-learner
-Automatic Learning of RGL grammars.
+A Semi-automatic Learning of RGL grammars.
 
 The entry point is the script rgl-learner which starts different phases of the grammar extraction as described bellow.
 
@@ -29,7 +29,7 @@ The extraction from Wikitionary expects that the current folder contains the fil
 https://kaikki.org/dictionary/rawdata.html
 
 Similarly the extraction from Unimorph requires a clone of the
-`unimorph/{lang}` repository in the `data` folder.
+`unimorph/{lang}` repository in subfolder `data` of the current folder.
     
 ## Paradigm extraction
 ```Bash
