@@ -9,22 +9,8 @@ The entry point is the script rgl-learner which starts different phases of the g
 ./rgl-learner <wiktionary|unimorph> <lang-code>
 ```
 
-This phase reads the data for the specified language from either Wiktionary or Unimorph and stores the extracted data in the file `data/<lang-code>/lexicon.pickle`.
-The data extraction is a plugin and is implemented in either `rgl_learner/plugins/wiktionary.py` or `rgl_learner/plugins/unimorph.py`.
+This phase reads the data for the specified language from either Wiktionary or Unimorph and produces:
 
-In particular the extract from Wikitionary expects that the current folder contains the file `raw-wiktextract-data.json.gz` which can be downloaded from:
-
-https://kaikki.org/dictionary/rawdata.html
-
-
-## Morphological Categories
-
-```Bash
-./rgl-learner morpho-cats <wiktionary|unimorph> <lang-code>
-```
-
-This phase reads the already extracted data in `data/<lang-code>/lexicon.pickle` and finds out the linearization categories for the lexicon.
-The phase is still source dependent since the annotations are different for Wiktionary and Unimorph. The output of the phase are the files:
   - CatXXX.gf - a prototype for the Cat module which only contains the lincats
   - ResXXX.gf - a prototype for the Res module which contains the lincats defined as operations. It also defines one operation per part of speech which creates
                 an entry of that type
@@ -37,6 +23,13 @@ In the plugin you can define the following:
   - one patch function per part of speech, e.g. `patchN` for instance, which can manipulate inflection tables as extracted from the data source. The inflection table is a trie
     where the keys are tags and the values are the actual forms. The role of the patch function is to remove forms that you don't want to have or to add more forms.
     You can add "-" for forms that must exist but you don't know them. After the patching all inflection tables must be uniform, i.e. all of them must have the same set of forms.
+
+The extraction from Wikitionary expects that the current folder contains the file `raw-wiktextract-data.json.gz` which can be downloaded from:
+
+https://kaikki.org/dictionary/rawdata.html
+
+Similarly the extraction from Unimorph requires a clone of the
+`unimorph/{lang}` repository in the `data` folder.
     
 ## Paradigm extraction
 ```Bash
