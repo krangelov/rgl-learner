@@ -1,61 +1,56 @@
-import re
+import pickle
 from collections import defaultdict
 
 from .learn_paradigms import learnparadigms
-from .parse_gf import parse_gf_files
-
-def find_n_morphemes(form):
-    _, base = form.split("=>")
-    morphemes = [s for s in base.split("+") if "base" in s]
-    return morphemes
 
 
-def write_paradigm(i, table, pos_tag):
-    morphemes = find_n_morphemes(table.strip(" ;").split("\n")[0])
-    code = f"""mk{pos_tag}{i} : {len(morphemes) * "Str -> "} {pos_tag} ;\nmk{pos_tag}{i} {" ".join(morphemes)} = {{s = table {{\n"""
-    code += table
-    code += f'{19 * " "} }} ;\n\n }} ;'
+def write_paradigm(i, par, cat):
+    names = [name for name, val in par.var_insts[0]]
+    code = f"""mk{cat}{i:03d} : {len(names) * "Str -> "}{cat} ;\nmk{cat}{i:03d} {" ".join(names)} =\n  """
+    code += f"lin {cat} " + par.typ.renderOper(2,par.forms)
+    code += ' ;'
     return code
 
 
-def write_lexicon(i, words, pos_tag):
+def write_lexicon(i, par, cat):
     code = ""
-    for wordform in words.split("#"):
-        code += f"""lin '{wordform}_{pos_tag}' = mk{pos_tag}{i} "{wordform}" ;\n"""
+    for j,lemma in enumerate(par.lemmas):
+        code += f"""lin '{lemma}' = mk{cat}{i:03d} {" ".join(('"'+val+'"' for name, val in par.var_insts[j]))} ;\n"""
     return code
 
 
 def parse(lang):
-    langcode = lang.title()
-    print("Parsing input files..")
-    paradigms = parse_gf_files(".", langcode)
+    with open(f"data/{lang}/lexicon.pickle", "rb") as f:
+        langcode, lexicon = pickle.load(f)
 
     print("Learning paradigms..")
     tables = defaultdict(list)
-    for pos, table in paradigms.items():
-        pos_tag = re.sub(r"\d*", "", pos)
-        paradigms = learnparadigms(table)
-        tables[pos_tag].extend(paradigms)
+    for pos_tag, (cat_name, table) in lexicon.items():
+        if len(table) > 1:
+            print("Warning: the inflection tables are not unified yet, using the first one")
+        typ,lexemes = next(iter(table.items()))
+        paradigms = learnparadigms(typ,lexemes)
+        tables[cat_name].extend(paradigms)
 
     print("Writing output files..")
     grammar_code = ""
     lexicon_code = ""
     freq_table = []
-    for pos_tag, table in tables.items():
-        for i, (par, freq) in enumerate(table):
-            formtable, words = par.split("\t")
-            lexicon_code += write_lexicon(i, words, pos_tag)
-            grammar_code += "\n\n" + write_paradigm(i, formtable, pos_tag)
-            freq_table.append(f"{pos_tag}{i}\t{freq}")
+    for cat, table in tables.items():
+        for i, par in enumerate(table):
+            lexicon_code += write_lexicon(i+1, par, cat)
+            grammar_code += "\n\n" + write_paradigm(i+1, par, cat)
+            freq_table.append(f"{pos_tag}{i}\t{len(par.lemmas)}")
 
-    with open(f"Dict{langcode}_tmp.gf", "w") as f:
+    with open(f"Dict{langcode}.gf", "w") as f:
         f.write(
-            f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Res{langcode}, Prelude in {{\n""")
+            f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Paradigms{langcode}, Prelude in {{\n""")
         f.write(lexicon_code)
         f.write("}")
 
-    with open(f"Paradigms{langcode}_tmp.gf", "w") as f:
-        f.write(f"""concrete Paradigms{langcode} = {{\n""")
+    with open(f"Paradigms{langcode}.gf", "w") as f:
+        f.write(f"""resource Paradigms{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n""")
+        f.write("oper")
         f.write(grammar_code)
         f.write("}")
 

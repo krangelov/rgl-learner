@@ -165,27 +165,34 @@ def count_infixes(string):
 
 
 def string_to_varstring(string, vars):
+    if string == "-":
+        return "nonExist"
     varpos = 0
     s = []
     idx = 0
     while idx < len(string):
-        if string[idx] == u'[':
+        if string[idx] == '[':
             if idx != 0:
-                s.append(u'+')
+                s.append('"+')
             idx += 1
-            while string[idx] != u']':
+            while string[idx] != ']':
                 idx += len(vars[varpos])
-                s.append(str(varpos+1))
+                s.append(f"base_{varpos+1}")
                 if idx < len(string) - 1:
-                    s.append(u'+')
+                    s.append('+')
                 varpos += 1
+            if idx < len(string) - 1:
+                s.append('"')
             idx += 1
-            continue
         else:
+            if idx == 0:
+                s.append('"')
             s.append(string[idx])
             idx += 1
+            if idx >= len(string):
+                s.append('"')
 
-    return u''.join(s)
+    return ''.join(s)
 
 
 def lcp(lst):
@@ -279,65 +286,42 @@ def findfactors(word, lcs):
         else:
             rec(word, lcs, posw + 1, posl, 0, tempstring + [word[posw]])
 
-
     rec(word, lcs, 0, 0, 0, [])
     return factors[:]
 
-# [table, c,variabletable,variablelist,numvars,infixcount]
-
-def vars_to_string(baseform, varlist):
+def vars_to_string(varlist):
     vstr = [(f"base_{idx+1}", v) for idx, v in enumerate(varlist)]
     return vstr
 
-def split_tags(tags):
-    spl = [tg.split(u',') for tg in tags]
-
-    newforms = []
-    ctr = 1
-    for form in spl:
-        newelement = []
-        for tagelement in form:
-            if tagelement == u'':
-                newelement.append((str(ctr), u'1'))
-            elif u'=' in tagelement:
-                splittag = tagelement.split(u'=')
-                newelement.append((splittag[0], splittag[1]))
-            else:
-                newelement.append((tagelement,u'1'))
-        newforms.append(newelement)
-        ctr += 1
-    return newforms
-
-
-def collapse_tables(tables):
+def collapse_tables(typ,tables):
     """Input: list of tables
        Output: Collapsed paradigms."""
     paradigms = []
     tablestrings = []
     collapsedidx = set() # Store indices to collapsed tables
     for idx, t in enumerate(tables):
-        lemma = t[0]
-        tags = t[2]
-        t = t[1]
         if idx in collapsedidx:
             continue
+        collapsedidx.add(idx)
+
+        lemma = t[0]
+        t = t[1]
         varstring = []
-        vartable = t[2]
+        vartable = t[1]
         lemmas = []
         # Find similar tables
         for idx2, t2 in enumerate(tables):
+            if idx2 in collapsedidx:
+                continue
             t2_lemma = t2[0]
             t2 = t2[1]
-            if idx2 != idx and (vartable == t2[2] or set(vartable).issubset(set(t2[2]))):
-                varstring.append(vars_to_string(t2[0][0], t2[3]))
+            if vartable == t2[1]:
+                varstring.append(vars_to_string(t2[2]))
                 lemmas.append(t2_lemma)
-                collapsedidx.update({idx2})
-        varstring.append(vars_to_string(t[0][0], t[3]))
+                collapsedidx.add(idx2)
+        varstring.append(vars_to_string(t[2]))
         lemmas.append(lemma)
-        splittags = split_tags(tags)
-        formlist = list(zip(t[2], splittags))
-        p = Paradigm(formlist, varstring, lemmas)
-        paradigms.append((str(p), len(lemmas)))
+        paradigms.append(Paradigm(t[1], typ, varstring, lemmas))
     return paradigms
 
 
@@ -369,36 +353,38 @@ def filterbracketings(factorlist, functionlist, tablecap):
                 break
     return factorlist
 
-
-def learnparadigms(inflectiontables):
+def learnparadigms(typ,inflectiontables):
     vartables = []
     TABLELIMIT = 16
-    for lemma, table, tagtable in inflectiontables:
-        wg = [wordgraph.wordtograph(x) for x in table]
+    for ident, table in inflectiontables:
+        wg = [wordgraph.wordtograph(w) for w in table if w != "-"]
+        if not wg:
+            variabletable = ['nonExist' for form in table]
+            vartables.append((ident, [(table,variabletable,[],0,0)]))
+            continue
         result = reduce(lambda x, y: x & y, wg)
         lcss = result.longestwords
         if not lcss: # Table has no LCS - no variables
-            vartables.append((lemma, [[table,table,table,[],0,0]], tagtable))
+            variabletable = ['"'+form+'"' for form in table]
+            vartables.append((ident, [(table,variabletable,[],0,0)]))
             continue
 
         combos = []
         for lcs in lcss:
-            factorlist = [findfactors(w, lcs) for w in table]
+            factorlist = [findfactors(w, lcs) or [w] for w in table]
             factorlist = filterbracketings(factorlist, (ffilter_lcp, ffilter_shortest_string, ffilter_shortest_infix, ffilter_longest_single_var, ffilter_leftmost_sum), TABLELIMIT)
             combinations = itertools.product(*factorlist)
             for c in combinations:
                 (numvars, variablelist) = evalfact(lcs, c)
                 infixcount = reduce(lambda x,y: x + count_infix_segments(y), c, 0)
                 variabletable = [string_to_varstring(s, variablelist) for s in c]
-                combos.append([table,c,variabletable,variablelist,numvars,infixcount])
-        vartables.append((lemma,combos,tagtable))
-
+                combos.append((c,variabletable,variablelist,numvars,infixcount))
+        vartables.append((ident, combos))
     filteredtables = []
+    for ident, t in vartables:
+        besttable = min(t, key = lambda s: (s[3],s[4]))
+        filteredtables.append((ident, besttable))
 
-    for lemma, t, tags in vartables:
-        besttable = min(t, key = lambda s: (s[4],s[5]))
-        filteredtables.append((lemma, besttable, tags))
-
-    paradigmlist = collapse_tables(filteredtables)
+    paradigmlist = collapse_tables(typ,filteredtables)
 
     return paradigmlist

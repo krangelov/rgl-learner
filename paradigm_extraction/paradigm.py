@@ -27,17 +27,16 @@ class Paradigm(object):
             Ex: [[('1','dimm')],[('1','dank')], ...]
     """
 
-    def __init__(self, form_msds, var_insts, lemmas, prefix=None):
+    def __init__(self, forms, typ, var_insts, lemmas, prefix=None):
         self.p_info = {}
-        self.forms = []
+        self.forms = forms
+        self.typ = typ
         self.var_insts = var_insts
         self.lemmas = lemmas
         if prefix == None:
             self.prefix = ''
         else:
             self.prefix = prefix
-        for (f, msd) in form_msds:
-            self.forms.append(Form(f, msd, var_insts))
 
     def __getattr__(self, attr):
         if len(self.p_info) > 0:  # Compute only once.
@@ -109,148 +108,9 @@ class Paradigm(object):
         return table
 
     def __str__(self):
-
-        p = [f.__unicode__() for f in self.forms]
+        p = [str(f) for f in self.forms]
         v = "#".join(self.lemmas)
         return '%s\t%s' % ("\n".join(p), v)
-
-
-class Form(object):
-    """A class representing a paradigmatic wordform and, possibly, its
-    morphosyntactic description.
-
-    Args:
-       form:str
-            Ex: 1+a+2
-       msd:list(tuple)
-            Ex: [('num','sg'),('case':'nom') .. ]
-                [] no msd available
-                [(None,'SGNOM')] no msd type available
-    """
-
-    def __init__(self, form, msd=[], v_insts=[]):
-        (self.form, self.msd) = (form.split('+'), msd)
-        self.scount = 0
-        r = ''
-        for f in self.form:
-            if f.isdigit():
-                r += '(.+)'
-            else:
-                r += f
-                self.scount += len(f)
-        self.regex = r
-        self.cregex = re.compile(self.regex)
-        # vars
-        collect_vars = defaultdict(set)
-        for vs in v_insts:
-            for (i, v) in vs:
-                collect_vars[i].add(v)
-        self.v_regex = []
-        for (_, ss) in collect_vars.items():
-            self.v_regex.append(re.compile(genregex.genregex(ss, pvalue=0.05).pyregex()))
-
-    def shapes(self, ss):
-        w = "".join(self.__call__(*ss)[0])
-        return {'form': "+".join(self.form),
-                'msd': self.msd,
-                'w': w,
-                'regex': self.regex,
-                'cregex': self.cregex,
-                'v_regex': self.v_regex}
-
-    def __call__(self, *insts):
-        """Instantiate the variables of the wordform.
-           Args:
-            insts: fun args
-                   Ex: f('schr','i','b')
-        """
-        (w, vindex) = ([], 0)
-        for p in self.form:
-            if p.isdigit():  # is a variable
-                w.append(insts[vindex])
-                vindex += 1
-            else:
-                w.append(p)
-        return (w, self.msd)
-
-    def match(self, w, constrained=True):
-        return self.match_vars(w, constrained) != None
-
-    def match_vars(self, w, constrained=True):
-        matcher = regexmatcher.mregex(self.regex)
-        ms = matcher.findall(w)
-        if ms == None:
-            return None
-        elif ms == []:
-            return []
-        if not constrained:
-            return [(self.scount, m) for m in ms]
-        else:
-            result = []
-            for vs in ms:
-                if type(vs) == str:
-                    var_and_reg = [(vs, self.v_regex[0])]
-                else:
-                    var_and_reg = list(zip(vs, self.v_regex))
-                vcount = 0
-                m_all = True
-                for (s, r) in var_and_reg:
-                    m = r.match(s)
-                    if m == None:
-                        return None
-                    xs = m.groups()  # .+-matches have no grouping
-                    if len(xs) > 0 or r.pattern == '.+':
-                        if r.pattern != '.+':
-                            vcount += len("".join(xs))  # select the variable specificity
-                    else:
-                        m_all = False
-                        break
-                if m_all:
-                    result.append((self.scount + vcount, vs))
-            if result == []:
-                return None
-            else:
-                return result
-
-    def strs(self):
-        """Collects the strings in a wordform.
-           A variable is assumed to be surrounded by (possibly empty) strings.
-        """
-        ss = []
-        if self.form[0].isdigit():
-            ss.append('_')
-        for i in range(len(self.form)):
-            if not (self.form[i].isdigit()):
-                ss.append(self.form[i])
-            elif i < len(self.form) - 1 and self.form[i + 1].isdigit():
-                ss.append('_')
-        if self.form[-1].isdigit():
-            ss.append('_')
-        return ss
-
-    def form_word(self):
-        code = []
-        for morpheme in self.form:
-            if morpheme.isdigit():
-                code.append(f"base_{morpheme}")
-            else:
-                code.append(f'"{morpheme}"')
-        return code
-
-    def __unicode__(self):
-        ms = []
-        for (t, v) in self.msd:
-            if t != None:
-                ms.append(t.replace(";", " "))
-            else:
-                if v != None:
-                    ms.append(v.replace(";", " "))
-        if len(ms) == 0:
-            print("+".join(self.form))
-            return "+".join(self.form)
-        else:
-            return f"{21 * ' '}{' '.join(ms)} => {'+'.join(self.form_word())} ;"
-
 
 def load_file(file):
     paradigms = []

@@ -29,6 +29,9 @@ class GFStr(GFType):
     def renderOper(self,indent,vars):
         return vars.pop(0)
 
+    def fillTagTable(self,tags,lst):
+        lst.append(tuple(tags))
+
 @dataclass(frozen=True)
 class GFParamType(GFType):
     name: str
@@ -79,6 +82,12 @@ class GFTable(GFType):
         s += '\n' + ' '*indent + '}'
         return s
 
+    def fillTagTable(self,tags,lst):
+        for pcon in self.arg_type.constructors:
+            tags.append(pcon)
+            self.res_type.fillTagTable(tags,lst)
+            tags.pop()
+
     def printParamDefs(self,f,pdefs):
         self.arg_type.printParamDefs(f,pdefs)
         self.res_type.printParamDefs(f,pdefs)
@@ -108,6 +117,12 @@ class GFRecord(GFType):
             ind = (indent+2)
         s += '\n' + ' '*indent + '}'
         return s
+
+    def fillTagTable(self,tags,lst):
+        for lbl,ty in self.fields:
+            tags.append(lbl)
+            ty.fillTagTable(tags,lst)
+            tags.pop()
 
     def printParamDefs(self,f,pdefs):
         for lbl,ty in self.fields:
@@ -197,7 +212,24 @@ def learn(source,lang):
 
             if table:
                 typ, forms = getTypeOf(source_plugin,table)
-                lin_types.setdefault(pos,{}).setdefault(typ,[]).append((word,forms))
+                lin_types.setdefault(pos,(cat_name,{}))[1].setdefault(typ,[]).append((word,forms))
+
+    # Make unique abstract identifiers
+    for tag, (cat_name, types) in lin_types.items():
+        counts = {}
+        for typ,lexemes in types.items():
+            for lemma,forms in lexemes:
+                counts[lemma] = counts.get(lemma,0)+1
+        counts = {lemma: 1 for lemma, count in counts.items() if count > 1}
+        for typ,lexemes in types.items():
+            for i,(lemma,forms) in enumerate(lexemes):
+                index = counts.get(lemma)
+                if not index:
+                    ident = lemma+"_"+cat_name
+                else:
+                    ident = lemma+"_"+str(index)+"_"+cat_name
+                    counts[lemma] = index+1
+                lexemes[i] = (ident, forms)
 
     pdefs = set()
     lang_code = lang_plugin.iso3
@@ -214,11 +246,7 @@ def learn(source,lang):
         fd.write('\n')
         fa.write('abstract Dict'+lang_code+'Abs = Cat ** {\n')
         fa.write('\n')
-        for tag, types in lin_types.items():
-            cat_name = source_plugin.tag2cat.get(tag)
-            if not cat_name:
-                continue
-
+        for tag, (cat_name, types) in lin_types.items():
             fc.write('lincat '+cat_name+' = '+tag.title()+' ;\n')
 
             for i,(typ,lexemes) in enumerate(sorted(types.items(),key=lambda x: -len(x[1]))):
@@ -243,24 +271,10 @@ def learn(source,lang):
                 fr.write('          '+typ.renderOper(10,vars)+" ;\n")
                 fr.write('\n')
 
-                # make them unique
-                d = {}
-                for lexeme,forms in lexemes:
-                    d.setdefault(lexeme,[]).append(forms)
-
-                for lexeme,forms_list in d.items():
-                    for i,forms in enumerate(forms_list):
-                        if not table:
-                            continue
-
-                        if len(forms_list) == 1:
-                            ident = lexeme+'_'+cat_name
-                        else:
-                            ident = lexeme+'_'+str(i+1)+'_'+cat_name
-
-                        fa.write('fun \''+ident+'\' : '+cat_name+' ;\n')
-                        fd.write('lin \''+ident+'\' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')
-                        tsv.write(lexeme+'_'+cat_name+'\t'+'\t'.join(forms)+'\n')
+                for ident,forms in lexemes:
+                    fa.write('fun \''+ident+'\' : '+cat_name+' ;\n')
+                    fd.write('lin \''+ident+'\' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')
+                    tsv.write(ident+'\t'+'\t'.join(forms)+'\n')
 
             fr.write('\n')
         fa.write('\n')
@@ -271,3 +285,6 @@ def learn(source,lang):
         fc.write('}\n')
         fr.write('\n')
         fr.write('}\n')
+
+    with open(f"data/{lang}/lexicon.pickle", "wb") as f:
+        pickle.dump((lang_code,lin_types),f)
