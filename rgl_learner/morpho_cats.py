@@ -208,7 +208,7 @@ def learn(source,lang):
             cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:
                 continue
-            lang_plugin.patch_inflection(cat_name,table)
+            lang_plugin.patch_inflection(cat_name,word,table)
 
             if table:
                 typ, forms = getTypeOf(source_plugin,table)
