@@ -56,7 +56,7 @@ params = {
   'neuter': ('Neuter','Gender'),
 }
 
-ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction']
+ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction', "error-unknown-tag"]
 
 def extract(lang):
     dir = "data/"+lang
