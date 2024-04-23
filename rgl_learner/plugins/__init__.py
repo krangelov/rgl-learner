@@ -12,10 +12,10 @@ class PluginWrapper:
         if fn:
             return fn(*args)
 
-    def patchPOS(self,cat,*args):
+    def patchPOS(self,lemma,cat,*args):
         fn = self.module.get("patchPOS")
         if fn:
-            return fn(cat,*args)
+            return fn(lemma,cat,*args)
         return cat
 
     def filter_lemma(self,*args):

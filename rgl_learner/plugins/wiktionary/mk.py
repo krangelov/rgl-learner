@@ -1,6 +1,6 @@
 iso3 = "Mkd"
 
-def patchPOS(tag,table):
+def patchPOS(lemma,tag,table):
     if tag == 'num':
         return tag
     o = table.get("indefinite")

@@ -204,7 +204,7 @@ def learn(source,lang):
             t[tags[-1]] = w
 
         if table:
-            pos = lang_plugin.patchPOS(pos,table)
+            pos = lang_plugin.patchPOS(word,pos,table)
             cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:
                 continue
