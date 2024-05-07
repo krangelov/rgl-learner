@@ -2,21 +2,6 @@ import pickle
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
 
-param_order = [
-  'comparative',
-  'superlative',
-  'Species',
-  'Distance',
-  'Case',
-  'count-form',
-  'pluperfect',
-  'Tense',
-  'imperative',
-  'Number',
-  'Person',
-  'mutation'
-]
-
 class GFType:
     def printParamDefs(self,f,pdefs):
         pass
@@ -168,9 +153,9 @@ def getTypeOf(source_plugin,o):
             fields = tuple(((tag, val_type) for tag, val_type, _  in record))
             return GFRecord(fields), forms
 
-def get_order(source_plugin,tag):
+def get_order(source_plugin,lang_plugin,tag):
     try:
-        return param_order.index(source_plugin.params.get(tag,(None,tag))[1])
+        return lang_plugin.param_order.index(source_plugin.params.get(tag,(None,tag))[1])
     except:
         return 10000000
 
@@ -188,7 +173,7 @@ def learn(source,lang):
         table = {}
         for w,tags in forms:
             tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
-            tags = sorted(tags,key=lambda tag: get_order(source_plugin,tag))
+            tags = sorted(tags,key=lambda tag: get_order(source_plugin,lang_plugin,tag))
 
             if not tags:
                 continue

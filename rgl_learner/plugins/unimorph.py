@@ -262,6 +262,8 @@ params = {
 def filter_tags(tags):
     new_tags = []
     for tag in re.split(r",|;", tags.strip()):
+        if not tag:
+            continue
         if "(" in tag:
             if tag.startswith("PSS"):
                 tag = tag.replace("(", "").replace(")", "").replace(",", "")

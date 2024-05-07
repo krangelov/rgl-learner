@@ -51,6 +51,7 @@ params = {
   'aorist': ('Aorist','Tense'),
   'perfect': ('Perf','Tense'),
   'present': ('Pres','Tense'),
+  'future': ('Fut','Tense'),
   'masculine': ('Masc','Gender'),
   'feminine': ('Fem','Gender'),
   'neuter': ('Neuter','Gender'),

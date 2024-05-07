@@ -1,5 +1,30 @@
 iso3 = "Alb"
 
+param_order = [
+  'Species',
+  'Case',
+  'indicative',
+  'subjunctive',
+  'conditional',
+  'optative',
+  'admirative',
+  'imperative'
+  'present',
+  'past',
+  'aorist-ii',
+  'future-i',
+  'future-ii',
+  'perfect',
+  'pluperfect',
+  'imperfect',
+  'jussive',
+  "progressive",
+  'imperative',
+  'Tense',
+  'Number',
+  'Person'
+]
+
 def patchPOS(lemma,tag,table):
     if tag == 'noun' and table.get("participle"):
         return "verb"
@@ -60,3 +85,53 @@ def patchN(lemma,table):
     table.pop("neuter",None)
     table.pop("alternative",None)
     table.pop("Cyrillic",None)
+
+def patchV(lemma,table):
+    def set_perfekt(mood,tense):
+        nonlocal table
+        d = table.get(mood,{})
+        perfekt = d.pop(tense,{}).pop("perfect",{})
+        if perfekt:
+            d[tense+"-perfect"] = perfekt
+    set_perfekt("admirative","past")
+    set_perfekt("conditional","past")
+    set_perfekt("indicative","past")
+    set_perfekt("indicative","future")
+    set_perfekt("subjunctive","past")
+    table.get("conditional",{}).pop("present",{})
+    table.get("conditional",{}).pop("perfect",{})
+    imp = table.get("imperative",{}).pop("present",{})
+    if imp:
+        singular = imp.get("singular",{}).get("second-person","-")
+        if type(singular) is dict:
+            singular = singular.pop(None)
+        plural = imp.get("plural",{}).get("second-person","-")
+        if type(plural) is dict:
+            plural = plural.pop(None)
+        table["imperative"] = {"singular": singular, "plural": plural}
+
+    indicative = table.setdefault("indicative",{})
+
+    aorist_ii = indicative.pop("aorist-ii",{})
+    aorist = aorist_ii.get("aorist")
+    if aorist_ii and aorist:
+        indicative["aorist-ii"] = aorist
+    elif aorist_ii:
+        indicative["aorist-ii"] = aorist_ii
+
+    aorist = indicative.setdefault("aorist",table.pop("past",{}))
+
+    indicative.pop("future-ii",{})
+    indicative.pop("progressive",{})
+
+    optative = table.get("conditional",{}).pop("optative",{})
+    if optative:
+        table["optative"] = optative
+
+    table.pop("jussive",{})
+    table.pop("privative",{})
+    table.pop("perfect",{})
+    table.pop("present",{})
+
+    table.setdefault("infinitive","-")
+    table.setdefault("gerund","-")
