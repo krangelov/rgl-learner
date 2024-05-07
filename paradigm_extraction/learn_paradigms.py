@@ -299,6 +299,22 @@ class Paradigm:
     var_insts : list[list[tuple[str,str]]]
     lemmas : list[str]
 
+    def compatible(self, other):
+        if len(self.forms) != len(other.forms):
+            return False
+
+        for i in range(len(self.forms)):
+            if self.forms[i] != "nonExist" and other.forms[i] != "nonExist" and self.forms[i] != other.forms[i]:
+                return False
+
+        return True
+
+    def merge(self, other):
+        forms = []
+        for i in range(len(self.forms)):
+            forms.append(self.forms[i] if self.forms[i] != "nonExist" else other.forms[i])
+        return Paradigm(forms,self.typ,self.var_insts+other.var_insts,self.lemmas+other.lemmas)
+
 def collapse_tables(typ,tables):
     """Input: list of tables
        Output: Collapsed paradigms."""
@@ -314,6 +330,55 @@ def collapse_tables(typ,tables):
         p.var_insts.append(vars_to_string(t[2]))
         p.lemmas.append(lemma)
     return paradigms
+
+def unify_tables(paradigmlist):
+    graph = []
+    for i,p1 in enumerate(paradigmlist):
+        edges = []
+        for j,p2 in enumerate(paradigmlist):
+            if i != j and p1.compatible(p2):
+                edges.append(j)
+        graph.append(edges)
+
+    cliques = []
+    def bors_kerbosch(R, P, X):
+        nonlocal graph, cliques
+
+        if len(P) == 0 and len(X) == 0:
+            cliques.append(sorted(R))
+            return
+
+        (d, pivot) = max([(len(graph[v]), v) for v in P.union(X)])
+
+        for v in P.difference(graph[pivot]):
+            bors_kerbosch(R.union(set([v])), P.intersection(graph[v]), X.intersection(graph[v]))
+            P.remove(v)
+            X.add(v)
+
+    bors_kerbosch(set(), set(range(len(graph))), set())
+
+    ambiguities = [0]*len(graph)
+    for clique in cliques:
+        for vertex in clique:
+            ambiguities[vertex] += 1
+
+    unified = []
+    for clique in cliques:
+        paradigm = None
+        for vertex in clique:
+            if ambiguities[vertex] == 1:
+                if paradigm:
+                    paradigm = paradigm.merge(paradigmlist[vertex])
+                else:
+                    paradigm = paradigmlist[vertex]
+        if paradigm:
+            unified.append(paradigm)
+
+    for vertex in range(len(graph)):
+        if ambiguities[vertex] > 1:
+            unified.append(paradigmlist[vertex])
+
+    return unified
 
 def ffilter_lcp(factorlist):
     flatten = lambda x: [y for l in x for y in flatten(l)] if type(x) is list else [x]
@@ -376,5 +441,6 @@ def learnparadigms(typ,inflectiontables):
         filteredtables.append((ident, besttable))
 
     paradigmlist = collapse_tables(typ,filteredtables)
+    paradigmlist = unify_tables(paradigmlist)
 
     return paradigmlist
