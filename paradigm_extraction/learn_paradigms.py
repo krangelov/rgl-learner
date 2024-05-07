@@ -1,10 +1,9 @@
-from __future__ import print_function
 import codecs
 import sys
 import itertools
 import re
-from .paradigm import Paradigm
 from functools import reduce
+from dataclasses import dataclass
 
 # Wordgraph class to extract LCS
 
@@ -292,6 +291,13 @@ def findfactors(word, lcs):
 def vars_to_string(varlist):
     vstr = [(f"base_{idx+1}", v) for idx, v in enumerate(varlist)]
     return vstr
+
+@dataclass
+class Paradigm:
+    forms : list[str]
+    typ : object
+    var_insts : list[list[tuple[str,str]]]
+    lemmas : list[str]
 
 def collapse_tables(typ,tables):
     """Input: list of tables
