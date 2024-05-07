@@ -302,34 +302,18 @@ class Paradigm:
 def collapse_tables(typ,tables):
     """Input: list of tables
        Output: Collapsed paradigms."""
-    paradigms = []
-    tablestrings = []
-    collapsedidx = set() # Store indices to collapsed tables
-    for idx, t in enumerate(tables):
-        if idx in collapsedidx:
-            continue
-        collapsedidx.add(idx)
-
-        lemma = t[0]
-        t = t[1]
-        varstring = []
-        vartable = t[1]
-        lemmas = []
-        # Find similar tables
-        for idx2, t2 in enumerate(tables):
-            if idx2 in collapsedidx:
-                continue
-            t2_lemma = t2[0]
-            t2 = t2[1]
-            if vartable == t2[1]:
-                varstring.append(vars_to_string(t2[2]))
-                lemmas.append(t2_lemma)
-                collapsedidx.add(idx2)
-        varstring.append(vars_to_string(t[2]))
-        lemmas.append(lemma)
-        paradigms.append(Paradigm(t[1], typ, varstring, lemmas))
+    paradigms_set = {}
+    paradigms     = []
+    for lemma,t in tables:
+        key = tuple(t[1])
+        p = paradigms_set.get(key)
+        if not p:
+            p = Paradigm(t[1], typ, [], [])
+            paradigms_set[key] = p
+            paradigms.append(p)
+        p.var_insts.append(vars_to_string(t[2]))
+        p.lemmas.append(lemma)
     return paradigms
-
 
 def ffilter_lcp(factorlist):
     flatten = lambda x: [y for l in x for y in flatten(l)] if type(x) is list else [x]
