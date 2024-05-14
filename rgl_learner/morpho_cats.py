@@ -11,6 +11,9 @@ class GFStr(GFType):
     def __repr__(self):
         return "Str"
 
+    def linearize(self):
+        return ""
+
     def renderOper(self,indent,vars):
         return vars.pop(0)
 
@@ -55,6 +58,12 @@ class GFTable(GFType):
 
     def __repr__(self):
         return self.arg_type.__repr__() + " => " + self.res_type.__repr__()
+
+    def linearize(self):
+        labels = {}
+        for lbl in self.arg_type.constructors:
+            labels[lbl] = self.res_type.linearize()
+        return labels
 
     def renderOper(self,indent,vars):
         s = 'table {\n'
@@ -112,6 +121,15 @@ class GFRecord(GFType):
     def printParamDefs(self,f,pdefs):
         for lbl,ty in self.fields:
            ty.printParamDefs(f,pdefs)
+
+    def linearize(self):
+        labels = {}
+        for lbl, ty in self.fields:
+          #  label = []
+            lbl = "".join([(c if c != '-' else '_') for c in str(lbl)])
+            labels[lbl] = ty.linearize()
+            #labels.append(label)
+        return labels
 
 
 def getTypeOf(source_plugin,o):

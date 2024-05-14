@@ -33,9 +33,14 @@ def parse(lang):
         tables[cat_name].extend(paradigms)
 
     print("Writing output files..")
+
+    with open(f"data/{lang}/paradigms.pickle", "wb") as f:
+        pickle.dump((langcode, tables), f)
+
     grammar_code = ""
     lexicon_code = ""
     freq_table = []
+
     for cat, table in tables.items():
         for i, par in enumerate(table):
             lexicon_code += write_lexicon(i+1, par, cat)
@@ -54,6 +59,5 @@ def parse(lang):
         f.write(grammar_code)
         f.write("}")
 
-    with open(f"freq_table_{langcode}.txt", "w") as f:
-        f.write("\n".join(freq_table))
+
 
