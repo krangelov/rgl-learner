@@ -6,8 +6,6 @@ import itertools
 import pandas as pd
 import pickle
 
-from smart_paradigms.gf_reader import *
-
 
 def read_data(lang):
     with open(f"data/{lang}/paradigms.pickle", "rb") as f:
