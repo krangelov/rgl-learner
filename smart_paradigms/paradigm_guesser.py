@@ -7,18 +7,6 @@ import pandas as pd
 from paradigm_extraction.parse_paradigm import write_lexicon
 from smart_paradigms.utils import *
 
-def form_tokens(tokens, forms, labels):
-    token_list = []
-    for token in tokens:
-        token_dict = {}
-        for label, form in zip(labels, forms):
-            if form != "nonExist":
-                for base in token:
-                    form = form.replace(base[0], base[1])
-                token_dict[label] = form.replace("+", "").replace('"', "")
-        token_list.append(token_dict)
-    return token_list
-
 def cross_validation(tokens, features, class2paradigm, classes):
     par_coverage = list()
     for num, token in enumerate(tokens):
@@ -68,43 +56,35 @@ def cross_validation(tokens, features, class2paradigm, classes):
     return np.mean(par_coverage, axis=0)
 
 
-def write_gf_code(table, rules, pos_tag):
+def write_gf_code(rules, pos_tag):
     first_line = " -> ".join(["Str",]*(len(rules[0])-1))
     second_line = ", ".join([f"f{i+1}" for i in range(len(rules[0])-1)])
 
     paradigm_code = ""
     gf_code = f"""formBasedSelection{pos_tag} : {first_line} => {pos_tag}Class\n= \\{second_line} -> case <{second_line}> of {{\n"""
     for num, rule in enumerate(rules):
-        paradigm_code += get_gf_paradigm(num, rule, table[rule["class_tag"]], pos_tag)
         values = list(rule.values())
         endings = [x.replace("base_1", "x").replace("+", ' + "')+'"' if x!="base_1" else "x" for x in values[:-1]]
-        gf_code += f"""\t\t<{", ".join(endings)}> -> mk{pos_tag}{num} x;\n"""
+        gf_code += f"""\t\t<{", ".join(endings)}> -> mk{pos_tag}{rule["class_tag"]} x;\n"""
     gf_code += "} ;\n"
     gf_code = gf_code.replace("; }", "}")
     return paradigm_code, gf_code
 
-def clean_forms(labels, forms):
-    forms = {label: form.replace('"', "") for label, form in zip(labels, forms) if form != "nonExist"}
-    return forms
 def guess_paradigm(lang):
     print("Reading data..")
     tables = read_data(lang)
-    infl_code = ""
-    par_code = ""
+    gf_code = ""
     for pos_tag, data in tables.items():
         print(f"=={pos_tag}==")
         labels = reverse_dict(data[0].typ.linearize())
         classes, tokens, forms, = list(
                 zip(*[(num, form_tokens(table.var_insts, table.forms, labels), clean_forms(labels, table.forms)) for num, table in enumerate(data)]))
 
-        class2code = dict(zip(classes, data))
-
         tokens = list(chain.from_iterable(tokens))
         df = pd.DataFrame(forms)
         df = df.replace("nonExist", None)
         df["class_tag"] = classes
         class2paradigm = dict(zip(classes, forms))
-
 
         feature_list = make_feat_list(df, df.columns)
         feats, labels = prepare_data(df, feature_list, class_tags=df.class_tag)
@@ -127,22 +107,9 @@ def guess_paradigm(lang):
             print("Writing rules..")
             if cross_valid_scores:
                 rules = get_rules(df, cross_valid_scores[0][0])
-                paradigm_code, gf_code = write_gf_code(class2code, rules, pos_tag)
-                infl_code += paradigm_code
-                par_code += gf_code
+                gf_code += write_gf_code(rules, pos_tag)
         else:
             print(f"Not enough data for {pos_tag}")
     with open(f"Inflection{lang}.gf", "w") as f:
-        f.write(par_code)
+        f.write(gf_code)
 
-    with open(f"Paradigms{lang}.gf", "w") as f:
-        f.write(f"""resource Paradigms{lang} = open Cat{lang}, Res{lang}, Predef in {{\n""")
-        f.write("oper")
-        f.write(infl_code)
-        f.write("}")
-
-
-
-
-if __name__ == "__main__":
-    guess_paradigm(sys.argv[1])

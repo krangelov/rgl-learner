@@ -1,9 +1,10 @@
 import sys
+from itertools import chain
 
 import numpy as np
 
-from utils import *
-from kaz import transform
+from smart_paradigms.utils import *
+from smart_paradigms.kaz import transform
 
 def get_scores_for_lemmas(lemma2tag, class2paradigm, tokens, lemma_form):
     scores_per_lemma = list()
@@ -29,17 +30,36 @@ def cross_validate(feat_subsets, df, class2paradigm, tokens, lemma_form):
         cross_valid_scores.append(["+".join(subset), ] + list(scores))
     return cross_valid_scores
 
+def write_gf_code(rules, pos_tag, encoded_feats):
+    first_line = " -> ".join(["Str",]*(len(rules[0])-1))
+    second_line = ", ".join([f"f{i+1}" for i in range(len(rules[0])-1)])
 
-def write_gf_code(df, rules):
+    paradigm_code = ""
+    gf_code = f"""formBasedSelection{pos_tag} : {first_line} => {pos_tag}Class\n= \\{second_line} -> case <{second_line}> of {{\n"""
     for rule in rules:
-        df = get_gf_paradigm(df, rule["class_tag"])
+        endings = encoded_feats["3gram_ending"][rule["3gram_ending"]]
+        gf_code += f"""\t\t<x + "{endings}"> -> mk{pos_tag}{rule["class_tag"]} x;\n"""
+    gf_code += "} ;\n"
+    gf_code = gf_code.replace("; }", "}")
+    return paradigm_code, gf_code
 
 
-def guess_by_lemma(lang, lemma_form, pos_tag):
+
+def guess_by_lemma(lang, pos_tag, lemma_form):
     print("Reading data..")
-    data, tokens = read_data(lang, pos_tag)
-    class2paradigm = {x["class_tag"]: x for x in data}
-    df = transform(tokens, lemma_form)
+    tables = read_data(lang)
+    data = tables[pos_tag]
+    labels = reverse_dict(data[0].typ.linearize())
+    classes, lemmas, tokens, forms, = list(
+        zip(*[(num, table.lemmas, form_tokens(table.var_insts, table.forms, labels), clean_forms(labels, table.forms)) for num, table
+              in enumerate(data)]))
+    class2paradigm = dict(zip(classes, forms))
+
+    if lemma_form:
+        df, encoded_feat = transform(tokens, classes, lemma_form)
+    else:
+        df, encoded_feat = transform(lemmas, classes)
+
     X = df.drop(["class_tag", "pred_class", "lemma"], axis=1)
     y = df["class_tag"]
 
@@ -50,10 +70,15 @@ def guess_by_lemma(lang, lemma_form, pos_tag):
 
     feat_subsets = get_subset(annotations, len(annotations)+1)
     print("Cross validating..")
+    tokens = list(chain.from_iterable(tokens))
     scores = cross_validate(feat_subsets, df, class2paradigm, tokens, lemma_form)
     scores = sorted(scores, key=lambda x: -x[1])
+    print("Best features: ", scores[0][0], "\t", scores[0][1], )
+    print("Writing rules..")
     rules = get_rules(df, scores[0][0])
+    paradigm_code, gf_code = write_gf_code(rules, pos_tag, encoded_feat)
+    print(gf_code)
+   # paradigm_code, gf_code = write_gf_code(class2code, rules, pos_tag)
+   # infl_code += paradigm_code
+   # par_code += gf_code
     return rules
-
-if __name__ == "__main__":
-    guess_by_lemma(sys.argv[1], sys.argv[2], sys.argv[3])
