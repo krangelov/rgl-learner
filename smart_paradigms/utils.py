@@ -13,6 +13,23 @@ def read_data(lang):
     return tables
 
 
+def form_tokens(tokens, forms, labels):
+    token_list = []
+    for token in tokens:
+        token_dict = {}
+        for label, form in zip(labels, forms):
+            if form != "nonExist":
+                for base in token:
+                    form = form.replace(base[0], base[1])
+                token_dict[label] = form.replace("+", "").replace('"', "")
+        token_list.append(token_dict)
+    return token_list
+
+def clean_forms(labels, forms):
+    forms = {label: form.replace('"', "") for label, form in zip(labels, forms) if form != "nonExist"}
+    return forms
+
+
 def reverse_dict(d, keys=[]):
     result = []
     for k, v in d.items():

@@ -190,21 +190,22 @@ def learn(source,lang):
 
         table = {}
         for w,tags in forms:
-            tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
-            tags = sorted(tags,key=lambda tag: get_order(source_plugin,lang_plugin,tag))
+            if 'multiword-construction' not in tags:
+                tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
+                tags = sorted(tags,key=lambda tag: get_order(source_plugin,lang_plugin,tag))
 
-            if not tags:
-                continue
+                if not tags:
+                    continue
 
-            t = table
-            for tag in tags[:-1]:
-                t1 = t.setdefault(tag,{})
-                if type(t1) is str:
-                    t1 = {None: t1}
-                    t[tag] = t1
-                t = t1
+                t = table
+                for tag in tags[:-1]:
+                    t1 = t.setdefault(tag,{})
+                    if type(t1) is str:
+                        t1 = {None: t1}
+                        t[tag] = t1
+                    t = t1
 
-            t[tags[-1]] = w
+                t[tags[-1]] = w
 
         if table:
             pos = lang_plugin.patchPOS(word,pos,table)

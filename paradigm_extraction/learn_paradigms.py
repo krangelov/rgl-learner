@@ -315,6 +315,7 @@ class Paradigm:
             forms.append(self.forms[i] if self.forms[i] != "nonExist" else other.forms[i])
         return Paradigm(forms,self.typ,self.var_insts+other.var_insts,self.lemmas+other.lemmas)
 
+
 def collapse_tables(typ,tables):
     """Input: list of tables
        Output: Collapsed paradigms."""

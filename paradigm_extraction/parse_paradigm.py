@@ -4,6 +4,54 @@ from collections import defaultdict
 from .learn_paradigms import learnparadigms
 
 
+def check_base(bases, rules, changed):
+    new_rules = []
+    num, form = list(zip(*bases))
+    if len(set(form)) == 1:
+        for rule in rules:
+            new_rule = rule.replace(f"{num[0]}", f'"{form[0]}"')
+
+            new_rules.append("".join([c for num, c in enumerate(new_rule) if (c != "+" and c !='"') or \
+                                      (c == "+" and (new_rule[num-1].isdigit() or new_rule[num+1]=="b")) \
+                                     or (c == '"' and (num==(len(new_rule)-1) or num==0 or new_rule[num-2].isdigit())) \
+                                      ]))
+    elif changed != 0:
+        for rule in rules:
+            base, new_num = num[0].split("_")
+            new_form = base + "_" + str(int(new_num)-changed)
+            new_rules.append(rule.replace(f"{num[0]}", new_form))
+    else:
+        new_rules = rules.copy()
+    return new_rules
+
+
+def correct_paradigms(paradigms):
+    mult_base_words = 0
+    new_paradigms = list()
+    for paradigm in paradigms:
+        bases = list(zip(*paradigm.var_insts))
+        new_bases = []
+        if len(bases) > 1:
+            changed = 0
+            rules = paradigm.forms
+            updated_bases = [bases[0], ]
+            for base in bases[1:]:
+                new_rules = check_base(base, rules, changed)
+                if new_rules != rules:
+                    changed += 1
+                else:
+                    updated_bases.append(base)
+                rules = new_rules.copy()
+            new_bases.extend(list(zip(*updated_bases)))
+            if changed:
+                mult_base_words += 1
+            paradigm.forms = rules
+            paradigm.var_insts = new_bases
+        new_paradigms.append(paradigm)
+    print(f"Number of forms with more than 1 base: {mult_base_words}")
+    return new_paradigms
+
+
 def write_paradigm(i, par, cat):
     names = [name for name, val in par.var_insts[0]]
     code = f"""mk{cat}{i:03d} : {len(names) * "Str -> "}{cat} ;\nmk{cat}{i:03d} {" ".join(names)} =\n  """
@@ -30,7 +78,8 @@ def parse(lang):
             print("Warning: the inflection tables are not unified yet, using the first one")
         typ,lexemes = next(iter(table.items()))
         paradigms = learnparadigms(typ,lexemes)
-        tables[cat_name].extend(paradigms)
+        new_paradigms = correct_paradigms(paradigms)
+        tables[cat_name].extend(new_paradigms)
 
     print("Writing output files..")
 
