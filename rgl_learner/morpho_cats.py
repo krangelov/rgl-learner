@@ -166,16 +166,13 @@ def getTypeOf(source_plugin,o):
             pcons = tuple((GFParamConstr(pcon,()) for pcon, _, _  in pcons))
             return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
-            record.sort(key=lambda p: p[0] or "Z")
+            record.sort(key=lambda p: get_order(source_plugin,p[0]))
             forms = sum((forms for _, _, forms in record), [])
             fields = tuple(((tag, val_type) for tag, val_type, _  in record))
             return GFRecord(fields), forms
 
-def get_order(source_plugin,lang_plugin,tag):
-    try:
-        return lang_plugin.param_order.index(source_plugin.params.get(tag,(None,tag))[1])
-    except:
-        return 10000000
+def get_order(source_plugin,tag):
+    return source_plugin.params_order.get(tag,10000000)
 
 def learn(source,lang):
     source_plugin = plugins[source]
@@ -192,7 +189,7 @@ def learn(source,lang):
         for w,tags in forms:
             if 'multiword-construction' not in tags:
                 tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
-                tags = sorted(tags,key=lambda tag: get_order(source_plugin,lang_plugin,tag))
+                tags = sorted(tags,key=lambda tag: get_order(source_plugin,tag))
 
                 if not tags:
                     continue

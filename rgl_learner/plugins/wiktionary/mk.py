@@ -1,20 +1,5 @@
 iso3 = "Mkd"
 
-param_order = [
-  'comparative',
-  'superlative',
-  'Species',
-  'Distance',
-  'Case',
-  'count-form',
-  'pluperfect',
-  'Tense',
-  'imperative',
-  'Number',
-  'Person',
-  'mutation'
-]
-
 def patchPOS(lemma,tag,table):
     if tag == 'num':
         return tag

@@ -15,8 +15,13 @@ tag2cat = {
   }
 
 params = {
-  'definite': ('Def','Species'),
+  'comparative': None,
+  'superlative': None,
   'indefinite': ('Indef','Species'),
+  'definite': ('Def','Species'),
+  'unspecified': ('Unspecified','Distance'),
+  'proximal': ('Proximal','Distance'),
+  'distal': ('Distal','Distance'),
   'singular': ('Sg','Number'),
   'plural': ('Pl','Number'),
   'nominative': ('Nom','Case'),
@@ -40,9 +45,6 @@ params = {
   'locative': ('Loc','Case'),
   'copulative': ('Cop','Case'),
   'instrumental': ('Cop','Case'),
-  'unspecified': ('Unspecified','Distance'),
-  'proximal': ('Proximal','Distance'),
-  'distal': ('Distal','Distance'),
   'first-person': ('P1','Person'),
   'second-person': ('P2','Person'),
   'third-person': ('P3','Person'),
@@ -56,6 +58,8 @@ params = {
   'feminine': ('Fem','Gender'),
   'neuter': ('Neuter','Gender'),
 }
+
+params_order = dict(zip(params.keys(), range(len(params))))
 
 ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction', "error-unknown-tag"]
 
