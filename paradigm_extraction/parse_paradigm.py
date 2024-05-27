@@ -118,27 +118,15 @@ def parse(lang):
     with open(f"data/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((langcode, tables), f)
 
-    grammar_code = ""
-    lexicon_code = ""
-    freq_table = []
+    with open(f"Dict{langcode}.gf", "w") as dct, open(f"Paradigms{langcode}.gf", "w") as para:
+        dct.write(
+            f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Paradigms{langcode}, Prelude in {{\n\n""")
+        para.write(f"""resource Paradigms{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")
 
-    for cat, table in tables.items():
-        for i, par in enumerate(table):
-            lexicon_code += write_lexicon(i+1, par, cat)
-            grammar_code += "\n\n" + write_paradigm(i+1, par, cat)
-            freq_table.append(f"{pos_tag}{i}\t{len(par.tables)}")
+        for cat, table in tables.items():
+            for i, par in enumerate(table):
+                dct.write(write_lexicon(i+1, par, cat))
+                para.write("\n\n" + write_paradigm(i+1, par, cat))
 
-    with open(f"Dict{langcode}.gf", "w") as f:
-        f.write(
-            f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Paradigms{langcode}, Prelude in {{\n""")
-        f.write(lexicon_code)
-        f.write("}")
-
-    with open(f"Paradigms{langcode}.gf", "w") as f:
-        f.write(f"""resource Paradigms{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n""")
-        f.write("oper")
-        f.write(grammar_code)
-        f.write("}")
-
-
-
+        dct.write("\n}")
+        para.write("\n}")
