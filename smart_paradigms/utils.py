@@ -43,7 +43,7 @@ def make_feat_list(df, columns):
     feature_list = {}
     for col in columns:
         if col != "class_tag":
-            feature_list[col] = {morpheme.rsplit("+")[-1]: f"{col} ends with {morpheme.rsplit("+")[-1]}" for morpheme in df[col].unique() if pd.notna(morpheme)}
+            feature_list[col] = {morpheme.rsplit("+")[-1]: f'{col} ends with {morpheme.rsplit("+")[-1]}' for morpheme in df[col].unique() if pd.notna(morpheme)}
     return feature_list
 
 
