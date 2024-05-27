@@ -24,6 +24,9 @@ def filter_lemma(lemma, pos):
     if pos == "name":
         return True
 
+    if ' ' in lemma:
+        return True
+
     return False
 
 
