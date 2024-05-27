@@ -4,7 +4,7 @@ from itertools import chain
 import numpy as np
 
 from smart_paradigms.utils import *
-from smart_paradigms.kaz import transform
+from smart_paradigms.kaz import *
 
 def get_scores_for_lemmas(lemma2tag, class2paradigm, tokens, lemma_form):
     scores_per_lemma = list()
@@ -30,14 +30,30 @@ def cross_validate(feat_subsets, df, class2paradigm, tokens, lemma_form):
         cross_valid_scores.append(["+".join(subset), ] + list(scores))
     return cross_valid_scores
 
+def write_param_file():
+    sounds = {"vowel": vowels, "consonant": consonants, "voiced_consonant": voiced,
+              "nasal_consonant": nasal, "fricative_consonant": fricative, "approximant_consonant": approx,
+              "tap_consonant": tap, "closed_vowel": closed, "back_vowel": back,
+              "rounded_vowel": rounded}
+    gf_code = "oper\n"
+    for sound_type, values in sounds.items():
+        gf_code += f"""\t#{sound_type} : pattern Str = #("{'"|"'.join(values)}") ;\n"""
+    return gf_code
+
 def write_gf_code(rules, pos_tag, encoded_feats):
     first_line = " -> ".join(["Str",]*(len(rules[0])-1))
     second_line = ", ".join([f"f{i+1}" for i in range(len(rules[0])-1)])
 
     paradigm_code = ""
     gf_code = f"""formBasedSelection{pos_tag} : {first_line} => {pos_tag}Class\n= \\{second_line} -> case <{second_line}> of {{\n"""
+    print(encoded_feats.keys())
     for rule in rules:
-        endings = encoded_feats["3gram_ending"][rule["3gram_ending"]]
+        if "3gram_ending" in encoded_feats:
+            endings = encoded_feats["3gram_ending"][rule["3gram_ending"]]
+        elif "2gram_ending" in encoded_feats:
+            endings = encoded_feats["2gram_ending"][rule["2gram_ending"]]
+        elif "ending" in encoded_feats:
+            endings = encoded_feats["ending"][rule["ending"]]
         gf_code += f"""\t\t<x + "{endings}"> -> mk{pos_tag}{rule["class_tag"]} x;\n"""
     gf_code += "} ;\n"
     gf_code = gf_code.replace("; }", "}")
@@ -77,7 +93,8 @@ def guess_by_lemma(lang, pos_tag, lemma_form):
     print("Writing rules..")
     rules = get_rules(df, scores[0][0])
     paradigm_code, gf_code = write_gf_code(rules, pos_tag, encoded_feat)
-    print(gf_code)
+   # print(gf_code)
+    params = write_param_file()
    # paradigm_code, gf_code = write_gf_code(class2code, rules, pos_tag)
    # infl_code += paradigm_code
    # par_code += gf_code

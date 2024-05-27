@@ -47,17 +47,23 @@ def make_feat_list(df, columns):
     return feature_list
 
 
-def prepare_data(df, feature_list, class_tags):
+def prepare_data(df, feature_list, class_tags, how="suffix"):
     featlist = defaultdict(list)
     labels = list()
     for i, row in df.iterrows():
         if row.class_tag in class_tags.values:
             for col, val in feature_list.items():
                 for feat, name in val.items():
-                    if pd.notna(row[col]) and row[col].endswith(feat):
-                        featlist[name].append(True)
-                    else:
-                        featlist[name].append(False)
+                    if how == "suffix":
+                        if pd.notna(row[col]) and row[col].endswith(feat):
+                            featlist[name].append(True)
+                        else:
+                            featlist[name].append(False)
+                    elif how == "prefix":
+                        if pd.notna(row[col]) and row[col].startswith(feat):
+                            featlist[name].append(True)
+                        else:
+                            featlist[name].append(False)
             labels.append(row.class_tag)
     feats = pd.DataFrame(featlist)
 
@@ -72,7 +78,7 @@ def coverage_score(token, forms):
 
     overlap = len(forms.keys() & token.keys())
     return (coverage/(len(token)),
-           coverage/(len(forms)),
+            coverage/(len(forms)),
             coverage/overlap)
 
 def build_tree(X, y):
