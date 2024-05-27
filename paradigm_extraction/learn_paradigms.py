@@ -297,7 +297,8 @@ class Paradigm:
     forms : list[str]
     typ : object
     var_insts : list[list[tuple[str,str]]]
-    lemmas : list[str]
+    assignments : list[str]
+    tables : list[tuple[str,list[str]]]
 
     def compatible(self, other):
         if len(self.forms) != len(other.forms):
@@ -313,7 +314,7 @@ class Paradigm:
         forms = []
         for i in range(len(self.forms)):
             forms.append(self.forms[i] if self.forms[i] != "nonExist" else other.forms[i])
-        return Paradigm(forms,self.typ,self.var_insts+other.var_insts,self.lemmas+other.lemmas)
+        return Paradigm(forms,self.typ,self.var_insts+other.var_insts,[],self.tables+other.tables)
 
 
 def collapse_tables(typ,tables):
@@ -321,15 +322,15 @@ def collapse_tables(typ,tables):
        Output: Collapsed paradigms."""
     paradigms_set = {}
     paradigms     = []
-    for lemma,t in tables:
+    for ident,table,t in tables:
         key = tuple(t[1])
         p = paradigms_set.get(key)
         if not p:
-            p = Paradigm(t[1], typ, [], [])
+            p = Paradigm(t[1], typ, [], [], [])
             paradigms_set[key] = p
             paradigms.append(p)
         p.var_insts.append(vars_to_string(t[2]))
-        p.lemmas.append(lemma)
+        p.tables.append((ident,table))
     return paradigms
 
 def unify_tables(paradigmlist):
@@ -416,13 +417,13 @@ def learnparadigms(typ,inflectiontables):
         wg = [wordgraph.wordtograph(w) for w in table if w != "-"]
         if not wg:
             variabletable = ['nonExist' for form in table]
-            vartables.append((ident, [(table,variabletable,[],0,0)]))
+            vartables.append((ident, table, [(table,variabletable,[],0,0)]))
             continue
         result = reduce(lambda x, y: x & y, wg)
         lcss = result.longestwords
         if not lcss: # Table has no LCS - no variables
             variabletable = ['"'+form+'"' for form in table]
-            vartables.append((ident, [(table,variabletable,[],0,0)]))
+            vartables.append((ident, table, [(table,variabletable,[],0,0)]))
             continue
 
         combos = []
@@ -435,11 +436,11 @@ def learnparadigms(typ,inflectiontables):
                 infixcount = reduce(lambda x,y: x + count_infix_segments(y), c, 0)
                 variabletable = [string_to_varstring(s, variablelist) for s in c]
                 combos.append((c,variabletable,variablelist,numvars,infixcount))
-        vartables.append((ident, combos))
+        vartables.append((ident, table, combos))
     filteredtables = []
-    for ident, t in vartables:
+    for ident, values, t in vartables:
         besttable = min(t, key = lambda s: (s[3],s[4]))
-        filteredtables.append((ident, besttable))
+        filteredtables.append((ident, values, besttable))
 
     paradigmlist = collapse_tables(typ,filteredtables)
     paradigmlist = unify_tables(paradigmlist)
