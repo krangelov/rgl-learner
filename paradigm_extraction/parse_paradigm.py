@@ -46,6 +46,7 @@ def correct_paradigms(cat,paradigms):
 
         j = len(elems)-1
         end = 0
+        k = len(ass)
         while j > i:
             elem = elems[j]
             l = lens.get(elem)
@@ -58,7 +59,7 @@ def correct_paradigms(cat,paradigms):
                 else:
                     expr = f"dp {l} base"
                 end += l
-                ass.append(f"{elem} = {expr}")
+                ass.insert(k,f"{elem} = {expr}")
             else:
                 break              # nonExist or a variable length base
             j -= 1
