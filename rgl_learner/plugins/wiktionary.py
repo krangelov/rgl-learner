@@ -49,14 +49,14 @@ params = {
   'imperfective': ('Imperf','Tense'),
   'imperfect': ('Imperfect','Tense'),
   'perfect': ('Perf','Tense'),
+  'masculine': ('Masc','Gender'),
+  'feminine': ('Fem','Gender'),
+  'neuter': ('Neuter','Gender'),
   'singular': ('Sg','Number'),
   'plural': ('Pl','Number'),
   'first-person': ('P1','Person'),
   'second-person': ('P2','Person'),
   'third-person': ('P3','Person'),
-  'masculine': ('Masc','Gender'),
-  'feminine': ('Fem','Gender'),
-  'neuter': ('Neuter','Gender'),
 }
 
 params_order = dict(zip(params.keys(), range(len(params))))
