@@ -99,15 +99,26 @@ def patchV(lemma,table):
 
 
 def patchA(lemma,table):
+    indef = table.setdefault("indefinite",{})
+    if indef.get("masculine","-") == "-":
+        indef["masculine"] = lemma
+    indef.setdefault("feminine", table.pop("feminine","-"))
+    indef.setdefault("neuter", table.pop("neuter","-"))
+    indef.setdefault("plural", "-")
+    defn = table.setdefault("definite",{})
+    for tag in ["unspecified","proximal","distal"]:
+        d = defn.setdefault(tag,{})
+        d.setdefault("masculine", "-")
+        d.setdefault("feminine", "-")
+        d.setdefault("neuter", "-")
+        d.setdefault("plural", "-")
+
     table.pop("abstract-noun",None)
     table.pop("comparative",None)
     table.pop("superlative",None)
     table.pop("masculine",None)
-    table.pop("feminine",None)
-    table.setdefault("adverb",table.get("indefinite",{}).get("neuter","-"))
+    table.setdefault("adverb",indef.get("neuter","-"))
 
-    if len(table) == 1 and table.get("adverb") == "-":
-        table.pop("adverb",None)
 
 def patchPron(lemma,table):
     table.get("plural",{}).pop("error-unrecognized-form",None)
