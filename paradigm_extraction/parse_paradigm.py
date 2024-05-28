@@ -18,6 +18,7 @@ def correct_paradigms(cat,paradigms):
 
         i = 0
         start = 0
+        first = None
         while i < len(elems)-1:
             elem = elems[i]
             l = lens.get(elem)
@@ -29,20 +30,19 @@ def correct_paradigms(cat,paradigms):
                     expr = f"take {l} (drop {start} base)"
                 else:
                     expr = f"take {l} base"
+                if not first:
+                    first = (i,start)
                 start += l
                 ass.append(f"{elem} = {expr}")
             else:
                 break              # nonExist or a variable length base
             i += 1
 
-        if i == len(elems)-1:
+        if first and i == len(elems)-1:
             # This means that all bases are constant length. We treat
             # the first base as variable and the rest as constant.
-            try:
-                i = elems.index("base_1")
-                ass.clear()
-            except:
-                pass
+            i,start = first
+            ass.clear()
 
         j = len(elems)-1
         end = 0
@@ -70,7 +70,7 @@ def correct_paradigms(cat,paradigms):
                 if end > 0:
                     expr = f"tk {end} {expr}"
                 if start > 0:
-                    expr = f"take {start} ({expr})"
+                    expr = f"drop {start} ({expr})"
                 ass.insert(i,f"{elem} = {expr}")
 
             if len(ass) == len(lens):
