@@ -120,5 +120,10 @@ def patchA(lemma,table):
     table.setdefault("adverb",indef.get("neuter","-"))
 
 
+def patchAdv(lemma,table):
+    table.clear()
+    table["s"] = lemma
+
+
 def patchPron(lemma,table):
     table.get("plural",{}).pop("error-unrecognized-form",None)
