@@ -258,6 +258,7 @@ params = {
     'PASS': ('Passive', 'Voice'),
     'PFOC': ('PFocus', 'Voice')} # Patient Focus
 
+params_order = dict(zip(params.keys(), range(len(params))))
 
 def filter_tags(tags):
     new_tags = []
