@@ -42,13 +42,28 @@ params = {
   'possessive': ('Poss','Case'),
   'locative': ('Loc','Case'),
   'copulative': ('Cop','Case'),
-  'instrumental': ('Cop','Case'),
+  'instrumental': ('Instr','Case'),
+  'indicative': None,
+  'subjunctive': None,
+  'conditional': None,
+  'optative': None,
+  'admirative': None,
+  'imperative': None,
+  'jussive': None,
+  "progressive": None,
   'present': ('Pres','Tense'),
+  'past': ('Past','Tense'),
   'aorist': ('Aorist','Tense'),
+  'aorist-ii': ('Aorist2','Tense'),
   'future': ('Fut','Tense'),
+  'future-i': ('Fut1','Tense'),
+  'future-ii': ('Fut2','Tense'),
   'imperfective': ('Imperf','Tense'),
   'imperfect': ('Imperfect','Tense'),
   'perfect': ('Perf','Tense'),
+  'pluperfect': ('Pluperf','Tense'),
+  'past-perfect': ('PastPerfect','Tense'),
+  'future-perfect': ('PastPerfect','Tense'),
   'masculine': ('Masc','Gender'),
   'feminine': ('Fem','Gender'),
   'neuter': ('Neuter','Gender'),
@@ -58,6 +73,7 @@ params = {
   'second-person': ('P2','Person'),
   'third-person': ('P3','Person'),
 }
+
 
 params_order = dict(zip(params.keys(), range(len(params))))
 

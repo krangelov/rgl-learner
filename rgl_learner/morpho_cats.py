@@ -182,9 +182,6 @@ def learn(source,lang):
 
     lin_types = {}
     for word, pos, forms in lexicon:
-        if lang_plugin.filter_lemma(word,pos):
-            continue
-
         table = {}
         for w,tags in forms:
             if 'multiword-construction' not in tags:
@@ -205,6 +202,9 @@ def learn(source,lang):
                 t[tags[-1]] = w
 
         if table:
+            if lang_plugin.filter_lemma(word,pos,table):
+                continue
+
             pos = lang_plugin.patchPOS(word,pos,table)
             cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:

@@ -1,35 +1,35 @@
 iso3 = "Alb"
 
-param_order = [
-  'Species',
-  'Case',
-  'indicative',
-  'subjunctive',
-  'conditional',
-  'optative',
-  'admirative',
-  'imperative'
-  'present',
-  'past',
-  'aorist-ii',
-  'future-i',
-  'future-ii',
-  'perfect',
-  'pluperfect',
-  'imperfect',
-  'jussive',
-  "progressive",
-  'imperative',
-  'Tense',
-  'Number',
-  'Person'
-]
+def filter_lemma(lemma,tag,table):
+    if tag == "name" or tag == "pron" or tag == "det":
+        return True
+    if tag == "adj" and lemma == "yt":
+        return True
+    if tag == 'verb' and lemma == "qis":
+        return True
+    if tag == 'verb' and lemma == "preh":
+        return True
+    if tag == 'verb' and lemma == "buças":
+        return True
+    if tag == 'verb' and lemma == "hallakat":
+        return True
+    if tag == 'verb' and ("masculine" in table or "feminine" in table):
+        return True
+    return False
 
 def patchPOS(lemma,tag,table):
     if tag == 'noun' and table.get("participle"):
         return "verb"
     if tag == 'noun' and (lemma == 'fatkeq' or lemma == 'shëndetshëm'):
         return 'adj'
+    if tag == 'adj' and lemma == "dygjuhësi":
+        return "noun"
+    if tag == 'verb' and lemma == "shpjegim":
+        return "noun"
+    if tag == 'verb' and lemma == "hjedhë":
+        return "noun"
+    if tag == 'adv' and lemma == "ngaldaltë":
+        return "noun"
     return tag
 
 def patchN(lemma,table):
@@ -87,19 +87,37 @@ def patchN(lemma,table):
     table.pop("Cyrillic",None)
 
 def patchV(lemma,table):
-    def set_perfekt(mood,tense):
-        nonlocal table
-        d = table.get(mood,{})
-        perfekt = d.pop(tense,{}).pop("perfect",{})
-        if perfekt:
-            d[tense+"-perfect"] = perfekt
-    set_perfekt("admirative","past")
-    set_perfekt("conditional","past")
-    set_perfekt("indicative","past")
-    set_perfekt("indicative","future")
-    set_perfekt("subjunctive","past")
-    table.get("conditional",{}).pop("present",{})
-    table.get("conditional",{}).pop("perfect",{})
+    def set_all(t,lemma):
+        t.setdefault("singular",{}).setdefault("first-person",lemma)
+        t.setdefault("singular",{}).setdefault("second-person","-")
+        t.setdefault("singular",{}).setdefault("third-person","-")
+        t.setdefault("plural",{}).setdefault("first-person","-")
+        t.setdefault("plural",{}).setdefault("second-person","-")
+        t.setdefault("plural",{}).setdefault("third-person","-")
+        return t
+
+    ind = table.setdefault("indicative",{})
+    set_all(ind.setdefault("present",{}), lemma)
+    if past := table.pop("past",None):
+        set_all(ind.setdefault("past",{}), "-")
+        ind.setdefault("past",past)
+    ind.pop("future",None)
+    ind.pop("perfect",None)
+    ind.pop("progressive",None)
+    ind.get("past",{}).pop("perfect",None)
+    set_all(ind.setdefault("past",{}), "-")
+    set_all(ind.setdefault("aorist",{}), "-")
+    set_all(ind.setdefault("imperfect",{}), "-")
+    ind.get("aorist",{}).pop("aorist-ii",None)
+
+    table.pop("subjunctive",None)
+    table.pop("conditional",None)
+    table.pop("jussive",None)
+    table.pop("privative",None)
+    table.pop("present",None)
+    table.pop("perfect",None)
+    table.pop("active",None)
+
     imp = table.get("imperative",{}).pop("present",{})
     if imp:
         singular = imp.get("singular",{}).get("second-person","-")
@@ -109,29 +127,64 @@ def patchV(lemma,table):
         if type(plural) is dict:
             plural = plural.pop(None)
         table["imperative"] = {"singular": singular, "plural": plural}
+    else:
+        table["imperative"] = {"singular": "-", "plural": "-"}
 
-    indicative = table.setdefault("indicative",{})
-
-    aorist_ii = indicative.pop("aorist-ii",{})
-    aorist = aorist_ii.get("aorist")
-    if aorist_ii and aorist:
-        indicative["aorist-ii"] = aorist
-    elif aorist_ii:
-        indicative["aorist-ii"] = aorist_ii
-
-    aorist = indicative.setdefault("aorist",table.pop("past",{}))
-
-    indicative.pop("future-ii",{})
-    indicative.pop("progressive",{})
-
-    optative = table.get("conditional",{}).pop("optative",{})
-    if optative:
-        table["optative"] = optative
-
-    table.pop("jussive",{})
-    table.pop("privative",{})
-    table.pop("perfect",{})
-    table.pop("present",{})
-
+    table.pop("gerund",None)
+    table.pop("alternative",None)
+    table.pop("Gheg",None)
+    table.pop("error-unrecognized-form",None)
+    table.setdefault("participle","-")
     table.setdefault("infinitive","-")
-    table.setdefault("gerund","-")
+
+    adm = table.pop("admirative",{})
+    table["pres_admirative"] = set_all(adm.get("present",{}), "-")
+    table["imperf_admirative"] = set_all(adm.setdefault("imperfect",{}), "-")
+
+
+def patchA(lemma,table):
+    nom = table.setdefault("nominative",{})
+    masc = table.pop("masculine",None)
+    if masc:
+        if type(masc) == str:
+            masc = {"singular": masc}
+        else:
+            masc.pop(None,None)
+            masc.setdefault("singular",lemma)
+        nom.setdefault("masculine",masc)
+    else:
+        masc = nom.get("masculine")
+        if type(masc) == str:
+            nom["masculine"] = {"singular": masc}
+        nom.setdefault("masculine",{}).setdefault("singular",lemma)
+    fem = table.pop("feminine",None)
+    if fem:
+        if type(fem) == str:
+            fem = {"singular": fem}
+        fem.setdefault("singular",fem.pop(None,"-"))
+        nom.setdefault("feminine",fem)
+    else:
+        fem = nom.get("feminine")
+        if type(fem) == str:
+            nom["feminine"] = {"singular": fem}
+    gen = table.get("dative",{}).pop("genitive",None)
+    if gen:
+        abl = gen.pop("ablative",None)
+        if abl:
+            table["dative"]   = abl
+            table["genitive"] = abl
+            table["ablative"] = abl
+        else:
+            table["dative"]   = gen
+            table["genitive"] = gen
+
+    for case in ["nominative", "accusative", "dative", "genitive", "ablative"]:
+        t1 = table.setdefault(case, {})
+        for gender in ["masculine", "feminine"]:
+            t2 = t1.setdefault(gender, {})
+            t2.setdefault("singular","-")
+            t2.setdefault("plural","-")
+
+def patchAdv(lemma,table):
+    table.clear()
+    table["s"] = lemma

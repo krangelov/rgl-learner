@@ -8,7 +8,7 @@ def patchPOS(lemma,tag,table):
         return "adj"
     return tag
 
-def filter_lemma(lemma, pos):
+def filter_lemma(lemma, pos, table):
     if pos == "verb" and (lemma == "биде" or lemma == "сум" or lemma == "в."):
         return True
 
