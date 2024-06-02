@@ -42,7 +42,7 @@ def get_inflection_table(pos, data, params, form2cat):
     _, lexeme = data
     known_forms = defaultdict(set)
     for typ in lexeme:
-        known_forms, new_form = get_known_forms(typ, known_forms, params, form2cat)
+        known_forms = get_known_forms(typ, known_forms, params, form2cat)
 
     params_order = []
     for param in params.values():
