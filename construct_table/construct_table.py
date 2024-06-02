@@ -16,21 +16,16 @@ def reverse_dict(d, keys=[]):
 
 def get_known_forms(typ, known_forms, params, form2cat):
     forms = reverse_dict(typ.linearize())
-    new_forms = list()
     for form in forms:
-        new_form = dict()
         for morpheme in form:
             if morpheme in form2cat:
                 known_forms[form2cat[morpheme][1]].add(form2cat[morpheme][0])
-                new_form[form2cat[morpheme][1]] = form2cat[morpheme][0]
             elif morpheme in params:
                 known_forms[params[morpheme][1]].add(morpheme)
-                new_form[params[morpheme][1]] = morpheme
             else:
                 message = f"Can't find {morpheme}"
                 warnings.warn(message)
-        new_forms.append(new_form)
-    return known_forms, new_forms
+    return known_forms
 
 
 def write_code(pos, known_forms, params_order):
