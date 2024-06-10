@@ -213,6 +213,8 @@ def learn(source,lang):
 
             if table:
                 typ, forms = getTypeOf(source_plugin,table)
+                if type(typ) != GFRecord:
+                    typ = GFRecord((("s",typ),))
                 lin_types.setdefault(pos,(cat_name,{}))[1].setdefault(typ,[]).append((word,forms))
 
     # Make unique abstract identifiers
