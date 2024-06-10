@@ -22,6 +22,7 @@ def fix_table(table, param_order, params, fixed_names, num=0):
 	new_table = defaultdict(dict)
 	param = param_order[num]
 	num += 1
+
 	for t, v in table.items():
 		if t not in params[param]:
 			param_name = fixed_names[param] if param in fixed_names else f"no{param}"

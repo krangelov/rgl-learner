@@ -7,9 +7,18 @@ from smart_paradigms.utils import *
 from scipy.stats import entropy
 
 class LemmaTree:
-    def __init__(self, lemmas):
+    def __init__(self,
+                 lemmas,
+                 max_depth=3,
+                 min_samples_leaf=3,
+                 stopping=None):
         self.lemmas = lemmas
-        self.max_length = max([len(x[0]) for x in self.lemmas]) + 1
+        if stopping == "max_length":
+            self.max_depth = max([len(x[0]) for x in self.lemmas]) + 1
+        else:
+            self.max_depth = max_depth
+
+        self.min_samples_leaf = min_samples_leaf
         self.rules = defaultdict()
         self.regex = defaultdict()
 
@@ -47,11 +56,10 @@ class LemmaTree:
                 class_tag = self.check_sister_nodes(label, entropy_scores, label2classes)
                 if class_tag:
                     self.rules[label] = class_tag
-                elif position != self.max_length:
-                    lemmas2class = label2classes[label]
-                    self.build_tree(lemmas2class, position)
+                elif position <= self.max_depth and len(label2classes[label]) >= self.min_samples_leaf:
+                    self.build_tree(label2classes[label], position)
                 else:
-                    break
+                    self.rules[label] = next(iter(Counter([l[1] for l in label2classes[label]])))
 
     def build_regex(self, rule):
         regex = defaultdict(list)
@@ -67,6 +75,7 @@ class LemmaTree:
             else:
                 regex_str += f"({'|'.join(set(c))})?" if len(set(c)) > 1 else f"{c[0]}?"
         return regex_str
+
     def linearize_tree(self):
         class2labels = defaultdict(list)
         for label, tag in self.rules.items():
@@ -88,9 +97,9 @@ class LemmaTree:
                     break
             y_pred.append(pred)
         return {"accuracy": accuracy_score(y_true, y_pred),
-                "f1": f1_score(y_true, y_pred, average="weighted"),
-                "precision": precision_score(y_true, y_pred, average="weighted"),
-                "recall": recall_score(y_true, y_pred, average="weighted")}
+                "f1": f1_score(y_true, y_pred, average="micro"),
+                "precision": precision_score(y_true, y_pred, average="micro"),
+                "recall": recall_score(y_true, y_pred, average="micro")}
 
 def write_gf_code(rules, pos_tag):
     gf_code = f"""formBasedSelection{pos_tag} : Str => {pos_tag}Class\n= \\lemma -> case lemma of {{\n"""
@@ -104,16 +113,17 @@ def guess_by_lemma(lang):
     print("Reading data..")
     tables = read_data(lang)
     for pos, forms in tables.items():
-        print(f"=={pos}==")
-        lemma2class = [(lemma[0].split("_")[0], tag) for tag, paradigm in enumerate(forms) for lemma in paradigm.tables]
-        lemma_tree = LemmaTree(lemma2class)
-        lemma_tree.build_tree(lemma2class)
-        lemma_tree.linearize_tree()
-      #  print(lemma_tree.regex)
-        scores = lemma_tree.compute_metrics()
-        print(scores)
+        if len(forms) > 1:
+            print(f"=={pos}==")
+            lemma2class = [(lemma[0].split("_")[0], tag) for tag, paradigm in enumerate(forms) for lemma in paradigm.tables]
+            lemma_tree = LemmaTree(lemma2class)
+            lemma_tree.build_tree(lemma2class)
+            lemma_tree.linearize_tree()
+            #print(lemma_tree.regex)
+            scores = lemma_tree.compute_metrics()
+            print(scores)
 
-        code = write_gf_code(lemma_tree.rules, pos)
-        with open(f"Inflection{lang}.gf", "w") as f:
-            f.write(code)
+            code = write_gf_code(lemma_tree.rules, pos)
+            with open(f"Inflection{lang}.gf", "w") as f:
+                f.write(code)
 

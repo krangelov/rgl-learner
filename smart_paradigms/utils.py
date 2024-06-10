@@ -13,14 +13,17 @@ def read_data(lang):
     return tables
 
 
-def form_tokens(tokens, forms, labels):
+def form_tokens(tokens, assignments, forms, labels):
     token_list = []
     for token in tokens:
         token_dict = {}
         for label, form in zip(labels, forms):
             if form != "nonExist":
-                for base in token:
-                    form = form.replace(base[0], base[1])
+                for base, stem in token:
+                    if base == "base":
+                        form = form.replace("base_1", stem)
+                    else:
+                        form = form.replace(base, stem)
                 token_dict[label] = form.replace("+", "").replace('"', "")
         token_list.append(token_dict)
     return token_list
@@ -75,6 +78,8 @@ def coverage_score(token, forms):
     for form, value in token.items():
         if forms.get(form) == value:
             coverage += 1
+        #else:
+        #    print(forms.get(form), value)
 
     overlap = len(forms.keys() & token.keys())
     return (coverage/(len(token)),
@@ -91,6 +96,7 @@ def build_tree(X, y):
 
 
 def get_freq_class(df, features):
+    features = list(set(features))
     new_df = df[features+["class_tag", "pred_class"]].groupby(features+["class_tag"]).count()
     new_df = new_df.reset_index().sort_values('pred_class', ascending=False).drop_duplicates(features)
     new_df["pred_class_tag"] = new_df.class_tag.values

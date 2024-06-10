@@ -56,19 +56,10 @@ def patchN(lemma,table):
     elif type(indef) is str:
         indef = {"nominative": {"singular": indef, "plural": "-"}}
         table["indefinite"] = indef
-    indef.setdefault("accusative",indef.get("nominative",{}))
     set_case(indef,"accusative")
     set_case(indef,"dative")
-    indef.pop("genitive",None) # always the same as dative
+    set_case(indef,"genitive")
     set_case(indef,"ablative")
-    for case in ["nominative","accusative","dative","ablative"]:
-        ws = indef[case]["singular"].split()
-        if len(ws) > 1 and ws[0] == "një":
-            indef[case]["singular"] = " ".join(ws[1:])
-        ws = indef[case]["plural"].split()
-        if len(ws) > 1 and ws[0] == "disa":
-            indef[case]["plural"] = " ".join(ws[1:])
-
     indef.pop(None,None)
     def_ = table.setdefault("definite",{})
     if type(def_) is dict:
@@ -86,7 +77,7 @@ def patchN(lemma,table):
         table["definite"] = def_
     set_case(def_,"accusative")
     set_case(def_,"dative")
-    def_.pop("genitive",None) # always the same as dative
+    set_case(def_,"genitive")
     set_case(def_,"ablative")
     def_.pop(None,None)
     table.pop("masculine",None)
@@ -181,11 +172,13 @@ def patchA(lemma,table):
         abl = gen.pop("ablative",None)
         if abl:
             table["dative"]   = abl
+            table["genitive"] = abl
             table["ablative"] = abl
         else:
             table["dative"]   = gen
+            table["genitive"] = gen
 
-    for case in ["nominative", "accusative", "dative", "ablative"]:
+    for case in ["nominative", "accusative", "dative", "genitive", "ablative"]:
         t1 = table.setdefault(case, {})
         for gender in ["masculine", "feminine"]:
             t2 = t1.setdefault(gender, {})
