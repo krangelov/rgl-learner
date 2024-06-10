@@ -6,6 +6,7 @@ class PluginWrapper:
     def __init__(self,module):
         self.module = module
         self.iso3 = module.get("iso3",module["__name__"])
+        self.params = module.get("params", {})
         
     def patch_inflection(self,cat,*args):
         fn = self.module.get("patch"+cat)
@@ -24,6 +25,18 @@ class PluginWrapper:
 
     def __getattr__(self,name):
         return self.module[name]
+
+    def convert2gf(self, tag, params):
+        fn = self.module.get("convert2gf")
+        if fn:
+            return fn(tag, params)
+        return tag
+
+    def fix_tags(self, tag):
+        fn = self.module.get("fix_tags")
+        if fn:
+            return fn(tag)
+        return tag
 
 class PluginManager:
     def __getitem__(self,key):

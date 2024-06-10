@@ -1,4 +1,5 @@
 import pickle
+from collections import defaultdict
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
 
@@ -29,12 +30,13 @@ class GFParamType(GFType):
         return self.name
 
     def printParamDefs(self,f,pdefs):
-        pdef = "param "+self.name+" = "+" | ".join(str(constructor) for constructor in self.constructors)+" ;\n"
+        pdefs[self.name].update(self.constructors)
+        #pdef = "param "+self.name+" = "+" | ".join(str(constructor) for constructor in self.constructors)+" ;\n"
         for constructor in self.constructors:
             constructor.printParamDefs(f,pdefs)
-        if pdef not in pdefs:
-            f.write(pdef)
-            pdefs.add(pdef)
+        #if pdef not in pdefs:
+        #    f.write(pdef)
+        #    pdefs.add(pdef)
 
 @dataclass(frozen=True)
 class GFParamConstr:
@@ -125,26 +127,23 @@ class GFRecord(GFType):
     def linearize(self):
         labels = {}
         for lbl, ty in self.fields:
-          #  label = []
             lbl = "".join([(c if c != '-' else '_') for c in str(lbl)])
             labels[lbl] = ty.linearize()
-            #labels.append(label)
         return labels
 
 
-def getTypeOf(source_plugin,o):
+def getTypeOf(source_plugin, lang_plugin, o):
     if type(o) is str:
         return GFStr(),[o]
     else:
-        table  = {}
+        table  = defaultdict(dict)
         record = []
         pcons  = []
-        params = source_plugin.params
+        params = source_plugin.params | lang_plugin.params
         params_keys = list(params.keys())
         for tag,val in o.items():
-            val_type, forms = getTypeOf(source_plugin,val)
-
-            param = source_plugin.params.get(tag)
+            val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
+            param = params.get(tag)
             if param == None:
                 table = None
             else:
@@ -157,7 +156,9 @@ def getTypeOf(source_plugin,o):
                     table = None
                 else:
                     table[arg_type] = val_type
+            tag = source_plugin.convert2gf(tag, params)
             record.append((tag,val_type,forms))
+
 
         if table and len(table) == 1:
             arg_type,val_type = table.popitem()
@@ -185,8 +186,8 @@ def learn(source,lang):
         table = {}
         for w,tags in forms:
             if 'multiword-construction' not in tags:
-                tags = [tag for tag in tags if tag not in source_plugin.ignore_tags]
-                tags = sorted(tags,key=lambda tag: get_order(source_plugin,tag))
+                tags = [lang_plugin.fix_tags(tag) for tag in tags if tag not in source_plugin.ignore_tags]
+                tags = sorted(tags,key=lambda tag: get_order(source_plugin, tag))
 
                 if not tags:
                     continue
@@ -209,10 +210,12 @@ def learn(source,lang):
             cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:
                 continue
-            lang_plugin.patch_inflection(cat_name,word,table)
+            res = lang_plugin.patch_inflection(cat_name,word,table)
+            if res:
+                table = res
 
             if table:
-                typ, forms = getTypeOf(source_plugin,table)
+                typ, forms = getTypeOf(source_plugin, lang_plugin, table)
                 if type(typ) != GFRecord:
                     typ = GFRecord((("s",typ),))
                 lin_types.setdefault(pos,(cat_name,{}))[1].setdefault(typ,[]).append((word,forms))
@@ -234,7 +237,6 @@ def learn(source,lang):
                     counts[lemma] = index+1
                 lexemes[i] = (ident, forms)
 
-    pdefs = set()
     lang_code = lang_plugin.iso3
     with open('Res'+lang_code+'.gf','w') as fr, \
          open('Cat'+lang_code+'.gf','w') as fc, \
@@ -250,14 +252,16 @@ def learn(source,lang):
         fa.write('abstract Dict'+lang_code+'Abs = Cat ** {\n')
         fa.write('\n')
         for tag, (cat_name, types) in lin_types.items():
+            pdefs = defaultdict(set)
             fc.write('lincat '+cat_name+' = '+tag.title()+' ;\n')
 
             for i,(typ,lexemes) in enumerate(sorted(types.items(),key=lambda x: -len(x[1]))):
                 type_name = tag.title()+(str(i) if i else "")
                 n_forms = len(lexemes[0][1])
 
-                typ.printParamDefs(fr,pdefs)
 
+                typ.printParamDefs(fr,pdefs)
+                fr.write(";\n".join(["param "+name+" = "+" | ".join(str(constructor) for constructor in constructors) for name, constructors in pdefs.items()]) + " ;\n")
                 fr.write('oper '+type_name+' = '+str(typ)+' ; -- '+str(len(lexemes))+'\n')
                 fr.write('oper mk'+type_name+' : ')
                 if n_forms == 1:
@@ -273,7 +277,6 @@ def learn(source,lang):
                 fr.write('       \\'+','.join(vars)+' ->\n')
                 fr.write('          '+typ.renderOper(10,vars)+" ;\n")
                 fr.write('\n')
-
                 for ident,forms in lexemes:
                     fa.write('fun \''+ident+'\' : '+cat_name+' ;\n')
                     fd.write('lin \''+ident+'\' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')

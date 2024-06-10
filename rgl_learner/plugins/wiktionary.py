@@ -11,12 +11,15 @@ tag2cat = {
   'name': 'PN',
   'pron': 'Pron',
   'adv': 'Adv',
-  'det': 'Det'
+  'det': 'Det',
+  'prep': 'Prep',
   }
 
 params = {
-  'comparative': None,
-  'superlative': None,
+ # 'comparative': None,
+ # 'superlative': None,
+  'comparative': ('Comp', 'Comparison'),
+  'superlative': ('Superlat', 'Comparison'),
   'indefinite': ('Indef','Species'),
   'definite': ('Def','Species'),
   'unspecified': ('Unspecified','Distance'),
@@ -43,14 +46,14 @@ params = {
   'locative': ('Loc','Case'),
   'copulative': ('Cop','Case'),
   'instrumental': ('Instr','Case'),
-  'indicative': None,
-  'subjunctive': None,
-  'conditional': None,
-  'optative': None,
-  'admirative': None,
-  'imperative': None,
-  'jussive': None,
-  "progressive": None,
+  'indicative': ('Indicative', 'Mood'),
+  'subjunctive': ('Subjunctive', 'Mood'),
+  'conditional': ('Conditional', 'Mood'),
+  'optative': ('Optative', 'Mood'),
+  'admirative': ('Admirative', 'Mood'),
+  'imperative': ('Imperative', 'Mood'),
+  'jussive': ('Jussive', 'Mood'),
+  "progressive": ('Progressive', 'Mood'),
   'present': ('Pres','Tense'),
   'past': ('Past','Tense'),
   'aorist': ('Aorist','Tense'),
@@ -77,7 +80,8 @@ params = {
 
 params_order = dict(zip(params.keys(), range(len(params))))
 
-ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction', "error-unknown-tag"]
+ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction', "error-unknown-tag",
+               "analytic", "emphatic", "archaic", "dialectal"]
 
 def extract(lang):
     dir = "data/"+lang

@@ -10,8 +10,10 @@ from smart_paradigms.utils import *
 
 def get_morphemes(features, tag):
     morpheme, feat = features
-    position = -1 if morpheme == "suffix" else 0
-    val = tag[feat].split("+")[position]
+    if morpheme == "suffix":
+        val = tag[feat].rsplit("+")[-1]
+    else:
+        val = tag[feat].split("+")[0]
     return morpheme, feat, val
 
 def get_forms(token, val_1, morpheme, paradigm):
@@ -21,7 +23,6 @@ def get_forms(token, val_1, morpheme, paradigm):
         base = token.rsplit(val_1, maxsplit=1)[0]
     else:
         base = ""
-
     forms = {k: re.sub(r"base_\d", "", x.replace("base_1", base).replace("+", "").strip()) for k, x in paradigm.items()}
     return forms
 
@@ -68,8 +69,8 @@ def cross_validation(tokens, features, class2paradigm, classes):
                         forms = get_forms(token.get(feat_1), val_1, morpheme_1, class2paradigm[tag["class_tag"]])
                         break
                     elif token.get(feat_2):
-                        forms = get_forms(token.get(feat_2), val_2, morpheme_2, class2paradigm[tag["class_tag"]])
-                        break
+                       forms = get_forms(token.get(feat_2), val_2, morpheme_2, class2paradigm[tag["class_tag"]])
+                       break
                     elif token.get(feat_3):
                         forms = get_forms(token.get(feat_3), val_3, morpheme_3, class2paradigm[tag["class_tag"]])
                         break
@@ -101,9 +102,10 @@ def guess_paradigm(lang):
     gf_code = ""
     for pos_tag, data in tables.items():
         print(f"=={pos_tag}==")
+        print(data[0].assignments)
         labels = reverse_dict(data[0].typ.linearize())
         classes, tokens, forms, = list(
-                zip(*[(num, form_tokens(table.var_insts, table.forms, labels), clean_forms(labels, table.forms)) for num, table in enumerate(data)]))
+                zip(*[(num, form_tokens(table.var_insts, table.assignments, table.forms, labels), clean_forms(labels, table.forms)) for num, table in enumerate(data)]))
 
         tokens = list(chain.from_iterable(tokens))
         df = pd.DataFrame(forms)
@@ -124,7 +126,7 @@ def guess_paradigm(lang):
             cross_valid_scores = list()
             for subset in feat_subsets:
                 _, features = list(zip(*subset))
-                classes = get_freq_class(df, list(features))
+                classes = get_freq_class(df, list(set(features)))
                 scores = cross_validation(tokens, subset, class2paradigm, classes)
                 cross_valid_scores.append(["+".join([s[1] for s in subset]), ] + list(scores))
             cross_valid_scores = sorted(cross_valid_scores, key=lambda x: -x[1])
