@@ -4,7 +4,7 @@ import sys
 import rgl_learner.morpho_cats
 import rgl_learner.learn_paradigms
 import rgl_learner.smart_paradigms
-import paradigm_extraction.parse_paradigm
+import smart_paradigms.lemma_tree
 import construct_table.construct_table
 
 if len(sys.argv) == 4 and sys.argv[1] == "morpho-cats":
@@ -16,7 +16,7 @@ elif len(sys.argv) == 3 and sys.argv[1] == "learn-paradigms":
 elif len(sys.argv) == 3 and sys.argv[1] == "smart-paradigms":
     rgl_learner.smart_paradigms.learn(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "build-lemma-tree":
-    lemma_tree.guess_by_lemma(sys.argv[2])
+    smart_paradigms.lemma_tree.guess_by_lemma(sys.argv[2])
 else:
     print(f"Synopsis: {sys.argv[0]} morpho-cats <wiktionary|unimorph> <lang-code>")
     print(f"          {sys.argv[0]} construct-table <wiktionary|unimorph> <lang-code>")
