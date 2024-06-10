@@ -5,7 +5,7 @@ from itertools import chain
 
 import numpy as np
 import pandas as pd
-from paradigm_extraction.parse_paradigm import write_lexicon
+from rgl_learner.learn_paradigms import write_lexicon
 from smart_paradigms.utils import *
 
 def get_morphemes(features, tag):

@@ -2,23 +2,24 @@
 
 import sys
 import rgl_learner.morpho_cats
+import rgl_learner.learn_paradigms
+import rgl_learner.smart_paradigms
 import paradigm_extraction.parse_paradigm
 import construct_table.construct_table
-from smart_paradigms import paradigm_guesser, lemma_guesser, lemma_tree
 
 if len(sys.argv) == 4 and sys.argv[1] == "morpho-cats":
     rgl_learner.morpho_cats.learn(sys.argv[2], sys.argv[3])
 elif len(sys.argv) == 4 and sys.argv[1] == "construct-table":
     construct_table.construct_table.construct(sys.argv[2], sys.argv[3])
-elif len(sys.argv) == 3 and sys.argv[1] == "parse-paradigm":
-    paradigm_extraction.parse_paradigm.parse(sys.argv[2])
-elif len(sys.argv) == 3 and sys.argv[1] == "learn-smart-par":
-    paradigm_guesser.guess_paradigm(sys.argv[2])
+elif len(sys.argv) == 3 and sys.argv[1] == "learn-paradigms":
+    rgl_learner.learn_paradigms.learn(sys.argv[2])
+elif len(sys.argv) == 3 and sys.argv[1] == "smart-paradigms":
+    rgl_learner.smart_paradigms.learn(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "build-lemma-tree":
     lemma_tree.guess_by_lemma(sys.argv[2])
 else:
     print(f"Synopsis: {sys.argv[0]} morpho-cats <wiktionary|unimorph> <lang-code>")
-    print(f"Synopsis: {sys.argv[0]} construct-table <wiktionary|unimorph> <lang-code>")
-    print(f"          {sys.argv[0]} parse-paradigm <lang-code>")
-    print(f"          {sys.argv[0]} learn-smart-par <lang-code>")
+    print(f"          {sys.argv[0]} construct-table <wiktionary|unimorph> <lang-code>")
+    print(f"          {sys.argv[0]} learn-paradigms <lang-code>")
+    print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
     print(f"          {sys.argv[0]} build-lemma-tree <lang-code>")
