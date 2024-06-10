@@ -90,5 +90,5 @@ def learn(lang):
                     comment = ""
                 cases.append(f'  _ + "{suffix}" => mk{cat}{max_class:03d} base{comment}')
             code = " ;\n".join(cases)
-            code = f"mk{cat} : Str -> {cat} ;  -- {c1/c2}\nmk{cat} base = case base of {{\n{code}\n}} ;\n"
+            code = f"mk{cat} : Str -> {cat} ;  -- {c1/c2 if c1 != c2 else 1.0}\nmk{cat} base = case base of {{\n{code}\n}} ;\n"
         print(code)
