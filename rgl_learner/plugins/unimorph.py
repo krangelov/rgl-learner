@@ -101,9 +101,28 @@ params = {
     'PRF': ('Perfect', 'Aspect'),
     'PROG': ('Progressive', 'Aspect'),
     'PROSP': ('Prospective', 'Aspect'),
-    'ABL': ('Ablat', 'Case'),
-    'ABS': ('Abs', 'Case'), # Absolutive case
+    'NOM': ('Nom', 'Case'),
     'ACC': ('Acc', 'Case'),
+    'DAT': ('Dat', 'Case'),
+    'GEN': ('Gen', 'Case'),
+    'VOC': ('Voc', 'Case'),
+    'PRT': ('Part', 'Case'), # Partitive
+    'IN': ('Iness', 'Case'), # IN
+    'ABL': ('Ablat', 'Case'),
+    'ESS': ('Ess', 'Case'),
+    'TRANS': ('Transl', 'Case'),
+    'INST': ('Instr', 'Case'),
+    'COM': ('Comit', 'Case'),
+    'LOC': ('Loc', 'Case'),
+    'NOMS': ('SNom', 'Case'),  # Nominative, S-only
+    'ON': ('On', 'Case'), # On
+    'ONHR': ('Onhr', 'Case'), # On (horizontal)
+    'ONVR': ('Onvr', 'Case'), # On (vertical)
+    'POST': ('Post', 'Case'), # Behind
+    'PRIV': ('Privative', 'Case'),
+    'PROL': ('Transl', 'Case'),
+    'PROPR': ('Proprietive', 'Case'),
+    'ABS': ('Abs', 'Case'), # Absolutive case
     'ALL': ('Allat', 'Case'),
     'ANTE': ('Ante', 'Case'), # Anterior case, near / in front
     'APPRX': ('Apprx', 'Case'), # Approximative
@@ -113,37 +132,18 @@ params = {
     'BEN': ('Benef', 'Case'), # benefactive
     'BYWAY': ('Essmod', 'Case'), # essive-modal
     'CIRC': ('Circ', 'Case'), # near
-    'COM': ('Comit', 'Case'),
     'COMPV': ('Compar', 'Case'),
-    'DAT': ('Dat', 'Case'),
     'EQTV': ('Equative', 'Case'),
     'ERG': ('Erg', 'Case'), # ergative
-    'ESS': ('Ess', 'Case'),
     'FRML': ('Formal', 'Case'),
-    'LOC': ('Loc', 'Case'),
-    'GEN': ('Gen', 'Case'),
-    'IN': ('In', 'Case'), # IN
-    'INST': ('Instr', 'Case'),
     'INTER': ('Inter', 'Case'), # Among
-    'NOM': ('Nom', 'Case'),
-    'NOMS': ('SNom', 'Case'),  # Nominative, S-only
-    'ON': ('On', 'Case'), # On
-    'ONHR': ('Onhr', 'Case'), # On (horizontal)
-    'ONVR': ('Onvr', 'Case'), # On (vertical)
-    'POST': ('Post', 'Case'), # Behind
-    'PRIV': ('Privative', 'Case'),
-    'PROL': ('Transl', 'Case'),
-    'PROPR': ('Proprietive', 'Case'),
     'PROX': ('Proximal', 'Deixis'), # Proximate
     'PRP': ('Purp', 'Case'), # Purposive
-    'PRT': ('Part', 'Case'), # Partitive
     'REL': ('Rel', 'Case'), # Relative
     'REM': ('Rem', 'Case'), # Distal
     'SUB': ('Sub', 'Case'), # Under
      'TERM': ('Term', 'Case'), # Terminative
-    'TRANS': ('Transl', 'Case'),
     'VERS': ('Vers', 'Case'), # Versative
-    'VOC': ('Voc', 'Case'),
     'AB': ('Absolute', 'Comparison'),
     'CMPR': ('Comparative', 'Comparison'),
     'EQT': ('Equative', 'Comparison'),
@@ -253,7 +253,7 @@ params = {
     'GRPL': ('GrPlural', 'Number'),
     'INVN': ('Inverse', 'Number'),
     'PAUC': ('Paucal', 'Number'),
-    'SG': ('Sing', 'Number'),
+    'SG': ('Sg', 'Number'),
     'DU': ('Dl', 'Number'),
     'PL': ('Pl', 'Number'),
     'TRI': ('Trial', 'Number'),
