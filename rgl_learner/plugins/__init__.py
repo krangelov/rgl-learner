@@ -38,6 +38,12 @@ class PluginWrapper:
             return fn(tag)
         return tag
 
+    def merge_tags(self, tags):
+        fn = self.module.get("merge_tags")
+        if fn:
+            return fn(tags)
+        return tags
+
 class PluginManager:
     def __getitem__(self,key):
         if type(key) is str:
