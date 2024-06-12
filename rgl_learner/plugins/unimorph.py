@@ -1,7 +1,7 @@
 import sys
 import re
 
-ignore_tags = []  # placeholder
+ignore_tags = ["LGSPEC1","LGSPEC2"]  # placeholder
 
 tag2cat = {
     'ADJ': 'A',
