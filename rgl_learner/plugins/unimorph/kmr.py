@@ -44,34 +44,12 @@ def patchN(lemma, table):
     table.pop("INDF",None)
 
 def patchA(lemma, table):
-    nom = table.setdefault("NOM",{})
-    acc = nom.pop("ACC",None)
-    if acc:
-        nom = acc
-        table["NOM"] = nom
-        table["ACC"] = acc
-    else:
-        acc = table.setdefault("ACC",{})
-    nom_def = nom.pop("DEF",{})
-    sg_pl = nom_def.get("SG",{}).get("PL")
-    if sg_pl:
-        nom["SG"] = sg_pl
-        nom["PL"] = sg_pl
-    else:
-        nom.update(nom_def)
-
-    acc.update(acc.pop("DEF",{}))
-
-    nom.setdefault("SG","-")
-    nom.setdefault("PL","-")
-
-    acc.setdefault("SG","-")
-    acc.setdefault("PL","-")
-
-    table.pop("IND",None)
+    table.clear()
+    table["s"] = lemma
 
 def patchAdv(lemma, table):
-    table["s"] = table.pop("NOM",{}).pop("ACC",{}).pop("DEF",{}).pop("SG",{}).pop("PL","-")
+    table.clear()
+    table["s"] = lemma
 
 def patchV(lemma, table):
     table.pop("ACC",None)
