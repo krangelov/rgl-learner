@@ -187,6 +187,7 @@ def learn(source,lang):
         for w,tags in forms:
             if 'multiword-construction' not in tags:
                 tags = [lang_plugin.fix_tags(tag) for tag in tags if tag not in source_plugin.ignore_tags]
+                tags = lang_plugin.merge_tags(tags)
                 tags = sorted(tags,key=lambda tag: get_order(source_plugin, tag))
 
                 if not tags:

@@ -5,6 +5,11 @@ iso3 = "Kaz"
 params =  {'LSSPEC1': ('Frml', 'Formality'),
 		   'LSSPEC2': ('Infrml', 'Formality')}
 
+def merge_tags(tags):
+	if "SBJV" in tags:
+		tags.remove("FUT")
+	return tags
+
 def fix_tags(tag):
 	if tag == "FRML":
 		return "FORM"
