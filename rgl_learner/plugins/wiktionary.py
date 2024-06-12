@@ -46,6 +46,8 @@ params = {
   'locative': ('Loc','Case'),
   'copulative': ('Cop','Case'),
   'instrumental': ('Instr','Case'),
+  'oblique': ('Obliq','Case'),
+  'construct': ('Constr','Case'),
   'indicative': ('Indicative', 'Mood'),
   'subjunctive': ('Subjunctive', 'Mood'),
   'conditional': ('Conditional', 'Mood'),
