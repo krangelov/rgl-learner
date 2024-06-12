@@ -278,6 +278,9 @@ def extract(lang):
     d = {}
     with open(f"data/{lang}/{lang}") as f:
         for line in f:
+            line = line.strip()
+            if line == "":
+                continue
             lemma, form, tags = line.split("\t")
             tags = filter_tags(tags)
             for tag in tag2cat:
