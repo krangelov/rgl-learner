@@ -156,7 +156,6 @@ def getTypeOf(source_plugin, lang_plugin, o):
                     table = None
                 else:
                     table[arg_type] = val_type
-            tag = source_plugin.convert2gf(tag, params)
             record.append((tag,val_type,forms))
 
 
@@ -169,7 +168,7 @@ def getTypeOf(source_plugin, lang_plugin, o):
         else:
             record.sort(key=lambda p: get_order(source_plugin,p[0]))
             forms = sum((forms for _, _, forms in record), [])
-            fields = tuple(((tag, val_type) for tag, val_type, _  in record))
+            fields = tuple(((source_plugin.convert2gf(tag, params), val_type) for tag, val_type, _  in record))
             return GFRecord(fields), forms
 
 def get_order(source_plugin,tag):

@@ -1,7 +1,7 @@
 import sys
 import re
 
-ignore_tags = ["LGSPEC1","LGSPEC2"]  # placeholder
+ignore_tags = ["LGSPEC1","LGSPEC2"]
 
 tag2cat = {
     'ADJ': 'A',
@@ -15,17 +15,18 @@ tag2cat = {
 # 'AUX': 'Auxiliary',
 # 'CLF': 'Classifier',
 # 'COMP': 'Complementizer',
-# 'CONJ': 'Conjunction',
-# 'INTJ': 'Interjection',
-# 'ADP': 'Adposition',
-# 'NUM': 'Numeral',
-# 'PART': 'Particle',
+    'CONJ': 'Conj',
+    'INTJ': 'Interj',
+    'ADP': 'Prep',
+    'NUM': 'Digit',
+    'PART': 'Particle',
 # 'V.CVB': 'Converb',
-# 'V.MSDR': 'Masdar',
-# 'V.PTCP': 'Participle'
+    'V.MSDR': 'Masdar',
+    'V.PTCP': 'Participle'
 }
 
 params = {
+    'IND': ('Indicative', 'Mood'),
     'ADM': ('Admirative', 'Mood'),
      'AUNPRP': ('Non_Purposive', 'Mood'),
      'AUPRP': ('Purposive', 'Mood'),
@@ -33,7 +34,6 @@ params = {
      'DEB': ('Debitive', 'Mood'),
      'DED': ('Deductive', 'Mood'),
      'IMP': ('Imperative_Jussive', 'Mood'),
-     'IND': ('Indicative', 'Mood'),
      'INTEN': ('Intentive', 'Mood'),
      'IRR': ('Irrealis', 'Mood'),
      'LKLY': ('Likely', 'Mood'),
@@ -45,6 +45,14 @@ params = {
      'REAL': ('Realis', 'Mood'),
      'SBJV': ('Subjunctive', 'Mood'),
      'SIM': ('Simulative', 'Mood'),
+    '1DAY': ('1day', 'Tense'), # within 1 day
+    'FUT': ('Fut', 'Tense'),
+    'HOD': ('Hodiernal', 'Tense'),
+    'IMMED': ('Immediate', 'Tense'),
+    'PRS': ('Pres', 'Tense'),
+    'PST': ('Past', 'Tense'),
+    'RCT': ('Recent', 'Tense'),
+    'RMT': ('Remote', 'Tense'),
     'ALN': ('Alien', 'Possession'), # Alienable possession
     'NALN': ('Inalien', 'Possession'), # Inalienable possession
     'PSS1D': ('Poss1Du', 'Possession'),
@@ -146,8 +154,8 @@ params = {
     'EQT': ('Equative', 'Comparison'),
     'RL': ('Relative', 'Comparison'),
     'SPRL': ('Superlative', 'Comparison'),
-    'DEF': ('Def', 'Species'),
     'INDF': ('Indef', 'Species'),
+    'DEF': ('Def', 'Species'),
     'NSPEC': ('Non_Spec', 'Species'),
     'SPEC': ('Spec', 'Species'),
     'ABV': ('Above', 'Deixis'),
@@ -213,14 +221,6 @@ params = {
     'SIMMA': ('SimMA', 'Switch_Reference'), # Simultaneous Multiclausal Aspect
     'SS': ('SS', 'Switch_Reference'),
     'SSADV': ('SS Adverbial', 'Switch_Reference'),
-    '1DAY': ('1day', 'Tense'), # within 1 day
-    'FUT': ('Fut', 'Tense'),
-    'HOD': ('Hodiernal', 'Tense'),
-    'IMMED': ('Immediate', 'Tense'),
-    'PRS': ('Pres', 'Tense'),
-    'PST': ('Past', 'Tense'),
-    'RCT': ('Recent', 'Tense'),
-    'RMT': ('Remote', 'Tense'),
     'APPL': ('Applicative', 'Valency'),
     'CAUS': ('Causative', 'Valency'),
     'IMPRS': ('Imprs', 'Valency'),
