@@ -1,7 +1,4 @@
 import sys
-import pandas as pd
-import glob
-
 import re
 
 ignore_tags = []  # placeholder
@@ -278,20 +275,19 @@ def filter_tags(tags):
     return new_tags
 
 def extract(lang):
-    # git clone unimorph/{lang}
-    datasets = glob.glob(f"data/{lang}/{lang}*")
-    dfs = []
-    for dataset in datasets:
-        if not dataset.endswith(".derivations"):  # ignore derivation morphology
-            df = pd.read_csv(dataset, sep="\t", header=None)
-            df.columns = ["lemma", "form", "tags"]
-            dfs.append(df)
-    df = pd.concat(dfs)
-    df[['POS', 'tags']] = df['tags'].str.split(';', n=1, expand=True)
-    df['tags'] = df['tags'].apply(filter_tags)
-    data = df.groupby(["lemma", "POS"]).agg(list).reset_index()
-    data['form2tag'] = data.apply(lambda x: list(zip(x.form, x.tags)), axis=1)
-    return data[['lemma', 'POS', 'form2tag']].values.tolist()
+    d = {}
+    with open(f"data/{lang}/{lang}") as f:
+        for line in f:
+            lemma, form, tags = line.split("\t")
+            tags = filter_tags(tags)
+            for tag in tag2cat:
+                if tag in tags:
+                    tags.remove(tag)
+                    d.setdefault((lemma,tag),[]).append((form,tags))
+    res = []
+    for (lemma,pos),forms in d.items():
+       res.append((lemma,pos,forms))
+    return res
 
 def convert2gf(tag, params):
     return params[tag][0] if tag in params else tag
