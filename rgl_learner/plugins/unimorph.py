@@ -94,10 +94,6 @@ params = {
     'SEMEL': ('Semelfactive', 'Aktionsart'),
     'STAT': ('Stative', 'Aktionsart'),
     'TEL': ('Telic', 'Aktionsart'),
-    'ANIM': ('Animate', 'Animacy'),
-    'HUM': ('Human', 'Animacy'),
-    'INAN': ('Inanimate', 'Animacy'),
-    'NHUM': ('Non_human', 'Animacy'),
     'ARGAC3S': ('3.sg Object (from feature template)', 'Argument_Marking'),
     'HAB': ('Habitual', 'Aspect'),
     'IPFV': ('Imperfective', 'Aspect'),
@@ -106,6 +102,10 @@ params = {
     'PRF': ('Perfect', 'Aspect'),
     'PROG': ('Progressive', 'Aspect'),
     'PROSP': ('Prospective', 'Aspect'),
+    'INDF': ('Indef', 'Species'),
+    'DEF': ('Def', 'Species'),
+    'NSPEC': ('Non_Spec', 'Species'),
+    'SPEC': ('Spec', 'Species'),
     'NOM': ('Nom', 'Case'),
     'ACC': ('Acc', 'Case'),
     'DAT': ('Dat', 'Case'),
@@ -142,7 +142,6 @@ params = {
     'ERG': ('Erg', 'Case'), # ergative
     'FRML': ('Formal', 'Case'),
     'INTER': ('Inter', 'Case'), # Among
-    'PROX': ('Proximal', 'Deixis'), # Proximate
     'PRP': ('Purp', 'Case'), # Purposive
     'REL': ('Rel', 'Case'), # Relative
     'REM': ('Rem', 'Case'), # Distal
@@ -154,10 +153,7 @@ params = {
     'EQT': ('Equative', 'Comparison'),
     'RL': ('Relative', 'Comparison'),
     'SPRL': ('Superlative', 'Comparison'),
-    'INDF': ('Indef', 'Species'),
-    'DEF': ('Def', 'Species'),
-    'NSPEC': ('Non_Spec', 'Species'),
-    'SPEC': ('Spec', 'Species'),
+    'PROX': ('Proximal', 'Deixis'), # Proximate
     'ABV': ('Above', 'Deixis'),
     'BEL': ('Below', 'Deixis'),
     'EVEN': ('Even', 'Deixis'),
@@ -183,10 +179,10 @@ params = {
     'FIN': ('Finite', 'Finiteness'),
     'NFIN': ('Nonfinite', 'Finiteness'),
     'BANTU1_23': ('NClass', 'Gender'),
-    'FEM': ('Fem', 'Gender'),
     'MASC': ('Masc', 'Gender'),
-    'NAKH1-8': ('NClasses', 'Gender'),
+    'FEM': ('Fem', 'Gender'),
     'NEUT': ('Neutr', 'Gender'),
+    'NAKH1-8': ('NClasses', 'Gender'),
      'FOC': ('Focus', 'Information_Structure'),
      'TOP': ('Topic', 'Information_Structure'),
      'DECL': ('Declarative', 'Interrogativity'),
@@ -252,8 +248,12 @@ params = {
     'PAUC': ('Paucal', 'Number'),
     'SG': ('Sg', 'Number'),
     'DU': ('Dl', 'Number'),
+    'TRI': ('Tr', 'Number'),
     'PL': ('Pl', 'Number'),
-    'TRI': ('Trial', 'Number'),
+    'ANIM': ('Animate', 'Animacy'),
+    'HUM': ('Human', 'Animacy'),
+    'INAN': ('Inanimate', 'Animacy'),
+    'NHUM': ('NonHuman', 'Animacy'),
 } # Patient Focus
 
 params_order = dict(zip(params.keys(), range(len(params))))
