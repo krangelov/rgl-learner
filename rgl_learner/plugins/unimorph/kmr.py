@@ -54,9 +54,46 @@ def patchAdv(lemma, table):
 def patchV(lemma, table):
     table.pop("ACC",None)
 
+    ind = table.get("IND",{})
+    x = ind.get("PRS",{}).get("PST",{}).get("IPFV",{}).get("PROG",{}).get("POS",{}).get("2",{}).get("3",{}).get("SG")
+    if x:
+        ind["PRS"].pop("PST",{})
+        ind.setdefault("PRS",{}).setdefault("IPFV",{}).setdefault("POS",{}).setdefault("2",{}).setdefault("SG",x)
+        ind.setdefault("PRS",{}).setdefault("IPFV",{}).setdefault("POS",{}).setdefault("3",{}).setdefault("SG",x)
+        ind.setdefault("PST",{}).setdefault("PROG",{}).setdefault("POS",{}).setdefault("2",{}).setdefault("SG",x)
+        ind.setdefault("PST",{}).setdefault("PROG",{}).setdefault("POS",{}).setdefault("3",{}).setdefault("SG",x)
+
+    sbjv = table.pop('SBJV',{}).get('PRS',{})
+    table["SBJV"] = sbjv
+
+    x = ind.get("SBJV",{}).get("PRS",{}).get("PST",{}).get("PFV",{}).get("NEG",{}).get("2",{}).get("3",{}).get("SG")
+    if x:
+        ind.pop("SBJV")
+        ind.setdefault("PST",{}).setdefault("PFV",{}).setdefault("NEG",{}).setdefault("2",{}).setdefault("SG",x)
+        ind.setdefault("PST",{}).setdefault("PFV",{}).setdefault("NEG",{}).setdefault("3",{}).setdefault("SG",x)
+        sbjv.setdefault("NEG",{}).setdefault("2",{}).setdefault("SG",x)
+        sbjv.setdefault("NEG",{}).setdefault("3",{}).setdefault("SG",x)
+
+    x = ind.get("PST",{}).get("PFV",{}).pop("DEF",{}).get("NOM",{}).get("POS",{}).get("1",{}).get("2",{}).get("3",{}).get("SG",{}).get("PL")
+    if x:
+        ind.get("PST",{}).get("PFV",{}).setdefault("POS",{}).setdefault("1",{}).setdefault("SG",x)
+        ind.get("PST",{}).get("PFV",{}).setdefault("POS",{}).setdefault("1",{}).setdefault("PL",x)
+        ind.get("PST",{}).get("PFV",{}).setdefault("POS",{}).setdefault("2",{}).setdefault("SG",x)
+        ind.get("PST",{}).get("PFV",{}).setdefault("POS",{}).setdefault("2",{}).setdefault("PL",x)
+        ind.get("PST",{}).get("PFV",{}).setdefault("POS",{}).setdefault("3",{}).setdefault("SG",x)
+        ind.get("PST",{}).get("PFV",{}).setdefault("POS",{}).setdefault("3",{}).setdefault("PL",x)
+
+    table.pop("DEF",None)
+    table.pop("NEG",None)
+
+    for pol in ["POS","NEG"]:
+        for person in ["1","2","3"]:
+            for number in ["SG","PL"]:
+                sbjv.setdefault(pol,{}).setdefault(person,{}).setdefault(number,"-")
+
     def fix(table):
         for pol in ["POS","NEG"]:
-            t = table[pol]
+            t = table.setdefault(pol,{})
             pl = t.get("1",{}).pop("2",{}).get("3",{}).get("PL")
             if pl:
                 t.setdefault("1",{}).setdefault("SG","-")
@@ -73,8 +110,7 @@ def patchV(lemma, table):
                 t.setdefault("3",{}).setdefault("PL",pl)
         return table
 
-    table["imp"]  = fix(table.pop('IMP',{}).get('SBJV',{}).get('PRS',{}))
-    table["subj"] = table.pop('SBJV',{}).get('PRS',{})
+    table["IMP"]  = fix(table.pop('IMP',{}).get('SBJV',{}).get('PRS',{}))
 
     t = table.get("COND",{}).get("PST",{})
     table.get("COND",{})["PRF"] = t.pop("PRF",{})
@@ -85,14 +121,35 @@ def patchV(lemma, table):
             fix(t)
 
     for tense in ["PRS","PST","PRF"]:
-        t = table.get("IND",{}).get(tense,{})
+        t = ind.get(tense,{})
         if not t:
             continue
         for aspect in ["PFV","PROG","PRF","IPFV"]:
             asp = t.get(aspect)
             if asp:
                 fix(asp)
+                for pol in ["POS","NEG"]:
+                    for person in ["1","2","3"]:
+                        for number in ["SG","PL"]:
+                            asp.setdefault(pol,{}).setdefault(person,{}).setdefault(number,"-")
 
-    #x = table.get("IND",{}).pop("SBJV",{}).get("PRS",{}).get("PST",{}).get("PFV",{})
-    #if x:
-     #   print(x)
+    t = ind.get("PRS",{}).get("IPFV",{}).get("POS",{})
+    for person in ["1","2","3"]:
+        for number in ["SG","PL"]:
+            x = t.get(person,{}).get(number,{})
+            if type(x) == dict:
+                t[person][number] = x.get(None,"-")
+
+    t = {
+        "pres":      table["IND"]["PRS"]["IPFV"],
+        "pres_perf": table["IND"]["PRS"]["PRF"],
+        "past":      table["IND"]["PST"]["PFV"],
+        "past_perf": table["IND"]["PST"]["PRF"],
+        "past_prog": table["IND"]["PST"]["PROG"],
+        "cond_past": table["COND"]["PST"],
+        "cond_perf": table["COND"]["PRF"],
+        "imp":       table["IMP"],
+        "subj":      table["SBJV"]
+       }
+    table.clear()
+    table.update(t)
