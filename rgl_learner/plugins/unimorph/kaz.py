@@ -8,17 +8,26 @@ params =  {'LSSPEC1': ('Frml', 'Formality'),
 def merge_tags(tags):
 	if "SBJV" in tags:
 		tags.remove("FUT")
+	if "2" in tags:
+		if "FRML" in tags:
+			tags.remove("FRML")
+			tags.remove("2")
+			tags.append("2F")
+		elif "INFM" in tags:
+			tags.remove("INFM")
+			tags.remove("2")
+			tags.append("2I")
+	if "FRML" in tags:
+		tags.remove("FRML")
+		tags.append("FORM")
 	return tags
 
-def fix_tags(tag):
-	if tag == "FRML":
-		return "FORM"
-	return tag
+
 
 def patchV(lemma, table):
 	param_order = ['Mood', 'Aspect', 'Polarity', 'Politeness', 'Tense', 'Person', 'Number']
-	params = {'Mood': {'SBJV', 'IMP'}, 'Tense': {'FUT', 'PST', 'PRS'}, 'Person': {'1', '3', '2'},
-			  'Number': {'SG', 'PL'}, 'Politeness': {'INFM', 'FORM'}, 'Polarity': {'NEG'}, 'Aspect': {'PROG', 'PRF'}}
+	params = {'Mood': {'SBJV', 'IMP'}, 'Tense': {'FUT', 'PST', 'PRS'}, 'Person': {'1', '3', '2I', '2F'},
+			  'Number': {'SG', 'PL'}, 'Politeness': {"FORM", "INFM"}, 'Polarity': {'NEG'}, 'Aspect': {'PROG', 'PRF'}}
 	fixed_names = {"Mood": "IND", "Polarity": "POS"}
 	new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
 	return new_table
