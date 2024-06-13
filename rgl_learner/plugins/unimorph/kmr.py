@@ -6,42 +6,41 @@ def filter_lemma(lemma, pos, table):
     return False
 
 def patchN(lemma, table):
-    nom = table.pop("NOM",{})
-    nom.update(nom.pop("ACC",{}))
-    nom.setdefault("DEF",{}).update(table.pop("IND",{}).get("PFV",{}).get("NOM",{}).get("DEF",{}).get("POS",{}).get("PST",{}).get("1",{}).get("2",{}).get("3",{}))
-    nom_def = nom.get("DEF",{})
-    nom_def = nom_def.pop("FEM",{}).pop("MASC",nom_def)
+    pass
+    df = table.pop("DEF",{})
+    nom_def = df.get("NOM",{})
+    nom_def.update(nom_def.pop("ACC",{}))
+    nom_def.update(table.pop("IND",{}).get("PST",{}).get("PFV",{}).get("DEF",{}).get("NOM",{}).get("POS",{}).get("1",{}).get("2",{}).get("3",{}))
+    nom_def = nom_def.pop("MASC",{}).pop("FEM",nom_def)
     sg_pl = nom_def.get("SG",{}).get("PL")
     if sg_pl:
         nom_def["SG"] = sg_pl
         nom_def["PL"] = sg_pl
-    voc = table.get("ACC",{}).pop("VOC",None)
+    voc = df.get("ACC",{}).pop("VOC",None)
     if voc:
-        voc_sg = voc.pop("DEF",{}).pop("SG","-")
+        voc_sg = voc.pop("SG","-")
     else:
         voc_sg = "-"
 
-    nom.setdefault("INDF",{}).setdefault("SG",lemma)
-    nom.setdefault("INDF",{}).setdefault("PL","-")
-    nom.setdefault("DEF",{}).setdefault("SG","-")
-    nom.setdefault("DEF",{}).setdefault("PL","-")
+    df.setdefault("NOM",{}).setdefault("SG",df.pop("SG","-"))
+    df.setdefault("NOM",{}).setdefault("PL","-")
+    df.setdefault("ACC",{}).setdefault("SG","-")
+    df.setdefault("ACC",{}).setdefault("PL","-")
 
-    acc = table.pop("ACC",{})
-    acc.setdefault("INDF",{}).setdefault("SG","-")
-    acc.setdefault("INDF",{}).setdefault("PL","-")
-    acc.setdefault("DEF",{}).setdefault("SG",voc_sg)
-    acc.setdefault("DEF",{}).setdefault("PL","-")
+    indf = table.pop("INDF",{})
+    indf.setdefault("NOM",{}).setdefault("SG",lemma)
+    indf.setdefault("NOM",{}).setdefault("PL",indf.pop("PL","-"))
+    indf.setdefault("ACC",{}).setdefault("SG",voc_sg)
+    indf.setdefault("ACC",{}).setdefault("PL","-")
 
-    table["s"] = {"NOM": nom, "ACC": acc}
-    voc = table.pop("VOC",{})
-    if voc:
-        voc = voc.pop("DEF",{})
+    table["s"] = {"INDF": indf, "DEF": df}
+    voc = df.pop("VOC",{})
     voc.setdefault("SG", voc_sg) 
     voc.setdefault("PL", "-")
     table["voc"] = voc
 
-    table.pop("DEF",None)
-    table.pop("INDF",None)
+    
+    
 
 def patchA(lemma, table):
     table.clear()
