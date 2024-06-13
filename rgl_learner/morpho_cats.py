@@ -237,6 +237,17 @@ def learn(source,lang):
                     counts[lemma] = index+1
                 lexemes[i] = (ident, forms)
 
+    def escape(s):
+        s2 = ""
+        for c in s:
+            if c == "'":
+                s2 += "\\'"
+            elif c == "\\":
+                s2 += "\\\\"
+            else:
+                s2 += c
+        return "'"+s2+"'"
+
     lang_code = lang_plugin.iso3
     with open('Res'+lang_code+'.gf','w') as fr, \
          open('Cat'+lang_code+'.gf','w') as fc, \
@@ -278,8 +289,8 @@ def learn(source,lang):
                 fr.write('          '+typ.renderOper(10,vars)+" ;\n")
                 fr.write('\n')
                 for ident,forms in lexemes:
-                    fa.write('fun \''+ident+'\' : '+cat_name+' ;\n')
-                    fd.write('lin \''+ident+'\' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')
+                    fa.write('fun '+escape(ident)+' : '+cat_name+' ;\n')
+                    fd.write('lin '+escape(ident)+' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')
                     tsv.write(ident+'\t'+'\t'.join(forms)+'\n')
 
             fr.write('\n')
