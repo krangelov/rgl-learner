@@ -1,5 +1,7 @@
 iso3 = "Kmr"
 
+ignore_tags = ["LGSPEC1", "LGSPEC2"]
+
 def filter_lemma(lemma, pos, table):
     if pos in ["V.MSDR", "V.PTCP", "PRO", "DET", "PART", "NUM", "ADP"]:
         return True

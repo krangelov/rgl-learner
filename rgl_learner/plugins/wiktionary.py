@@ -18,6 +18,7 @@ tag2cat = {
 params = {
  # 'comparative': None,
  # 'superlative': None,
+  'positive': ('Pos', 'Comparison'),
   'comparative': ('Comp', 'Comparison'),
   'superlative': ('Superlat', 'Comparison'),
   'indefinite': ('Indef','Species'),
@@ -55,7 +56,8 @@ params = {
   'admirative': ('Admirative', 'Mood'),
   'imperative': ('Imperative', 'Mood'),
   'jussive': ('Jussive', 'Mood'),
-  "progressive": ('Progressive', 'Mood'),
+  "progressive": ('Progressive', 'Aspect'),
+  'past_habitual': ("Past_habitual", "Tense"),
   'present': ('Pres','Tense'),
   'past': ('Past','Tense'),
   'aorist': ('Aorist','Tense'),
@@ -69,21 +71,26 @@ params = {
   'pluperfect': ('Pluperf','Tense'),
   'past-perfect': ('PastPerfect','Tense'),
   'future-perfect': ('PastPerfect','Tense'),
-  'masculine': ('Masc','Gender'),
-  'feminine': ('Fem','Gender'),
-  'neuter': ('Neuter','Gender'),
-  'singular': ('Sg','Number'),
-  'plural': ('Pl','Number'),
   'first-person': ('P1','Person'),
   'second-person': ('P2','Person'),
   'third-person': ('P3','Person'),
+'singular': ('Sg','Number'),
+  'plural': ('Pl','Number'),
+    'masculine': ('Masc', 'Gender'),
+    'feminine': ('Fem', 'Gender'),
+    'neuter': ('Neuter', 'Gender'),
+    "formal": ("Formal", "Formality"),
+    "informal": ("Informal", "Formality"),
 }
 
 
-params_order = dict(zip(params.keys(), range(len(params))))
 
 ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction', "error-unknown-tag",
-               "analytic", "emphatic", "archaic", "dialectal"]
+               "analytic", "emphatic", "archaic", "dialectal", "triggers-lenition",
+               'triggers-eclipsis', "triggers-no-mutation", 'usually', 'triggers-h-prothesis',
+               'obsolete', 'abbreviation', 'determiner', 'with-genitive', "in-certain-phrases",
+               "noun-from-verb", 'error-unrecognized-form', 'dependent', 'uncommon', 'slang', 'Chinese', 'Western',
+               "reciprocal"]
 
 def extract(lang):
     dir = "data/"+lang
@@ -96,7 +103,7 @@ def extract(lang):
         with gzip.open('raw-wiktextract-data.json.gz','r') as f:
             for line in f:
                 record = json.loads(line)
-                if record.get("lang_code")==lang:
+                if record.get("lang_code") == lang:
                     word  = record["word"]
                     pos   = record.get("pos")
                     forms = []
@@ -113,3 +120,6 @@ def extract(lang):
             lexicon = pickle.load(f)
 
     return lexicon
+
+def convert2gf(tag, params):
+    return params[tag][0] if tag in params else tag

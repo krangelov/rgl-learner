@@ -1,5 +1,6 @@
 iso3 = "Poma"
 
+ignore_tags = ["LGSPEC1", "LGSPEC2"]
 def patchA(lemma,table):
     table.update(table.pop("INDF",{}))
     for case in ["NOM","ACC","GEN","VOC"]:

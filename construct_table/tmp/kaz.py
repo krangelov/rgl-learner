@@ -1,15 +1,17 @@
 from rgl_learner.utils import *
 
 iso3 = "Kaz"
-def patchV(lemma, table):
-	params = {'Mood': {'SBJV', 'IND', 'IMP'}, 'Polarity': {'POS', 'NEG'}, 'Tense': {'FUT', 'PST', 'PRS'}, 'Person': {'2', '3', '1'}, 'Number': {'SG', 'PL'}, 'Politeness': {'INFM', 'FORM'}, 'Aspect': {'PROG', 'PRF'}} 
-	param_order = ['Mood', 'Aspect', 'Person', 'Polarity', 'Politeness', 'Tense', 'Number'] 
-	new_table = fill_empty(fix_table(table, param_order, params))
+def patchN(lemma, table):
+	params = {'Possession': {'PSS3S', 'PSS1P', 'PSS1S', 'PSS2P', 'PSS3P', 'PSS2S'}, 'Number': {'PL', 'SG'}, 'Formality': {'LSSPEC1', 'LSSPEC2'}, 'Case': {'NOM', 'ACC', 'GEN', 'LOC', 'DAT', 'INST', 'ABL'}} 
+	param_order = ['Possession', 'Case', 'Number', 'Formality'] 
+	fixed_names = {} 
+	new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
 	return new_table
 
-def patchN(lemma, table):
-	params = {'Possession': {'PSS3P', 'PSS2S', 'PSS1S', 'PSS1P', 'PSS3S', 'PSS2P'}, 'Number': {'SG', 'PL'}, 'Formality': {'LSSPEC1', 'LSSPEC2'}, 'Case': {'LOC', 'INST', 'ACC', 'GEN', 'DAT', 'ABL', 'NOM'}} 
-	param_order = ['Possession', 'Case', 'Number', 'Formality'] 
-	new_table = fill_empty(fix_table(table, param_order, params))
+def patchV(lemma, table):
+	params = {'Mood': {'SBJV', 'IMP'}, 'Polarity': {'NEG'}, 'Politeness': {'FORM', 'INFM'}, 'Person': {'2', '1', '3'}, 'Number': {'PL', 'SG'}, 'Tense': {'PRS', 'PST'}, 'Aspect': {'PRF', 'PROG'}} 
+	param_order = ['Mood', 'Tense', 'Aspect', 'Person', 'Polarity', 'Politeness', 'Number'] 
+	fixed_names = {} 
+	new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
 	return new_table
 

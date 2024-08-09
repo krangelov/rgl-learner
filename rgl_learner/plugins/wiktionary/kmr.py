@@ -1,5 +1,11 @@
 iso3 = "Kmr"
 
+ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction', "error-unknown-tag",
+               "analytic", "emphatic", "archaic", "dialectal", "triggers-lenition",
+               'triggers-eclipsis', "triggers-no-mutation", 'usually', 'triggers-h-prothesis',
+               'obsolete', 'abbreviation', 'determiner', 'with-genitive', "in-certain-phrases",
+               "noun-from-verb", 'error-unrecognized-form', 'dependent', 'uncommon', 'slang', 'Chinese', 'Western']
+
 def patchPOS(lemma,tag,table):
     if tag == 'noun' and table.get("comparative"):
         return "adj"

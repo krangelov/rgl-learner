@@ -16,6 +16,7 @@ def reverse_dict(d, keys=[]):
 
 def get_known_forms(typ, known_forms, params, form2cat):
     forms = reverse_dict(typ.linearize())
+    unknown_tags = []
     for form in forms:
         for morpheme in form:
             if morpheme in form2cat:
@@ -23,9 +24,9 @@ def get_known_forms(typ, known_forms, params, form2cat):
             elif morpheme in params:
                 known_forms[params[morpheme][1]].add(morpheme)
             else:
-                message = f"Can't find {morpheme}"
-                warnings.warn(message)
-    return known_forms
+                unknown_tags.append(morpheme)
+   # warnings.warn(f"Unknown tags: {set(unknown_tags)}")
+    return known_forms, set(unknown_tags)
 
 
 def write_code(pos, known_forms, params_order):
@@ -39,10 +40,15 @@ def write_code(pos, known_forms, params_order):
 
 
 def get_inflection_table(pos, data, params, form2cat):
+    print(f"=={pos}==")
     _, lexeme = data
     known_forms = defaultdict(set)
+    unknown_tags = set()
     for typ in lexeme:
-        known_forms = get_known_forms(typ, known_forms, params, form2cat)
+        known_forms, unknown = get_known_forms(typ, known_forms, params, form2cat)
+        unknown_tags.update(unknown)
+    warnings.warn(f"Unknown forms: {set(unknown_tags)}")
+
 
     params_order = []
     for param in params.values():
@@ -59,6 +65,7 @@ def construct(source, lang):
         langcode, lexicon = pickle.load(f)
 
     params = source_plugin.params | lang_plugin.params
+    #print(params)
     form2cat = {v[0]:(k, v[1]) for k,v in params.items() if v}
     code = ""
     for pos, data in lexicon.items():
