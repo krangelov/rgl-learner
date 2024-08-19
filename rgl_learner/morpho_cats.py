@@ -1,6 +1,6 @@
 import pickle
 
-#from resource import *
+from resource import *
 from collections import defaultdict
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
@@ -167,18 +167,20 @@ def getTypeOf(source_plugin, lang_plugin, o):
         if table and len(table) == 1:
             arg_type,val_type = table.popitem()
             pcons.sort(key=lambda p: p[1])
-           # print(pcons)
             forms = sum((forms for _, _, forms in pcons), [])
             pcons = tuple((GFParamConstr(pcon,()) for pcon, _, _  in pcons))
             return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
-            record.sort(key=lambda p: get_order(source_plugin,p[0]))
+            record.sort(key=lambda p: get_order(source_plugin,lang_plugin,p[0]))
             forms = sum((forms for _, _, forms in record), [])
             fields = tuple(((source_plugin.convert2gf(tag, params), val_type) for tag, val_type, _  in record))
             return GFRecord(fields), forms
 
-def get_order(lang_plugin,tag):
-    return lang_plugin.params_order.get(tag,10000000)
+def get_order(source_plugin, lang_plugin, tag):
+    if lang_plugin.params_order:
+        return lang_plugin.params_order.get(tag,10000000)
+    else:
+        return source_plugin.params_order.get(tag,10000000)
 
 def learn(source,lang):
     source_plugin = plugins[source]
@@ -187,21 +189,23 @@ def learn(source,lang):
     lexicon=source_plugin.extract(lang)
 
     lin_types = {}
+    ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
     for word, pos, forms in lexicon:
         table = {}
-        #print(forms)
         for w,tags in forms:
             if 'multiword-construction' not in tags:
                 if lang_plugin.filter_form(w):
                     continue
 
-                tags = [lang_plugin.fix_tags(tag) for tag in tags if tag not in source_plugin.ignore_tags and tag not in lang_plugin.ignore_tags]
+
+                tags = [lang_plugin.fix_tags(tag) for tag in tags if tag not in ignore_tags]
                 forms, tags = lang_plugin.merge_tags(pos, forms, w, tags)
-                tags = sorted(tags,key=lambda tag: get_order(lang_plugin, tag))
 
-                if not tags or nested_key_exists(table, tags):
+                tags = sorted(tags,key=lambda tag: get_order(source_plugin, lang_plugin, tag))
+
+
+                if not tags or lang_plugin.nested_key_exists(table, tags):
                     continue
-
 
 
                 t = table
@@ -318,4 +322,4 @@ def learn(source,lang):
     with open(f"data/{lang}/lexicon.pickle", "wb") as f:
         pickle.dump((lang_code,lin_types),f)
 
-    #print(getrusage(RUSAGE_SELF))
+    print(getrusage(RUSAGE_SELF))

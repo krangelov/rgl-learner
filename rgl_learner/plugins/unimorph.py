@@ -1,7 +1,6 @@
 import sys
 import re
 import glob
-import os
 
 ignore_tags = ["LGSPEC1", "LGSPEC2"]
 

@@ -53,11 +53,18 @@ ignore_tags = [
     "first-person",
     "reciprocal",
     "Baybayin",
+    "noun-from-verb",
+    "slang",
+    "Western",
+    "Chinese",
+    "uncommon"
 ]
 
 params.update(source_plugin.params)
 
 params_order = dict(zip(params.keys(), range(len(params))))
+
+nested_key_exists = nested_key_exists
 
 
 def filter_lemma(lemma, pos, table):

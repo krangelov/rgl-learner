@@ -75,6 +75,12 @@ ignore_tags = [
 source_plugin.params.update(params)
 
 params_order = dict(zip(source_plugin.params.keys(), range(len(source_plugin.params))))
+params_order["plural"] += 3
+params_order["singular"] += 3
+params_order["first-person"] -= 2
+params_order["second-person"] -= 2
+params_order["third-person"] -= 2
+
 
 
 def filter_lemma(lemma, pos, table):
@@ -327,14 +333,17 @@ def patchPrep(lemma, table):
         "Person": {"third-person", "first-person", "second-person"},
         "Gender": {"masculine", "feminine"},
     }
-    param_order = ["Person", "Number", "Gender", "MutationType"]
+    param_order = ["Person", "Number", "Gender",  "MutationType"]
 
-    table["first-person"] = {number: "-" for number in params["Number"]}
-    table["second-person"] = {number: "-" for number in params["Number"]}
-    table["third-person"] = {
-        "singular": {"feminine": "-", "masculine": "-"},
-        "plural": "-",
-    }
+   # table.setdefault(param_order, []).append(lemma)
+
+    for number in params["Number"]:
+        table.setdefault("first-person", {}).setdefault(number, "-")
+        table.setdefault("second-person", {}).setdefault(number, "-")
+
+    table.setdefault("third-person", {}).setdefault("plural", "-")
+    table.setdefault("third-person", {}).setdefault("singular", {}).setdefault("feminine", "-")
+    table.setdefault("third-person", {}).setdefault("singular", {}).setdefault("masculine", "-")
 
     fixed_names = {}
     new_table = fill_empty(fix_table(table, param_order, params, fixed_names))

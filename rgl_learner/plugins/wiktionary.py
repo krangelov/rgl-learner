@@ -56,8 +56,7 @@ params = {
   'admirative': ('Admirative', 'Mood'),
   'imperative': ('Imperative', 'Mood'),
   'jussive': ('Jussive', 'Mood'),
-  "progressive": ('Progressive', 'Aspect'),
-  'past_habitual': ("Past_habitual", "Tense"),
+
   'present': ('Pres','Tense'),
   'past': ('Past','Tense'),
   'aorist': ('Aorist','Tense'),
@@ -71,26 +70,90 @@ params = {
   'pluperfect': ('Pluperf','Tense'),
   'past-perfect': ('PastPerfect','Tense'),
   'future-perfect': ('PastPerfect','Tense'),
-  'first-person': ('P1','Person'),
-  'second-person': ('P2','Person'),
-  'third-person': ('P3','Person'),
-'singular': ('Sg','Number'),
-  'plural': ('Pl','Number'),
     'masculine': ('Masc', 'Gender'),
     'feminine': ('Fem', 'Gender'),
     'neuter': ('Neuter', 'Gender'),
+    'singular': ('Sg', 'Number'),
+    'plural': ('Pl', 'Number'),
+  'first-person': ('P1','Person'),
+  'second-person': ('P2','Person'),
+  'third-person': ('P3','Person'),
     "formal": ("Formal", "Formality"),
     "informal": ("Informal", "Formality"),
 }
 
+params = {
+ # 'comparative': None,
+ # 'superlative': None,
+  'comparative': ('Comp', 'Comparison'),
+  'superlative': ('Superlat', 'Comparison'),
+  'indefinite': ('Indef','Species'),
+  'definite': ('Def','Species'),
+  'unspecified': ('Unspecified','Distance'),
+  'proximal': ('Proximal','Distance'),
+  'distal': ('Distal','Distance'),
+  'nominative': ('Nom','Case'),
+  'accusative': ('Acc','Case'),
+  'dative': ('Dat','Case'),
+  'genitive': ('Gen','Case'),
+  'vocative': ('Voc','Case'),
+  'partitive': ('Part','Case'),
+  'inessive': ('Iness','Case'),
+  'elative': ('Elat','Case'),
+  'illative': ('Illat','Case'),
+  'adessive': ('Adess','Case'),
+  'ablative': ('Ablat','Case'),
+  'allative': ('Allat','Case'),
+  'essive': ('Ess','Case'),
+  'translative': ('Transl','Case'),
+  'instructive': ('Instr','Case'),
+  'abessive': ('Abess','Case'),
+  'comitative': ('Comit','Case'),
+  'possessive': ('Poss','Case'),
+  'locative': ('Loc','Case'),
+  'copulative': ('Cop','Case'),
+  'instrumental': ('Instr','Case'),
+  'oblique': ('Obliq','Case'),
+  'construct': ('Constr','Case'),
+  'indicative': ('Indicative', 'Mood'),
+  'subjunctive': ('Subjunctive', 'Mood'),
+  'conditional': ('Conditional', 'Mood'),
+  'optative': ('Optative', 'Mood'),
+  'admirative': ('Admirative', 'Mood'),
+  'imperative': ('Imperative', 'Mood'),
+  'jussive': ('Jussive', 'Mood'),
+"progressive": ('Progressive', 'Aspect'),
+  'past_habitual': ("Past_habitual", "Tense"),
+  "progressive": ('Progressive', 'Mood'),
+  'present': ('Pres','Tense'),
+  'past': ('Past','Tense'),
+  'aorist': ('Aorist','Tense'),
+  'aorist-ii': ('Aorist2','Tense'),
+  'future': ('Fut','Tense'),
+  'future-i': ('Fut1','Tense'),
+  'future-ii': ('Fut2','Tense'),
+  'imperfective': ('Imperf','Tense'),
+  'imperfect': ('Imperfect','Tense'),
+  'perfect': ('Perf','Tense'),
+  'pluperfect': ('Pluperf','Tense'),
+  'past-perfect': ('PastPerfect','Tense'),
+  'future-perfect': ('PastPerfect','Tense'),
+  'singular': ('Sg','Number'),
+  'plural': ('Pl','Number'),
+  'first-person': ('P1','Person'),
+  'second-person': ('P2','Person'),
+  'third-person': ('P3','Person'),
+'masculine': ('Masc','Gender'),
+  'feminine': ('Fem','Gender'),
+  'neuter': ('Neuter','Gender'),
+}
 
 
-ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template', 'multiword-construction', "error-unknown-tag",
-               "analytic", "emphatic", "archaic", "dialectal", "triggers-lenition",
-               'triggers-eclipsis', "triggers-no-mutation", 'usually', 'triggers-h-prothesis',
-               'obsolete', 'abbreviation', 'determiner', 'with-genitive', "in-certain-phrases",
-               "noun-from-verb", 'error-unrecognized-form', 'dependent', 'uncommon', 'slang', 'Chinese', 'Western',
-               "reciprocal"]
+
+ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template',
+               'multiword-construction', "error-unknown-tag", "analytic", "emphatic", "archaic", "dialectal"]
+
+params_order = dict(zip(params.keys(), range(len(params))))
 
 def extract(lang):
     dir = "data/"+lang
@@ -103,7 +166,7 @@ def extract(lang):
         with gzip.open('raw-wiktextract-data.json.gz','r') as f:
             for line in f:
                 record = json.loads(line)
-                if record.get("lang_code") == lang:
+                if record.get("lang_code")==lang:
                     word  = record["word"]
                     pos   = record.get("pos")
                     forms = []

@@ -8,6 +8,8 @@ class PluginWrapper:
         self.iso3 = module.get("iso3",module["__name__"])
         self.params = module.get("params", {})
         self.params_order = module.get("params_order", {})
+        self.ignore_tags = module.get("ignore_tags", [])
+        self.params_order = module.get("params_order", {})
         
     def patch_inflection(self,cat,*args):
         fn = self.module.get("patch"+cat)
@@ -26,6 +28,10 @@ class PluginWrapper:
 
     def filter_form(self,*args):
         fn = self.module.get("filter_form")
+        return fn and fn(*args)
+
+    def nested_key_exists(self,*args):
+        fn = self.module.get("nested_key_exists")
         return fn and fn(*args)
 
     def __getattr__(self,name):

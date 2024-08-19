@@ -37,7 +37,6 @@ def fix_table(table, param_order, params, fixed_names, num=0, exclude_list=[]):
     param = param_order[num]
     values = params[param]
     num += 1
-    #  print(table)
 
     for t, v in table.items():
         if not t or t in values:

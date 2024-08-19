@@ -5,11 +5,11 @@ import rgl_learner.plugins as plugins
 iso3 = "Kaz"
 source_plugin = plugins["unimorph"]
 
-#params = {}
+params = {}
 
 ignore_tags = ["LGSPEC1", "LGSPEC2"]
 
-#source_plugin.params.update(params)
+source_plugin.params.update(params)
 
 #params_order = dict(zip(source_plugin.params.keys(), range(len(source_plugin.params))))
 
