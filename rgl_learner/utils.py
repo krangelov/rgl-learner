@@ -52,36 +52,35 @@ def fix_table(table, param_order, params, fixed_names, num=0, exclude_list=[]):
                 param_order[num] in exclude_list and t not in params[param_order[num]]
             ):
                 num += 1
-            else:
-                if t in params[param_order[num]]:
-                    if isinstance(v, dict):
-                        update(
+            if t in params[param_order[num]]:
+                if isinstance(v, dict):
+                    update(
                             new_table[t],
                             fix_table(
                                 v,
                                 param_order,
                                 params,
                                 fixed_names,
-                                num + 1,
+                                num+1,
                                 exclude_list,
                             ),
                         )
-                    else:
-                        new_table[t] = v
                 else:
-                    param_name = (
+                    new_table[t] = v
+            else:
+                param_name = (
                         fixed_names[param_order[num]]
                         if param_order[num] in fixed_names
                         else f"no{param_order[num]}"
                     )
-                    update(
+                update(
                         new_table[param_name],
                         fix_table(
                             {t: v},
                             param_order,
                             params,
                             fixed_names,
-                            num + 1,
+                            num+1,
                             exclude_list,
                         ),
                     )

@@ -27,6 +27,7 @@ tag2cat = {
 }
 
 params = {
+    "INF": ("Infinitive", "Infinitive"),
     "IND": ("Indicative", "Mood"),
     "ADM": ("Admirative", "Mood"),
     "AUNPRP": ("Non_Purposive", "Mood"),

@@ -18,6 +18,8 @@ source_plugin = plugins["wiktionary"]
 params = {
     "relative": ("Relative", "Relative_Form"),
     "positive_adj": ("Positive", "Comparison"),
+    "third_person": ("P3", "Person"),
+    "autonomous": ("Autonomous", "Person"),
     "negative": ("Neg", "Polarity"),
     "positive": ("Pos", "Polarity"),
     "transitive": ("Transitive", "Transitivity"),
@@ -30,8 +32,6 @@ params = {
     "strong": ("Strong", "MutationType"),
     "weak": ("Weak", "MutationType"),
     "mutation-nasal": ("Mutation_nasal", "MutationType"),
-    "third_person": ("P3", "Person"),
-    "autonomous": ("Autonomous", "Person"),
     "participle": ("Part", "Participle"),
     "independent": ("Independent", "Dependency"),
     "dependent": ("Dependent", "Dependency"),
@@ -69,18 +69,19 @@ ignore_tags = [
     "Western",
     "substantive",
     "transitive",
-    "not comparable"
+    "not comparable",
+    "mutation"
 ]
 
 source_plugin.params.update(params)
 
 params_order = dict(zip(source_plugin.params.keys(), range(len(source_plugin.params))))
-params_order["plural"] += 3
-params_order["singular"] += 3
-params_order["first-person"] -= 2
-params_order["second-person"] -= 2
-params_order["third-person"] -= 2
-
+params_order["first-person"] -= 5
+params_order["second-person"] -= 5
+params_order["third-person"] -= 5
+params_order["masculine"] += 5
+params_order["feminine"] += 5
+params_order["neuter"] += 5
 
 
 def filter_lemma(lemma, pos, table):
@@ -170,7 +171,6 @@ def patchN(lemma, table):
         "Case": {"genitive", "nominative", "dative", "vocative"},
         "Number": {"plural", "singular"},
         "MutationType": {
-            "mutation",
             "mutation-nasal",
             "prothesis-t",
             "mutation-radical",
@@ -211,13 +211,14 @@ def patchN(lemma, table):
     if "MutationType" not in new_table:
         new_table["MutationType"] = {}
         for typename in params["MutationType"]:
-            new_table["MutationType"].setdefault(typename, "-")
+            new_table["MutationType"][typename] = "-"
 
-    return dict(sorted(new_table.items()))
+    return new_table
 
 
 def patchV(lemma, table):
     params = {
+        "Infinitive": {"infinitive"},
         "Mood": {"conditional", "subjunctive", "imperative", "indicative"},
         "MutationType": {
             "prothesis-t",
@@ -227,7 +228,7 @@ def patchV(lemma, table):
             "strong",
             "prothesis-h",
             "mutation-nasal",
-            "mutation",
+          #  "mutation",
             "mutation-radical",
         },
         "Tense": {
@@ -242,6 +243,7 @@ def patchV(lemma, table):
         "Participle": {"past_participle"},
     }
     param_order = [
+        "Infinitive",
         "Participle",
         "Mood",
         "Tense",
@@ -250,6 +252,11 @@ def patchV(lemma, table):
         "Number",
         "MutationType",
     ]
+
+    table.setdefault("infinitive", lemma)
+    table.setdefault("past_participle", "-")
+
+
 
     per_num_table = {}
     per_num_table.setdefault("first-person", {}).setdefault("singular", "-")
@@ -261,7 +268,6 @@ def patchV(lemma, table):
     per_num_table.setdefault("autonomous", "-")
     per_num_table.setdefault("relative", "-")
 
-    table.setdefault("past_participle", "-")
    # table.setdefault("indicative", {})
     table.setdefault("conditional", per_num_table)
   #  table.setdefault("subjunctive", {})
@@ -272,9 +278,7 @@ def patchV(lemma, table):
         table.setdefault("indicative", {}).setdefault(tense, {})
         for person in params["Person"]:
             if person == "autonomous":
-                #table.setdefault(tense, {}).setdefault(person, "-")
                 table.setdefault("subjunctive",{}).setdefault(tense, {}).setdefault(person, "-")
-               # table.setdefault("indicative", {}).setdefault(tense, {})
             else:
                  for number in params["Number"]:
            #         table.setdefault(tense, {}).setdefault(person, {}).setdefault(number, "-")
@@ -288,17 +292,19 @@ def patchV(lemma, table):
             param_order,
             params,
             fixed_names,
-            exclude_list=["Participle", "Relative_Form"],
+            exclude_list=["Infinitive", "Relative_Form",],
         )
     )
 
+    new_table.update(new_table["noParticiple"])
+    new_table.pop("noParticiple")
     if "imperative" in new_table and new_table["imperative"] != "-":
         new_table["imperative"] = new_table["imperative"]["noTense"]
     if "conditional" in new_table and new_table["conditional"] != "-":
         new_table["conditional"] = new_table["conditional"]["noTense"]
 
     if nested_key_exists(
-        new_table, ["indicative", "noTense", "noPerson", "noNumber", "mutation"]
+        new_table, ["indicative", "noTense", "noPerson", "noNumber", "mutation_radical"]
     ):
         new_table["MutationType"] = new_table["indicative"]["noTense"]["noPerson"][
             "noNumber"
@@ -326,14 +332,14 @@ def patchPrep(lemma, table):
             "strong",
             "prothesis-h",
             "mutation-nasal",
-            "mutation",
+           # "mutation",
             "mutation-radical",
         },
         "Number": {"singular", "plural"},
         "Person": {"third-person", "first-person", "second-person"},
         "Gender": {"masculine", "feminine"},
     }
-    param_order = ["Person", "Number", "Gender",  "MutationType"]
+    param_order = ["Person", "Number", "Gender", "MutationType"]
 
    # table.setdefault(param_order, []).append(lemma)
 
@@ -348,7 +354,7 @@ def patchPrep(lemma, table):
     fixed_names = {}
     new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
 
-    if nested_key_exists(new_table, ["noPerson", "noNumber", "noGender", "mutation"]):
+    if nested_key_exists(new_table, ["noPerson", "noNumber", "noGender", "lenition"]):
         new_table["MutationType"] = new_table["noPerson"]["noNumber"]["noGender"]
         new_table.pop("noPerson")
     else:
@@ -361,7 +367,6 @@ def patchPrep(lemma, table):
 def patchA(lemma, table):
     params = {
         "MutationType": {
-            "mutation",
             "mutation-nasal",
             "prothesis-t",
             "mutation-radical",
@@ -371,7 +376,7 @@ def patchA(lemma, table):
             "weak",
             "strong",
         },
-        "Comparison": {"superlative", "comparative"},
+        "Comparison": {"superlative", "comparative", "positive"},
         "Case": {"vocative", "nominative", "dative", "genitive"},
         "Number": {"plural", "singular"},
         "Gender": {"masculine", "feminine"},
@@ -379,25 +384,29 @@ def patchA(lemma, table):
     param_order = ["Comparison", "Case", "Number", "Gender", "MutationType"]
 
     for case in params["Case"]:
-        table[case] = {"singular": {"feminine": "-", "masculine": "-"}, "plural": "-"}
+        table.setdefault("positive", {}).setdefault(case, {}).setdefault("singular", {}).setdefault("masculine", "-")
+        table.setdefault("positive", {}).setdefault(case, {}).setdefault("singular", {}).setdefault("feminine", "-")
+        table.setdefault("positive", {}).setdefault(case, {}).setdefault("plural", {}).setdefault("masculine", "-")
+        table.setdefault("positive", {}).setdefault(case, {}).setdefault("plural", {}).setdefault("feminine", "-")
 
     table.setdefault("comparative", "-")
     table.setdefault("superlative", "-")
 
+
+
+
     fixed_names = {"Comparison": "positive"}
-    new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
+    new_table = fill_empty(fix_table(table, param_order, params, fixed_names, exclude_list=["Gender"]))
 
     if "positive" in new_table and "noCase" in new_table["positive"]:
-        if "plural" in new_table["positive"]["noCase"]:
-            new_table["positive"]["noCase"].pop("plural")
-            new_table["positive"]["noCase"].pop("singular")
+      #  if "plural" in new_table["positive"]["noCase"]:
+      #      new_table["positive"]["noCase"].pop("plural")
+      #      new_table["positive"]["noCase"].pop("singular")
         if (
             "noNumber" in new_table["positive"]["noCase"]
             and "noGender" in new_table["positive"]["noCase"]["noNumber"]
         ):
-            new_table["MutationType"] = new_table["positive"]["noCase"]["noNumber"][
-                "noGender"
-            ]
+            new_table["MutationType"] = new_table["positive"]["noCase"]["noNumber"]
         if len(new_table["positive"]) == 1:
             new_table.pop("positive")
         else:
@@ -411,7 +420,7 @@ def patchA(lemma, table):
         new_table["vocative"] = new_table["positive"]["vocative"]
         new_table["positive"].pop("vocative")
 
-    return dict(sorted(new_table.items()))
+    return new_table
 
 
 def patchPN(lemma, table):
@@ -440,7 +449,7 @@ def patchPN(lemma, table):
 def patchAdv(lemma, table):
     params = {
         "MutationType": {
-            "mutation",
+          #  "mutation",
             "mutation-nasal",
             "prothesis-t",
             "mutation-radical",
@@ -454,13 +463,14 @@ def patchAdv(lemma, table):
     param_order = ["MutationType"]
     fixed_names = {}
     new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
+   # new_table.pop("mutation")
     return new_table
 
 
 def patchPron(lemma, table):
     params = {
         "MutationType": {
-            "mutation",
+           # "mutation",
             "mutation-nasal",
             "prothesis-t",
             "mutation-radical",
@@ -474,6 +484,7 @@ def patchPron(lemma, table):
     param_order = ["MutationType"]
     fixed_names = {}
     new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
+   # new_table.pop("mutation")
     return new_table
 
 

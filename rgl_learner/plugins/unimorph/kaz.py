@@ -5,14 +5,6 @@ import rgl_learner.plugins as plugins
 iso3 = "Kaz"
 source_plugin = plugins["unimorph"]
 
-params = {}
-
-ignore_tags = ["LGSPEC1", "LGSPEC2"]
-
-source_plugin.params.update(params)
-
-#params_order = dict(zip(source_plugin.params.keys(), range(len(source_plugin.params))))
-
 
 def merge_tags(pos, forms, w, tags):
     if "SBJV" in tags:
@@ -33,6 +25,7 @@ def merge_tags(pos, forms, w, tags):
 
 def patchV(lemma, table):
     param2val = {
+        "Infinitive": {"INF"},
         "Mood": {"SBJV", "IMP"},
         "Polarity": {"NEG"},
         "Politeness": {"FORM", "INFM"},
@@ -42,6 +35,7 @@ def patchV(lemma, table):
         "Aspect": {"PRF", "PROG"},
     }
     param_order = [
+        "Infinitive",
         "Mood",
         "Tense",
         "Aspect",
@@ -50,13 +44,15 @@ def patchV(lemma, table):
         "Politeness",
         "Number",
     ]
+
+    table.setdefault("INF", lemma)
     new_table = fill_empty(
         fix_table(
             table,
             param_order,
             param2val,
             fixed_names={"Polarity": "POS", "Mood": "IND"},
-            exclude_list=["Tense", "Person", "Politeness"],
+            exclude_list=["Tense", "Person", "Politeness", "Infinitive"],
         )
     )
 
@@ -78,6 +74,13 @@ def patchN(lemma, table):
     table.setdefault("PSS2P", {}).setdefault("FORM", {}).setdefault("SG", "-")
     table.setdefault("PSS2P", {}).setdefault("INFM", {}).setdefault("SG", "-")
 
+    table["s"] = {}
+    for case in case_types:
+        table.setdefault(case, {}).setdefault("SG", "-")
+        table.setdefault(case, {}).setdefault("PL", "-")
+        table["s"].update({case: table.get(case, {})})
+        table.pop(case, {})
+
     table["poss"] = {}
     for pos_type in pos_types:
         if pos_type not in ["PSS2S", "PSS2P"]:
@@ -85,10 +88,3 @@ def patchN(lemma, table):
             table.setdefault(pos_type, {}).setdefault("PL", "-")
         table["poss"].update({pos_type: table.get(pos_type, {})})
         table.pop(pos_type, {})
-
-    table["s"] = {}
-    for case in case_types:
-        table.setdefault(case, {}).setdefault("SG", "-")
-        table.setdefault(case, {}).setdefault("PL", "-")
-        table["s"].update({case: table.get(case, {})})
-        table.pop(case, {})
