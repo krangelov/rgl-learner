@@ -101,21 +101,27 @@ class LemmaTree:
                 "precision": precision_score(y_true, y_pred, average="micro"),
                 "recall": recall_score(y_true, y_pred, average="micro")}
 
-def write_gf_code(rules, pos_tag):
+def write_gf_code(rules, pos_tag, forms2bases):
     gf_code = f"""formBasedSelection{pos_tag} : Str => {pos_tag}Class\n= \\lemma -> case lemma of {{\n"""
     for rule, class_tag in rules.items():
-        gf_code += f"""\t\t<x + "{rule}"> -> mk{pos_tag}{class_tag} x;\n"""
+        tag = str(class_tag+1).zfill(3)
+        gf_code += f"""\t\t_ + "{rule}" -> mk{pos_tag}{tag} lemma"""
+        if forms2bases[class_tag] > 1:
+            gf_code += ' ""' * (forms2bases[class_tag]-1)
+        gf_code += ";\n"
     gf_code += "} ;\n"
-    gf_code = gf_code.replace("; }", "}")
+    gf_code = gf_code.replace(";\n}", "\n}")
     return gf_code
 
 def guess_by_lemma(lang):
     print("Reading data..")
-    tables = read_data(lang)
+    langcode, tables = read_data(lang)
+    code = ""
     for pos, forms in tables.items():
         if len(forms) > 1:
             print(f"=={pos}==")
             lemma2class = [(lemma[0].split("_")[0], tag) for tag, paradigm in enumerate(forms) for lemma in paradigm.tables]
+            forms2bases = {n: len(table.var_insts[0]) for n, table in enumerate(forms)}
             lemma_tree = LemmaTree(lemma2class)
             lemma_tree.build_tree(lemma2class)
             lemma_tree.linearize_tree()
@@ -123,7 +129,10 @@ def guess_by_lemma(lang):
             scores = lemma_tree.compute_metrics()
             print(scores)
 
-            code = write_gf_code(lemma_tree.rules, pos)
-            with open(f"Inflection{lang}.gf", "w") as f:
-                f.write(code)
+            code += write_gf_code(lemma_tree.rules, pos, forms2bases)
+
+    with open(f"Inflection{langcode}.gf", "w") as f:
+        f.write(f"resource Inflection{langcode} = open Prelude, Res{langcode}, Paradigms{langcode} in {{\noper\n")
+        f.write(code)
+        f.write("}")
 
