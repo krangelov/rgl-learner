@@ -135,7 +135,7 @@ def patchV(lemma,table):
     table.pop("Gheg",None)
     table.pop("error-unrecognized-form",None)
     table.setdefault("participle","-")
-    table.setdefault("infinitive","-")
+    table.pop("infinitive","-")
 
     adm = table.pop("admirative",{})
     table["pres_admirative"] = set_all(adm.get("present",{}), "-")
