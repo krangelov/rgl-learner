@@ -1,5 +1,40 @@
 iso3 = "Mkd"
 
+params = {
+  'comparative': None,
+  'superlative': None,
+  "infinitive": None,
+  "past_participle": ("Past_Part", "Participle"),
+  'positive': ('Pos', 'Comparison'),
+  'indefinite': ('Indef','Species'),
+  'definite': ('Def',['Distance'],'Species'),
+  'unspecified': ('Unspecified','Distance'),
+  'proximal': ('Proximal','Distance'),
+  'distal': ('Distal','Distance'),
+  'present': None,
+  'past': ('Past','Tense'),
+  'aorist': None,
+  'imperfective': None,
+  'imperfect': None,
+  'perfect': None,
+  'pluperfect': ('Pluperf','Tense'),
+  'past-perfect': ('PastPerfect','Tense'),
+  'future-perfect': ('PastPerfect','Tense'),
+  'imperative': ('Imperative', 'Mood'),
+  'masculine': ('Masc', 'Gender'),
+  'feminine': ('Fem', 'Gender'),
+  'neuter': ('Neuter', 'Gender'),
+  'singular': ('Sg', 'Number'),
+  'plural': ('Pl', 'Number'),
+  'first-person': ('P1','Person'),
+  'second-person': ('P2','Person'),
+  'third-person': ('P3','Person'),
+  'gender-singular': ('GSg',['Gender'],'GenNum'),
+  'gender-plural': ('GPl','GenNum')
+}
+
+params_order = dict(zip(params.keys(), range(len(params))))
+
 def patchPOS(lemma,tag,table):
     if tag == 'num':
         return tag
@@ -39,9 +74,13 @@ def patchN(lemma,table):
     table.setdefault("definite",{}).setdefault("proximal",{}).setdefault("plural","-")
     table.setdefault("definite",{}).setdefault("distal",{}).setdefault("singular","-")
     table.setdefault("definite",{}).setdefault("distal",{}).setdefault("plural","-")
-    table.setdefault("vocative",{}).setdefault("singular","-")
-    table.setdefault("vocative",{}).setdefault("plural","-")
-    table["count-form"] = table.get("count-form",{}).get("plural",table.get("indefinite",{"plural": "-"}).get("plural","-"))
+    table["s"] = {"indefinite": table.pop("indefinite",{})
+                 ,"definite": table.pop("definite",{})
+                 }
+    table["count-form"] = table.pop("count-form",{}).get("plural",table.get("indefinite",{"plural": "-"}).get("plural","-"))
+    table["vocative"] = table.pop("vocative",{})
+    table["vocative"].setdefault("singular","-")
+    table["vocative"].setdefault("plural","-")
     table.pop("singular",None)
     table.pop("plural",None)
     table.pop("masculine",None)
@@ -77,11 +116,14 @@ def patchV(lemma,table):
     aorist.setdefault("adverbial",{}).setdefault("participle","-")
     aorist.setdefault("noun-from-verb","-")
     o = imp.pop("perfect",{}).get("present",{})
-    table["participle"] = {"imperfect": {"masculine": imp.pop("masculine","-"),
-                                         "feminine": imp.pop("feminine","-"),
-                                         "neuter": imp.pop("neuter","-"),
-                                         "plural": pl.pop(None,"-")},
-                           "aorist": {"masculine": aorist.pop("masculine","-"), "feminine": aorist.pop("feminine","-"), "neuter": aorist.pop("neuter","-"), "plural": aorist.get("plural",{}).pop(None,"-")},
+    table["participle"] = {"imperfect": {"gender-singular": {"masculine": imp.pop("masculine","-"),
+                                                             "feminine": imp.pop("feminine","-"),
+                                                             "neuter": imp.pop("neuter","-")},
+                                         "gender-plural": pl.pop(None,"-")
+                                        },
+                           "aorist": {"gender-singular": {"masculine": aorist.pop("masculine","-"), "feminine": aorist.pop("feminine","-"), "neuter": aorist.pop("neuter","-")}
+                                     ,"gender-plural": aorist.get("plural",{}).pop(None,"-")
+                                     },
                            "adjectival": aorist.pop("adjectival",{}).get("participle","-"),
                            "adverbial":  aorist.pop("adverbial",{}).get("participle","-"),
                            "perfect": o.get("reported",{}).get("има","-").split()[-1]}
@@ -99,25 +141,30 @@ def patchV(lemma,table):
 
 
 def patchA(lemma,table):
-    indef = table.setdefault("indefinite",{})
-    if indef.get("masculine","-") == "-":
-        indef["masculine"] = lemma
-    indef.setdefault("feminine", table.pop("feminine","-"))
-    indef.setdefault("neuter", table.pop("neuter","-"))
-    indef.setdefault("plural", "-")
-    defn = table.setdefault("definite",{})
+    indef = table.pop("indefinite",{})
+    indef["gender-singular"] = {
+       "masculine": indef.pop("masculine", table.pop("masculine",lemma)),
+       "feminine": indef.pop("feminine", table.pop("feminine","-")),
+       "neuter": indef.pop("neuter", table.pop("neuter","-"))
+    }
+    indef["gender-plural"] = indef.pop("plural", "-")
+    defn = table.pop("definite",{})
     for tag in ["unspecified","proximal","distal"]:
         d = defn.setdefault(tag,{})
-        d.setdefault("masculine", "-")
-        d.setdefault("feminine", "-")
-        d.setdefault("neuter", "-")
-        d.setdefault("plural", "-")
+        d["gender-singular"] = {
+           "masculine": d.pop("masculine", "-"),
+           "feminine": d.pop("feminine", "-"),
+           "neuter": d.pop("neuter", "-")
+        }
+        d["gender-plural"] = d.pop("plural", "-")
+    table["s"] = {"indefinite": indef
+                 ,"definite": defn
+                 }
 
     table.pop("abstract-noun",None)
     table.pop("comparative",None)
     table.pop("superlative",None)
-    table.pop("masculine",None)
-    table.setdefault("adverb",indef.get("neuter","-"))
+    table["adverb"] = table.pop("adverb",indef.get("neuter","-"))
 
 
 def patchAdv(lemma,table):

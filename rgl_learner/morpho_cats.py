@@ -5,6 +5,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
 from rgl_learner.utils import nested_key_exists
+import itertools
 
 class GFType:
     def printParamDefs(self,f,pdefs):
@@ -34,27 +35,38 @@ class GFParamType(GFType):
 
     def printParamDefs(self,f,pdefs):
         pdefs[self.name].update(self.constructors)
-        #pdef = "param "+self.name+" = "+" | ".join(str(constructor) for constructor in self.constructors)+" ;\n"
         for constructor in self.constructors:
             constructor.printParamDefs(f,pdefs)
-        #if pdef not in pdefs:
-        #    f.write(pdef)
-        #    pdefs.add(pdef)
+
+    def renderValues(self,d):
+        for con in self.constructors:
+            for value in con.renderValues(d):
+                yield value
 
 @dataclass(frozen=True)
 class GFParamConstr:
     name: str
-    arg_types: tuple[GFType]
+    arg_types: tuple[GFParamType]
 
     def __repr__(self):
         if self.arg_types:
-            return self.name+' '.join(str(ty) for ty in self.arg_types)
+            return self.name+' '+' '.join(str(ty) for ty in self.arg_types)
         else:
             return self.name
 
     def printParamDefs(self,f,pdefs):
         for ty in self.arg_types:
             ty.printParamDefs(f,pdefs)
+
+    def renderValues(self,d):
+        for values in itertools.product(*(arg_type.renderValues(1) for arg_type in self.arg_types)):
+            if len(values) == 0:
+                yield self.name
+            else:
+                value = self.name+' '+' '.join(values)
+                if d > 0:
+                    value = "(" + value + ")"
+                yield value
 
 @dataclass(frozen=True)
 class GFTable(GFType):
@@ -73,10 +85,10 @@ class GFTable(GFType):
     def renderOper(self,indent,vars):
         s = 'table {\n'
         first = True
-        for pcon in self.arg_type.constructors:
+        for value in self.arg_type.renderValues(0):
             if not first:
                 s += ' ;\n'
-            s += ' '*(indent+2)+pcon.name+' => '+self.res_type.renderOper(indent+len(pcon.name)+6,vars)
+            s += ' '*(indent+2)+value+' => '+self.res_type.renderOper(indent+len(value)+6,vars)
             first = False
         s += '\n' + ' '*indent + '}'
         return s
@@ -134,41 +146,62 @@ class GFRecord(GFType):
             labels[lbl] = ty.linearize()
         return labels
 
-
 def getTypeOf(source_plugin, lang_plugin, o):
     if type(o) is str:
         return GFStr(),[o]
     else:
+        params = lang_plugin.params or source_plugin.params
+        params_keys = list(params.keys())
+
+        def decodePolishSequence(o,types):
+            if not types:
+                val_type, forms = getTypeOf(source_plugin, lang_plugin, o)
+                return (), val_type, forms
+
+            pcons = []
+            old_val_type = None
+            for tag,val in o.items():
+                match params.get(tag):
+                    case param_con, res_type:
+                        ps, val_type, forms = decodePolishSequence(val,types[1:])
+                        pcons.append((GFParamConstr(param_con,()),ps,params_keys.index(tag) or 10000,forms))
+                    case param_con, arg_types, res_type:
+                        n_args = len(arg_types)
+                        ps, val_type, forms = decodePolishSequence(val,arg_types+types[1:])
+                        pcons.append((GFParamConstr(param_con,tuple(ps[:n_args])),ps[n_args:],params_keys.index(tag) or 10000,forms))
+
+            pcons.sort(key=lambda p: p[2])
+            forms = sum((forms for _, _, _, forms in pcons), [])
+            return (GFParamType(types[0],tuple((pcon for pcon, _, _, _  in pcons))),)+ps, val_type, forms
+
         table  = defaultdict(dict)
         record = []
         pcons  = []
-        params = source_plugin.params | lang_plugin.params
-        params_keys = list(params.keys())
         for tag,val in o.items():
-            val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
-            param = params.get(tag)
-            if param == None:
-                table = None
-            else:
-                param_con, arg_type = param
-              #  print(param_con, arg_type)
-                pcons.append((param_con,params_keys.index(tag) or 10000,forms))
-              #  print(pcons)
+            match params.get(tag):
+                case None:
+                    table = None
+                    val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
+                case param_con, res_type:
+                    val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
+                    pcons.append((GFParamConstr(param_con,()),params_keys.index(tag) or 10000,forms))
+                case param_con, arg_types, res_type:
+                    args, val_type, forms = decodePolishSequence(val,arg_types)
+                    pcons.append((GFParamConstr(param_con,tuple(args)),params_keys.index(tag) or 10000,forms))
 
             if table != None:
-                old_type = table.get(arg_type)
+                old_type = table.get(res_type)
                 if old_type and old_type != val_type:
                     table = None
                 else:
-                    table[arg_type] = val_type
+                    table[res_type] = val_type
             record.append((tag,val_type,forms))
-
 
         if table and len(table) == 1:
             arg_type,val_type = table.popitem()
             pcons.sort(key=lambda p: p[1])
             forms = sum((forms for _, _, forms in pcons), [])
-            pcons = tuple((GFParamConstr(pcon,()) for pcon, _, _  in pcons))
+            pcons = tuple((pcon for pcon, _, _  in pcons))
             return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
             record.sort(key=lambda p: get_order(source_plugin,lang_plugin,p[0]))

@@ -118,4 +118,7 @@ def extract(lang):
     return lexicon
 
 def convert2gf(tag, params):
-    return params[tag][0] if tag in params else tag
+    name = params.get(tag) or tag
+    if type(name) == tuple:
+        name = name[0]
+    return name
