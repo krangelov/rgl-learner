@@ -288,7 +288,7 @@ def learn(source,lang):
 
 
                 typ.printParamDefs(fr,pdefs)
-                fr.write(";\n".join(["param "+name+" = "+" | ".join(str(constructor) for constructor in constructors) for name, constructors in pdefs.items()]) + " ;\n")
+                fr.write("\n".join(["param "+name+" = "+" | ".join(str(constructor) for constructor in constructors)+" ;" for name, constructors in pdefs.items()]) + "\n")
                 fr.write('oper '+type_name+' = '+str(typ)+' ; -- '+str(len(lexemes))+'\n')
                 fr.write('oper mk'+type_name+' : ')
                 if n_forms == 1:
