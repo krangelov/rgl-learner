@@ -386,9 +386,9 @@ def unify_tables(paradigmlist):
     return unified
 
 def ffilter_lcp(factorlist):
-    flatten = lambda x: [y for l in x for y in flatten(l)] if type(x) is list else [x]
+    flatten = lambda x: [y for l in x for y in flatten(l) if y != "-"] if type(x) is list else [x]
     lcprefix = lcp(flatten(factorlist))
-    factorlist = [[x for x in w if firstvarmatch(x, lcprefix)] for w in factorlist]
+    factorlist = [[x for x in w if x == "-" or firstvarmatch(x, lcprefix)] for w in factorlist]
     return factorlist
 
 def ffilter_shortest_string(factorlist):
