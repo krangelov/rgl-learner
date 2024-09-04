@@ -2,6 +2,7 @@ import gzip
 import json
 import pickle
 import os.path
+import rgl_learner.plugins as plugins
 from pathlib import Path
 
 tag2cat = {
@@ -93,6 +94,8 @@ def extract(lang):
     Path(dir).mkdir(parents=True, exist_ok=True)
     fpath = dir+"/wiktionary.pickle"
 
+    lang_plugin = plugins["wiktionary",lang]
+
     if not os.path.exists(fpath):
         print(f"Extracting data from raw-wiktextract-data.json.gz for {lang}.")
         lexicon = []
@@ -100,14 +103,23 @@ def extract(lang):
             for line in f:
                 record = json.loads(line)
                 if record.get("lang_code")==lang:
+                    if not lang_plugin.preprocess(record):
+                        continue
+
                     word  = record["word"]
                     pos   = record.get("pos")
+                    wtags = record.get("tags",[])
+
+                    for sense in record["senses"]:
+                        wtags += sense.get("tags",[])
+                    wtags = list(set(wtags))
+
                     forms = []
                     for form in record.get("forms",[]):
                         w    = form["form"]
                         tags = form.get("tags",[])
                         forms.append((w,tags))
-                    lexicon.append((word,pos,forms))
+                    lexicon.append((word,pos,forms,wtags))
 
         with open(fpath, "wb") as f:
             pickle.dump(lexicon,f)

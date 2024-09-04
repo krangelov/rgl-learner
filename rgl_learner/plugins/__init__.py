@@ -10,7 +10,13 @@ class PluginWrapper:
         self.params_order = module.get("params_order", {})
         self.ignore_tags = module.get("ignore_tags", [])
         self.params_order = module.get("params_order", {})
-        
+
+    def preprocess(self,*args):
+        fn = self.module.get("preprocess")
+        if fn:
+            return fn(*args)
+        return True
+
     def patch_inflection(self,cat,*args):
         fn = self.module.get("patch"+cat)
         if fn:

@@ -223,7 +223,7 @@ def learn(source,lang):
 
     lin_types = {}
     ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
-    for word, pos, forms in lexicon:
+    for word, pos, forms, tags in lexicon:
         table = {}
         for w,tags in forms:
             if 'multiword-construction' not in tags:

@@ -35,6 +35,28 @@ params = {
 
 params_order = dict(zip(params.keys(), range(len(params))))
 
+def preprocess(record):
+    if record.get("pos") == "noun":
+        categories = record.get("categories",[])
+
+        if 'Macedonian non-lemma forms' in categories:
+            return False
+
+        def extract_gender(categories):
+            if 'Macedonian masculine nouns' in categories:
+                return ["masculine"]
+            elif 'Macedonian feminine nouns' in categories:
+                return ["feminine"]
+            elif 'Macedonian neuter nouns' in categories:
+                return ["neuter"]
+            return []
+
+        record["tags"] = extract_gender(categories)
+        for sense in record["senses"]:
+            sense["tags"] = extract_gender(sense.get("categories",[]))
+
+    return True
+
 def patchPOS(lemma,tag,table):
     if tag == 'num':
         return tag

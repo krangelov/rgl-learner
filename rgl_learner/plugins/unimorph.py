@@ -299,7 +299,16 @@ def extract(lang):
                             d.setdefault((lemma, tag), []).append((form, tags))
     res = []
     for (lemma, pos), forms in d.items():
-        res.append((lemma, pos, forms))
+        tags = []
+        if pos == "N":
+            gender_set = set()
+            for form,tags in forms:
+                for gender in ["MASC","FEM","NEUT"]:
+                    if gender in tags:
+                        tags.remove(gender)
+                        gender_set.add(gender)
+            tags = list(gender_set)
+        res.append((lemma, pos, forms, tags))
     return res
 
 
