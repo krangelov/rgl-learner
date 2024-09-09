@@ -531,9 +531,10 @@ def correct_paradigms(cat,paradigms):
     if mult_base_words > 0:
         print(f"Number of {cat} paradigms with more than 1 base: {mult_base_words}")
 
-def write_paradigm(i, par, cat):
+def write_paradigm(i, max_i, par, cat):
     names = [name for name, val in par.var_insts[0]]
-    code = f"""mk{cat}{i:03d} : {len(names) * "Str -> "}{cat} ;\nmk{cat}{i:03d} {" ".join(names)} =\n  """
+    s = "" if max_i == 1 else f"{i:03d}"
+    code = f"""mk{cat}{s} : {len(names) * "Str -> "}{cat} ;\nmk{cat}{s} {" ".join(names)} =\n  """
     if par.assignments:
         code += "let "+" ;\n      ".join(par.assignments)+f"\n  in lin {cat}\n  "
     else:
@@ -541,10 +542,11 @@ def write_paradigm(i, par, cat):
     code += par.typ.renderOper(2,par.forms) + " ;"
     return code
 
-def write_lexicon(i, par, cat):
+def write_lexicon(i, max_i, par, cat):
     code = ""
+    s = "" if max_i == 1 else f"{i:03d}"
     for j,(ident,table) in enumerate(par.tables):
-        code += f"""lin '{ident}' = mk{cat}{i:03d} {" ".join(('"'+val+'"' for name, val in par.var_insts[j]))} ;\n"""
+        code += f"""lin '{ident}' = mk{cat}{s} {" ".join(('"'+val+'"' for name, val in par.var_insts[j]))} ;\n"""
     return code
 
 
@@ -574,8 +576,8 @@ def learn(lang):
 
         for cat, table in tables.items():
             for i, par in enumerate(table):
-                dct.write(write_lexicon(i+1, par, cat))
-                para.write("\n\n" + write_paradigm(i+1, par, cat))
+                dct.write(write_lexicon(i+1, len(table), par, cat))
+                para.write("\n\n" + write_paradigm(i+1, len(table), par, cat))
 
         dct.write("\n}")
         para.write("\n}")
