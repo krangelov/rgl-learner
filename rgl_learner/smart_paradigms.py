@@ -12,7 +12,7 @@ def learn(lang):
         classes = []
         for i,paradigm in enumerate(paradigms):
             for ident,forms in paradigm.tables:
-                classes.append((forms[0],i+1))
+                classes.append((ident.split("_")[0],i+1))
 
         table       = []
         max_classes = []
@@ -59,29 +59,32 @@ def learn(lang):
                 max_classes.pop()
 
             if max_value[0] > min_count and max_value[1] == -1:
-                table.append((suffix,max_class,max_value[0],c))
-                for dist in prev_dists:
-                    count = dist[max_class] - max_value[0]
-                    if count == 0:
-                        del dist[max_class]
-                    else:
-                        dist[max_class] = count
+                table.append((suffix,max_class,c))
+                for cls,count in c.items():
+                    for dist in prev_dists:
+                        prev_count = dist[cls] - count
+                        if prev_count == 0:
+                            del dist[cls]
+                        else:
+                            dist[cls] = prev_count
 
         trie("",classes,0)
 
         if len(table) == 1 and table[0][0] == "":
+            c1 = table[0][2][table[0][1]]
+            c2 = sum(count for cls,count in table[0][2].items())
             code = f"mk{cat} : Str -> {cat} = mk{cat}{table[0][1]:03d} ;\n"
         else:
             c1 = 0
             c2 = 0
             cases = []
-            for suffix,max_class,max_count,c in table:
+            for suffix,max_class,c in table:
                 entropy = 0
                 total = sum(count for cls,count in c.items())
                 for cls,count in c.items():
                     prob = count/total
                     entropy -= prob * math.log(prob)
-                c1 += max_count
+                c1 += c[max_class]
                 c2 += total
 
                 if entropy > 0:
