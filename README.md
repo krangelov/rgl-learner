@@ -36,4 +36,4 @@ Similarly the extraction from Unimorph requires a clone of the
 ./rgl-learner learn-paradigms <lang-code>
 ```
 
-This phase reads the data produced during the previous phase. It then tries to predict the inflection tables from existing forms and morphological annotation. The code is based on [the paradigm extractor by Marcus Forsberg and Mark Hulden](https://github.com/marfors/paradigmextract/tree/8ceb702ee20dfde452fea2f7db6810a0ebf961cb).
+This phase reads the data produced during the previous phase. It then tries to predict the inflection tables from existing forms and morphological annotation. The code is based on [the paradigm extractor by Marcus Forsberg and Mans Hulden](https://github.com/marfors/paradigmextract/tree/8ceb702ee20dfde452fea2f7db6810a0ebf961cb).
