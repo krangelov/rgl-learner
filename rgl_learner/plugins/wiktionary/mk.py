@@ -55,6 +55,10 @@ def preprocess(record):
         for sense in record["senses"]:
             sense["tags"] = extract_gender(sense.get("categories",[]))
 
+    # strip the stress annotation
+    for form in record.get("forms",[]):
+        form["form"] = form["form"].replace("́", "")
+
     return True
 
 def patchPOS(lemma,tag,table):
@@ -88,8 +92,12 @@ def filter_lemma(lemma, pos, table):
 
 
 def patchN(lemma,table):
+    if type(table.get("plural")) == str:
+        pl = table.pop("plural")
+    else:
+        pl = "-"
     table.setdefault("indefinite",{}).setdefault("singular",lemma)
-    table.setdefault("indefinite",{}).setdefault("plural","-")
+    table.setdefault("indefinite",{}).setdefault("plural",pl)
     table.setdefault("definite",{}).setdefault("unspecified",{}).setdefault("singular","-")
     table.setdefault("definite",{}).setdefault("unspecified",{}).setdefault("plural","-")
     table.setdefault("definite",{}).setdefault("proximal",{}).setdefault("singular","-")
@@ -99,12 +107,12 @@ def patchN(lemma,table):
     table["s"] = {"indefinite": table.pop("indefinite",{})
                  ,"definite": table.pop("definite",{})
                  }
-    table["count-form"] = table.pop("count-form",{}).get("plural",table.get("indefinite",{"plural": "-"}).get("plural","-"))
-    table["vocative"] = table.pop("vocative",{})
+    table["count-form"] = table.get("plural", {}).get("count-form",table["s"]["indefinite"]["plural"])
+    table["vocative"] = {"singular": table.pop("singular",{}).get("vocative","-"),
+                         "plural": table.pop("plural",{}).get("vocative","-")
+                        }
     table["vocative"].setdefault("singular","-")
     table["vocative"].setdefault("plural","-")
-    table.pop("singular",None)
-    table.pop("plural",None)
     table.pop("masculine",None)
     table.pop("feminine",None)
     table.pop("augmentative",None)
