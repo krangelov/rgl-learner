@@ -467,7 +467,7 @@ def correct_paradigms(cat,paradigms):
         i = 0
         start = 0
         first = None
-        while i < len(elems)-1:
+        while i < len(elems):
             elem = elems[i]
             l = lens.get(elem)
             if elem[0] == '"' and elem[-1] == '"':   # this is a string
@@ -486,7 +486,7 @@ def correct_paradigms(cat,paradigms):
                 break              # nonExist or a variable length base
             i += 1
 
-        if first and i == len(elems)-1:
+        if first and i == len(elems):
             # This means that all bases are constant length. We treat
             # the first base as variable and the rest as constant.
             i,start = first
