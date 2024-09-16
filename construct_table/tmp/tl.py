@@ -1,17 +1,17 @@
 from rgl_learner.utils import *
 
-iso3 = "Tgl"
-def patchA(lemma, table):
-	params = {'Gender': {'feminine', 'masculine'}, 'Comparison': {'positive', 'superlative_equal', 'comparative_equal', 'superlative_inferior', 'comparative_inferior'}, 'Number': {'plural', 'singular'}} 
-	param_order = ['Comparison', 'Number', 'Gender'] 
-	fixed_names = {} 
-	new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
-	return new_table
-
-def patchV(lemma, table):
-	params = {'Aspect': {'progressive', 'completive', 'infinitive', 'past-recent', 'contemplative'}, 'Mood': {'imperative'}, 'Formality': {'formal', 'informal'}, 'Voice': {'actor-secondary', 'locative_focus', 'trigger-referential', 'reciprocal', 'trigger-object', 'directional', 'trigger-actor', 'trigger-measurement', 'trigger-instrument', 'indirect', 'direct', 'trigger-locative', 'benefactive', 'trigger-causative'}} 
-	param_order = ['Mood', 'Aspect', 'Formality', 'Voice'] 
-	fixed_names = {} 
-	new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
-	return new_table
-
+params = {'root': ('Root_Word', 'Root'),
+          'positive': ('Pos', 'Comparison'),
+          'equal': ('Equal', 'Comparison'),
+          'absolute': ('Absolute', 'Comparison'),
+          'inferior': ('Inferior', 'Comparison'),
+          'imperative': ('Imperative', 'Mood'),
+          'trigger-actor': ('AcFocus', 'Voice'),
+          'trigger-object': ('PatientFocus', 'Voice'),
+          'trigger-locative': ('LocFocus', 'Voice'),
+          'trigger-causative': ('CausFocus', 'Voice'),
+          'trigger-measurement': ('MeusureFocus', 'Voice'),
+          'reciprocal': ('ReciprocalFocus', 'Voice'),
+          'trigger-referential': ('ReferentialFocus', 'Voice'),
+          'trigger-instrument': ('InstrumentFocus', 'Voice'),
+          'actor-secondary': ('SecondaryFocus', 'Voice'), 'benefactive': ('BenefFocus', 'Voice'), 'directional': ('DirectionFocus', 'Voice'), 'direct': ('SocialDirect', 'Voice'), 'indirect': ('SocialCaus', 'Voice'), 'infinitive': ('Infinitive', 'Infinitive'), 'contemplative': ('Contemplative', 'Aspect'), 'completive': ('Completive', 'Aspect'), 'progressive': ('Progressive', 'Aspect'), 'past-recent': ('PastRecent', 'Aspect'), 'comparative': ('Comp', 'Comparison'), 'superlative': ('Superlat', 'Comparison'), 'locative': ('Loc', 'Case'), 'past': ('Past', 'Tense'), 'masculine': ('Masc', 'Gender'), 'feminine': ('Fem', 'Gender'), 'singular': ('Sg', 'Number'), 'plural': ('Pl', 'Number'), 'first-person': ('P1', 'Person'), 'second-person': ('P2', 'Person'), 'formal': ('Formal', 'Formality'), 'informal': ('Informal', 'Formality')}

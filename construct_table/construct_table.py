@@ -19,6 +19,7 @@ def get_known_forms(typ, known_forms, params, form2cat):
     unknown_tags = []
     for form in forms:
         for morpheme in form:
+            print(morpheme)
             if morpheme in form2cat:
                 known_forms[form2cat[morpheme][1]].add(form2cat[morpheme][0])
             elif morpheme in params:
@@ -47,7 +48,6 @@ def get_inflection_table(pos, data, params, form2cat):
     for typ in lexeme:
         known_forms, unknown = get_known_forms(typ, known_forms, params, form2cat)
         unknown_tags.update(unknown)
-    warnings.warn(f"Unknown forms: {set(unknown_tags)}")
 
 
     params_order = []
@@ -61,20 +61,27 @@ def construct(source, lang):
     source_plugin = plugins[source]
     lang_plugin = plugins[source, lang]
 
-    with open(f"data/{lang}/lexicon.pickle", "rb") as f:
-        langcode, lexicon = pickle.load(f)
+    lexicon = source_plugin.extract(lang)
 
-    params = source_plugin.params | lang_plugin.params
-    #print(params)
+    params = lang_plugin.params | source_plugin.params
+    ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
     form2cat = {v[0]:(k, v[1]) for k,v in params.items() if v}
     code = ""
-    for pos, data in lexicon.items():
-        pos = source_plugin.tag2cat[pos]
-        code += get_inflection_table(pos, data, params, form2cat) + "\n\n"
+    known_tags = []
+    unknown_tags = []
+    for _, pos, forms, _ in lexicon:
+        for _, tags in forms:
+            for tag in tags:
+                if tag in params:
+                    known_tags.append(tag)
+                elif tag not in ignore_tags:
+                    unknown_tags.append(tag)
+    params = dict(filter(lambda x: x[0] in known_tags, params.items()))
+
+    warnings.warn(f"Unknown forms: {set(unknown_tags)}")
 
     with open(f"construct_table/tmp/{lang}.py", "w") as f:
         f.write("from rgl_learner.utils import *\n\n")
-        f.write(f"""iso3 = "{langcode}"\n""")
-        f.write(code)
+        f.write(f"params = {params}")
 
 

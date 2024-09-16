@@ -1,17 +1,3 @@
 from rgl_learner.utils import *
 
-iso3 = "Kaz"
-def patchN(lemma, table):
-	params = {'Possession': {'PSS3S', 'PSS1P', 'PSS1S', 'PSS2P', 'PSS3P', 'PSS2S'}, 'Number': {'PL', 'SG'}, 'Formality': {'LSSPEC1', 'LSSPEC2'}, 'Case': {'NOM', 'ACC', 'GEN', 'LOC', 'DAT', 'INST', 'ABL'}} 
-	param_order = ['Possession', 'Case', 'Number', 'Formality'] 
-	fixed_names = {} 
-	new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
-	return new_table
-
-def patchV(lemma, table):
-	params = {'Mood': {'SBJV', 'IMP'}, 'Polarity': {'NEG'}, 'Politeness': {'FORM', 'INFM'}, 'Person': {'2', '1', '3'}, 'Number': {'PL', 'SG'}, 'Tense': {'PRS', 'PST'}, 'Aspect': {'PRF', 'PROG'}} 
-	param_order = ['Mood', 'Tense', 'Aspect', 'Person', 'Polarity', 'Politeness', 'Number'] 
-	fixed_names = {} 
-	new_table = fill_empty(fix_table(table, param_order, params, fixed_names))
-	return new_table
-
+params = {'IMP': ('Imperative_Jussive', 'Mood'), 'SBJV': ('Subjunctive', 'Mood'), 'FUT': ('Fut', 'Tense'), 'PRS': ('Pres', 'Tense'), 'PST': ('Past', 'Tense'), 'PSS1P': ('Poss1Pl', 'Possession'), 'PSS1S': ('Poss1Sg', 'Possession'), 'PSS2S': ('Poss2Sg', 'Possession'), 'PSS3S': ('Poss3Sg', 'Possession'), 'PRF': ('Perfect', 'Aspect'), 'PROG': ('Progressive', 'Aspect'), 'NOM': ('Nom', 'Case'), 'ACC': ('Acc', 'Case'), 'DAT': ('Dat', 'Case'), 'GEN': ('Gen', 'Case'), 'ABL': ('Ablat', 'Case'), 'INST': ('Instr', 'Case'), 'LOC': ('Loc', 'Case'), 'FRML': ('Formal', 'Case'), 'NEG': ('Neg', 'Polarity'), '1': ('P1', 'Person'), '2': ('P2', 'Person'), '3': ('P3', 'Person'), 'INFM': ('Informal', 'Politeness'), 'SG': ('Sg', 'Number'), 'PL': ('Pl', 'Number')}

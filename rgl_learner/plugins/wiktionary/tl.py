@@ -5,40 +5,53 @@ iso3 = "Tgl"
 source_plugin = plugins["wiktionary"]
 
 params = {
-    "positive": ("Positive", "Comparison"),
-    "comparative_equal": ("CompEqual", "Comparison"),
-    "comparative_inferior": ("CompInferior", "Comparison"),
-    "superlative_equal": ("SuperEqual", "Comparison"),
-    "superlative_inferior": ("SuperInferior", "Comparison"),
-    "equal": ("Equal", "Comparison"),
-    "absolute": ("Absolute", "Comparison"),
-    "inferior": ("Inferior", "Comparison"),
+    "root": ("Root_Word", "Root"),
+    "positive": ("Pos", "Comparison"),
+    "comparative_inferior": ("ComparativeInferior", "Comparison"),
+    "comparative_equal": ("ComparativeEqual", "Comparison"),
+    "superlative_inferior": ("SuperlativeInferior", "Comparison"),
+    "superlative_equal": ("SuperlativeEqual", "Comparison"),
     "imperative": ("Imperative", "Mood"),
+    "indicative": ("Indicative", "Mood"),
+    "actor-i": ("AdFocus", "Voice"),
+    "trigger-actor": ("AcFocus", "Voice"),
+    "trigger-object": ("PatientFocus", "Voice"),
     "trigger-locative": ("LocFocus", "Voice"),
     "trigger-causative": ("CausFocus", "Voice"),
     "trigger-measurement": ("MeusureFocus", "Voice"),
     "reciprocal": ("ReciprocalFocus", "Voice"),
     "trigger-referential": ("ReferentialFocus", "Voice"),
-    "trigger-object": ("PatientFocus", "Voice"),
-    "trigger-actor": ("AcFocus", "Voice"),
     "trigger-instrument": ("InstrumentFocus", "Voice"),
     "actor-secondary": ("SecondaryFocus", "Voice"),
-    "locative_focus": ("LocativeFocus", "Voice"),
     "benefactive": ("BenefFocus", "Voice"),
     "directional": ("DirectionFocus", "Voice"),
     "direct": ("SocialDirect", "Voice"),
     "indirect": ("SocialCaus", "Voice"),
-    "infinitive": ("Infinititve", "Aspect"),
+    "infinitive": ("Infinitive", "Aspect"),
     "contemplative": ("Contemplative", "Aspect"),
     "completive": ("Completive", "Aspect"),
     "progressive": ("Progressive", "Aspect"),
     "past-recent": ("PastRecent", "Aspect"),
+    "locative": ("Loc", "Case"),
+    "past": ("Past", "Tense"),
+    "masculine": ("Masc", "Gender"),
+    "feminine": ("Fem", "Gender"),
+    "singular": ("Sg", "Number"),
+    "plural": ("Pl", "Number"),
+    "first-person": ("P1", "Person"),
+    "second-person": ("P2", "Person"),
+    "formal": ("Formal", "Formality"),
+    "informal": ("Informal", "Formality"),
 }
 
 ignore_tags = [
     "literary",
     "Batangas",
     "Southern",
+    "Northern",
+    "physical",
+    "Philippine",
+    "Central",
     "Eastern",
     "sometimes",
     "absolute",
@@ -57,18 +70,30 @@ ignore_tags = [
     "slang",
     "Western",
     "Chinese",
-    "uncommon"
+    "uncommon",
+    "error-unrecognized-form"
 ]
-
-params.update(source_plugin.params)
 
 params_order = dict(zip(params.keys(), range(len(params))))
 
 nested_key_exists = nested_key_exists
 
+param_order = []
+parameters = defaultdict(set)
+for tag, (_, param) in params.items():
+    parameters[param].add(tag)
+    if param not in param_order:
+        param_order.append(param)
+
 
 def filter_lemma(lemma, pos, table):
     if pos == "pron" or pos == "prep" or pos == "name":
+        return True
+    return False
+
+
+def filter_paradigm(tag, forms):
+    if tag == "verb" and forms[0] == "-":
         return True
     return False
 
@@ -102,9 +127,6 @@ def merge_tags(pos, forms, w, tags):
 
     if "positive" in tags and "root" in tags:
         tags.remove("positive")
-        tags.remove("root")
-    elif "root" in tags:
-        tags.remove("root")
 
     if "singular" in tags and "plural" in tags:
         new_tags = tags.copy()
@@ -137,16 +159,6 @@ def merge_tags(pos, forms, w, tags):
 
 
 def patchA(lemma, table):
-    params = {
-        "Comparison": {
-            "positive",
-            "comparative_inferior",
-            "comparative_equal",
-            "superlative_inferior",
-            "superlative_equal",
-        },
-        "Number": {"singular", "plural"},
-    }
 
     if table.keys() == {"plural"}:
         table.setdefault("positive", {})
@@ -157,71 +169,55 @@ def patchA(lemma, table):
         table["masculine"] = lemma
     elif table.keys() == {"masculine"}:
         table["feminine"] = lemma
-    else:
-        for comparison in params["Comparison"]:
-            for number in params["Number"]:
-                table.setdefault(comparison, {}).setdefault(number, "-")
 
-    if "plural" in table:
+    for comparison in parameters["Comparison"]:
+        for number in parameters["Number"]:
+            table.setdefault(comparison, {}).setdefault(number, "-")
+
+    if "plural" in table:  # already in the table
         table.pop("plural")
 
-
-def patchV(lemma, table):
-    params = {
-        "Aspect": {
-            "completive",
-            "contemplative",
-            "infinitive",
-            "past-recent",
-            "progressive",
-        },
-        "Mood": {"imperative"},
-        "Formality": {"formal", "informal"},
-        "Voice": {
-            "benefactive",
-            "trigger-actor",
-            "trigger-referential",
-            "actor-secondary",
-            "trigger-object",
-            "direct",
-            "trigger-instrument",
-            "trigger-locative",
-            "directional",
-            "trigger-causative",
-            "trigger-measurement",
-            "indirect",
-            "locative_focus",
-        },
-    }
-    param_order = [
-        "Mood",
-        "Voice",
-        "Aspect",
-        "Formality",
-    ]
-
+    table["sp"] = {}
+    table["t"] = {}
+    table["t"]["feminine"] = table.get("feminine", "-")
+    table["t"]["masculine"] = table.get("masculine", "-")
+    if "feminine" in table:
+        table.pop("feminine")
+    if "masculine" in table:
+        table.pop("masculine")
     if "root" in table:
         table.pop("root")
 
-    # table.setdefault("imperative", "-")
+    for compar in parameters["Comparison"]:
+        table["sp"][compar] = table.get(compar, "-")
+        if compar in table:
+            table.pop(compar)
 
-    for voice in params["Voice"]:
-        # if voice in ['trigger-object']:
-        # 	table.setdefault(voice, "-")
-        # else:
-        for aspect in params["Aspect"]:
-            table.setdefault(voice, {}).setdefault(aspect, "-")
 
-    for aspect in params["Aspect"]:
+
+def patchV(lemma, table):
+    table.setdefault("root", {})
+
+    table.setdefault("indicative", {})
+    table.setdefault("imperative", {})
+
+    for voice in parameters["Voice"]:
+        for aspect in parameters["Aspect"]:
+            table.setdefault(voice, {}).setdefault(aspect, {})
+
+    for aspect in parameters["Aspect"]:
         if aspect == "past-recent":
             table.setdefault(aspect, {}).setdefault("formal", "-")
             table.setdefault(aspect, {}).setdefault("informal", "-")
         else:
-            table.setdefault(aspect, "-")
+            table.setdefault(aspect, {})
 
     fixed_names = {"Mood": "indicative"}
     new_table = fill_empty(
-        fix_table(table, param_order, params, fixed_names, exclude_list=["Aspect"])
+        fix_table(
+            table, param_order, parameters, fixed_names, exclude_list=["Aspect", "Root", "Comparison", "Case", "Gender",
+                                                                       "Number", "Person", "Tense"]
+        )
     )
 
     if "imperative" not in new_table:
@@ -237,9 +233,8 @@ def patchV(lemma, table):
     else:
         new_table["imperative"]["base"] = "-"
 
-    new_table["indicative"]["noVoice"] = dict(
-        sorted(new_table["indicative"]["noVoice"].items())
-    )
-    new_table["indicative"] = dict(sorted(new_table["indicative"].items()))
+    #  new_table["indicative"]["noVoice"] = dict(
+    #      sorted(new_table["indicative"]["noVoice"].items())
+    #  )
 
-    return dict(sorted(new_table.items()))
+    return new_table

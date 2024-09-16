@@ -1,5 +1,11 @@
 from collections import defaultdict, abc
 
+def get_param_order(pos, params):
+    param_order = []
+    for tag, (_, param, pos_tags) in params.items():
+        if param not in param_order and pos in pos_tags:
+            param_order.append(param)
+    return param_order
 
 def nested_key_exists(d, keys):
     if keys and d:
@@ -32,11 +38,15 @@ def fill_empty(table):
     return new_table
 
 
+
 def fix_table(table, param_order, params, fixed_names, num=0, exclude_list=[]):
     new_table = defaultdict(dict)
+    if num >= len(param_order):
+        raise ValueError(f"This tag is not supported: {next(iter(table))}")
     param = param_order[num]
     values = params[param]
     num += 1
+
 
     for t, v in table.items():
         if not t or t in values:

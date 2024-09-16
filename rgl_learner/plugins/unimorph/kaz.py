@@ -5,6 +5,45 @@ import rgl_learner.plugins as plugins
 iso3 = "Kaz"
 source_plugin = plugins["unimorph"]
 
+params = {
+    "INF": ("Infinitive", "Infinitive"),
+    "IND": ("Indicative", "Mood"),
+    "IMP": ("Imperative_Jussive", "Mood"),
+    "SBJV": ("Subjunctive", "Mood"),
+    "FUT": ("Fut", "Tense"),
+    "PRS": ("Pres", "Tense"),
+    "PST": ("Past", "Tense"),
+    "PSS1P": ("Poss1Pl", "Possession"),
+    "PSS1S": ("Poss1Sg", "Possession"),
+    "PSS2S": ("Poss2Sg", "Possession"),
+    "PSS3S": ("Poss3Sg", "Possession"),
+    "PRF": ("Perfect", "Aspect"),
+    "PROG": ("Progressive", "Aspect"),
+    "NOM": ("Nom", "Case"),
+    "ACC": ("Acc", "Case"),
+    "DAT": ("Dat", "Case"),
+    "GEN": ("Gen", "Case"),
+    "ABL": ("Ablat", "Case"),
+    "INST": ("Instr", "Case"),
+    "LOC": ("Loc", "Case"),
+    "FRML": ("Formal", "Case"),
+    "POS": ("Pos", "Polarity"),
+    "NEG": ("Neg", "Polarity"),
+    "1": ("P1", "Person"),
+    "2": ("P2", "Person"),
+    "3": ("P3", "Person"),
+    "INFM": ("Informal", "Politeness"),
+    "FORM": ("Formal", "Politeness"),
+    "SG": ("Sg", "Number"),
+    "PL": ("Pl", "Number"),
+}
+
+param_order = []
+parameters = defaultdict(set)
+for tag, (_, param) in params.items():
+    parameters[param].add(tag)
+    if param not in param_order:
+        param_order.append(param)
 
 def merge_tags(pos, forms, w, tags):
     if "SBJV" in tags:
@@ -24,35 +63,14 @@ def merge_tags(pos, forms, w, tags):
 
 
 def patchV(lemma, table):
-    param2val = {
-        "Infinitive": {"INF"},
-        "Mood": {"SBJV", "IMP"},
-        "Polarity": {"NEG"},
-        "Politeness": {"FORM", "INFM"},
-        "Person": {"2", "1", "3"},
-        "Number": {"PL", "SG"},
-        "Tense": {"PRS", "PST"},
-        "Aspect": {"PRF", "PROG"},
-    }
-    param_order = [
-        "Infinitive",
-        "Mood",
-        "Tense",
-        "Aspect",
-        "Polarity",
-        "Person",
-        "Politeness",
-        "Number",
-    ]
-
     table.setdefault("INF", lemma)
     new_table = fill_empty(
         fix_table(
             table,
             param_order,
-            param2val,
+            parameters,
             fixed_names={"Polarity": "POS", "Mood": "IND"},
-            exclude_list=["Tense", "Person", "Politeness", "Infinitive"],
+            exclude_list=["Tense", "Person", "Politeness", "Infinitive", "Possession", "Case"],
         )
     )
 
