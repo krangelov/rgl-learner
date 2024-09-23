@@ -15,8 +15,10 @@ params = {
     "PST": ("Past", "Tense"),
     "PSS1P": ("Poss1Pl", "Possession"),
     "PSS1S": ("Poss1Sg", "Possession"),
-    "PSS2S": ("Poss2Sg", "Possession"),
+    "PSS2S": ("Poss2Sg", ["Formality"], "Possession"),
+    "PSS2P": ("Poss2Pl", ["Formality"], "Possession"),
     "PSS3S": ("Poss3Sg", "Possession"),
+    "PSS3P": ("Poss3Pl", "Possession"),
     "PRF": ("Perfect", "Aspect"),
     "PROG": ("Progressive", "Aspect"),
     "NOM": ("Nom", "Case"),
@@ -30,7 +32,7 @@ params = {
     "POS": ("Pos", "Polarity"),
     "NEG": ("Neg", "Polarity"),
     "1": ("P1", "Person"),
-    "2": ("P2", "Person"),
+    "2": ("P2", ["Formality"], "Person"),
     "3": ("P3", "Person"),
     "INFM": ("Informal", "Politeness"),
     "FORM": ("Formal", "Politeness"),
@@ -40,10 +42,11 @@ params = {
 
 param_order = []
 parameters = defaultdict(set)
-for tag, (_, param) in params.items():
-    parameters[param].add(tag)
-    if param not in param_order:
-        param_order.append(param)
+for tag, param in params.items():
+    parameters[param[-1]].add(tag)
+    if param[-1] not in param_order:
+        param_order.append(param[-1])
+
 
 def merge_tags(pos, forms, w, tags):
     if "SBJV" in tags:
