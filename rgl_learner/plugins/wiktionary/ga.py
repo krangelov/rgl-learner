@@ -339,10 +339,11 @@ def patchPrep(lemma, table):
 
 
 def patchA(lemma, table):
-
     for case in parameters["Case"]:
-        table.setdefault("positive", {}).setdefault(case, {}).setdefault("plural", {})
-        table.setdefault("positive", {}).setdefault(case, {}).setdefault("singular", {})
+        sg = table.setdefault("positive", {}).setdefault(case, {}).setdefault("singular", {})
+        pl = table.setdefault("positive", {}).setdefault(case, {}).setdefault("plural", {})
+        if case == "nominative":
+            sg.setdefault("masculine", lemma)
         if case == "genitive":
             table.setdefault("positive", {}).setdefault(case, {}).setdefault("plural", {}).setdefault("strong", "-")
             table.setdefault("positive", {}).setdefault(case, {}).setdefault("plural", {}).setdefault("weak", "-")
@@ -361,9 +362,9 @@ def patchA(lemma, table):
     if "positive" in new_table and "noCase" in new_table["positive"]:
         if (
             "noNumber" in new_table["positive"]["noCase"]
-            and "noGender" in new_table["positive"]["noCase"]["noNumber"]
+            and "noPolarity" in new_table["positive"]["noCase"]["noNumber"]
         ):
-            new_table["MutationType"] = new_table["positive"]["noCase"]["noNumber"]
+            new_table["MutationType"] = new_table["positive"]["noCase"]["noNumber"]["noPolarity"]
         if len(new_table["positive"]) == 1:
             new_table.pop("positive")
         else:
