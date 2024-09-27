@@ -107,6 +107,16 @@ for tag, (_, param) in params.items():
         param_order.append(param)
 
 
+def preprocess(record):
+    if 'Irish non-lemma forms' in record.get('categories',[]):
+        return False
+
+    for sense in record.get('senses',[]):
+        if 'Irish non-lemma forms' in sense.get('categories',[]):
+            return False
+
+    return True
+
 def filter_lemma(lemma, pos, table):
     if pos == "name" or pos == "det" or pos == "pron":
         return True
@@ -186,6 +196,7 @@ def fix_tags(tag):
 def patchN(lemma, table):
     fixed_names = {}
 
+    table.setdefault("indefinite", {}).setdefault("nominative", {}).setdefault("singular", lemma)
     for defin in parameters["Species"]:
         for case in parameters["Case"]:
             for number in parameters["Number"]:
