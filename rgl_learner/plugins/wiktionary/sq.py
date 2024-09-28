@@ -1,9 +1,16 @@
 iso3 = "Alb"
 
+
+ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template',
+               'multiword-construction', "error-unknown-tag", "analytic", "emphatic", "archaic", "dialectal",
+               "active"]
+
 def filter_lemma(lemma,tag,table):
     if tag == "name" or tag == "pron" or tag == "det":
         return True
     if tag == "adj" and lemma == "yt":
+        return True
+    if tag == "adj" and lemma == "gjuetar":
         return True
     if tag == 'verb' and lemma == "qis":
         return True
@@ -14,6 +21,8 @@ def filter_lemma(lemma,tag,table):
     if tag == 'verb' and lemma == "hallakat":
         return True
     if tag == 'verb' and ("masculine" in table or "feminine" in table):
+        return True
+    if tag == 'prep' and lemma == "pi":
         return True
     return False
 
@@ -46,19 +55,18 @@ def patchN(lemma,table):
     if type(indef) is dict:
         nom = indef.setdefault("nominative",{})
         if type(nom) is str:
-            indef["nominative"] = {"singular": nom, "plural": "-"}
+            indef["nominative"] = {"singular": nom, "plural": table.pop("plural","-")}
         if nom:
-            indef.pop("singular",None)
-            indef.pop("plural",None)
+            nom.setdefault("singular", indef.pop("singular","-"))
+            nom.setdefault("plural", indef.pop("plural",table.pop("plural","-")))
         else:
             nom["singular"] = indef.pop("singular",lemma)
             nom["plural"]   = indef.pop("plural",table.pop("plural","-"))
     elif type(indef) is str:
-        indef = {"nominative": {"singular": indef, "plural": "-"}}
+        indef = {"nominative": {"singular": indef, "plural": table.pop("plural","-")}}
         table["indefinite"] = indef
     set_case(indef,"accusative")
     set_case(indef,"dative")
-    set_case(indef,"genitive")
     set_case(indef,"ablative")
     indef.pop(None,None)
     def_ = table.setdefault("definite",{})
@@ -67,8 +75,11 @@ def patchN(lemma,table):
         if type(nom) is str:
             def_["nominative"] = {"singular": nom, "plural": "-"}
         if nom:
-            def_.pop("singular",None)
-            def_.pop("plural",None)
+            nom.setdefault("singular", def_.pop("singular","-"))
+            nom.setdefault("plural", def_.pop("plural","-"))
+            acc = nom.pop("accusative",None)
+            if acc:
+                def_.setdefault("accusative", {}).setdefault("singular", acc)
         else:
             nom["singular"] = def_.pop("singular","-")
             nom["plural"]   = def_.pop("plural","-")
@@ -77,7 +88,6 @@ def patchN(lemma,table):
         table["definite"] = def_
     set_case(def_,"accusative")
     set_case(def_,"dative")
-    set_case(def_,"genitive")
     set_case(def_,"ablative")
     def_.pop(None,None)
     table.pop("masculine",None)
@@ -85,6 +95,12 @@ def patchN(lemma,table):
     table.pop("neuter",None)
     table.pop("alternative",None)
     table.pop("Cyrillic",None)
+    table.pop("Gheg",None)
+    table.pop("Northern",None)
+    table.pop("Southern",None)
+    table.pop("especially",None)
+    table.pop("Arvanitika",None)
+    table.pop("rare",None)
 
 def patchV(lemma,table):
     def set_all(t,lemma):
@@ -106,9 +122,15 @@ def patchV(lemma,table):
     ind.pop("progressive",None)
     ind.get("past",{}).pop("perfect",None)
     set_all(ind.setdefault("past",{}), "-")
-    set_all(ind.setdefault("aorist",{}), "-")
+    set_all(ind.setdefault("aorist",{}), table.pop("aorist","-"))
     set_all(ind.setdefault("imperfect",{}), "-")
     ind.get("aorist",{}).pop("aorist-ii",None)
+    ind.pop("singular",None)
+    ind.pop("plural",None)
+
+    opt = table.setdefault("optative",{})
+    set_all(opt.setdefault("present",{}), "-")
+    set_all(opt.setdefault("perfect",{}), "-")
 
     table.pop("subjunctive",None)
     table.pop("conditional",None)
@@ -117,6 +139,8 @@ def patchV(lemma,table):
     table.pop("present",None)
     table.pop("perfect",None)
     table.pop("active",None)
+    table.pop("third-person",None)
+    table.pop("passive",None)
 
     imp = table.get("imperative",{}).pop("present",{})
     if imp:
@@ -178,12 +202,18 @@ def patchA(lemma,table):
             table["dative"]   = gen
             table["genitive"] = gen
 
+    pl = table.pop("plural",None)
+    if pl:
+        nom.setdefault("masculine",{}).setdefault("plural",pl)
+
     for case in ["nominative", "accusative", "dative", "genitive", "ablative"]:
         t1 = table.setdefault(case, {})
         for gender in ["masculine", "feminine"]:
             t2 = t1.setdefault(gender, {})
             t2.setdefault("singular","-")
             t2.setdefault("plural","-")
+
+    table.pop("often",None)
 
 def patchAdv(lemma,table):
     table.clear()
