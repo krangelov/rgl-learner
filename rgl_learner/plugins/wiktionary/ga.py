@@ -124,6 +124,8 @@ def filter_lemma(lemma, pos, table):
     if " " in lemma:
         return True
 
+    if lemma == "d'ainneoin":
+        return True
 
     if lemma == "Ó":
         return True
