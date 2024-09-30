@@ -6,6 +6,16 @@ ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-ta
                "active"]
 
 def filter_lemma(lemma,tag,table):
+    def is_multi(table):
+        if type(table) == dict:
+            for value in table.values():
+                if is_multi(value):
+                    return True
+        elif type(table) == str and len(table.split()) > 1:
+            return True
+        return False
+    if len(lemma.split()) > 1 or is_multi(table):
+        return True
     if tag == "name" or tag == "pron" or tag == "det":
         return True
     if tag == "adj" and lemma == "yt":
