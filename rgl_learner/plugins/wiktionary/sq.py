@@ -128,10 +128,6 @@ def patchV(lemma,table):
     ind.pop("singular",None)
     ind.pop("plural",None)
 
-    opt = table.setdefault("optative",{})
-    set_all(opt.setdefault("present",{}), "-")
-    set_all(opt.setdefault("perfect",{}), "-")
-
     table.pop("subjunctive",None)
     table.pop("conditional",None)
     table.pop("jussive",None)
@@ -158,12 +154,18 @@ def patchV(lemma,table):
     table.pop("alternative",None)
     table.pop("Gheg",None)
     table.pop("error-unrecognized-form",None)
-    table.setdefault("participle","-")
     table.pop("infinitive","-")
+
+    table.setdefault("participle","-")
+
+    opt = table.pop("optative",{})
+    table["pres_optative"] = set_all(opt.get("present",{}), "-")
+    table["perf_optative"] = set_all(opt.get("perfect",{}), "-")
 
     adm = table.pop("admirative",{})
     table["pres_admirative"] = set_all(adm.get("present",{}), "-")
     table["imperf_admirative"] = set_all(adm.setdefault("imperfect",{}), "-")
+
 
 
 def patchA(lemma,table):
@@ -196,17 +198,15 @@ def patchA(lemma,table):
         abl = gen.pop("ablative",None)
         if abl:
             table["dative"]   = abl
-            table["genitive"] = abl
             table["ablative"] = abl
         else:
             table["dative"]   = gen
-            table["genitive"] = gen
 
     pl = table.pop("plural",None)
     if pl:
         nom.setdefault("masculine",{}).setdefault("plural",pl)
 
-    for case in ["nominative", "accusative", "dative", "genitive", "ablative"]:
+    for case in ["nominative", "accusative", "dative", "ablative"]:
         t1 = table.setdefault(case, {})
         for gender in ["masculine", "feminine"]:
             t2 = t1.setdefault(gender, {})
