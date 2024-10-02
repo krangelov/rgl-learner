@@ -322,13 +322,13 @@ def learn(source,lang):
         else:
             return '"'+form+'"'
 
-    noun_cat,noun_types = lin_types["noun"]
-    new_noun_types = {}
+    noun_cat,noun_types = lin_types.get("noun") or lin_types.get("N")
     new_gender_typ = GFParamType("Gender",tuple(GFParamConstr(gender,()) for gender in noun_genders))
-    for noun_type,lexemes in noun_types.items():
+    items = list(noun_types.items())
+    noun_types.clear()
+    for noun_type,lexemes in items:
         noun_type = GFRecord(tuple(((name,typ if name != "g" else new_gender_typ) for name,typ in noun_type.fields)))
-        new_noun_types[noun_type] = lexemes
-    lin_types["noun"] = noun_cat,new_noun_types
+        noun_types[noun_type] = lexemes
 
     lang_code = lang_plugin.iso3
     with open('Res'+lang_code+'.gf','w') as fr, \
