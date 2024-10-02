@@ -11,7 +11,11 @@ def preprocess(record):
 
         def check_gender(tags):
             nonlocal found
-            for g in ["masculine","feminine","neuter"]:
+            try:
+                tags.remove("neuter")
+            except:
+                pass
+            for g in ["masculine","feminine"]:
                 if g in tags:
                     found = True
                     break

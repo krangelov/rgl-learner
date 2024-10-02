@@ -125,6 +125,8 @@ class wordgraph(object):
 
 
 def longest_variable(string):
+    if type(string) != str:
+        return 0
     thislen = 0
     maxlen = 0
     inside = 0
@@ -412,7 +414,7 @@ def ffilter_longest_single_var(factorlist):
     return [[x for x in w if longest_variable(x) == longest_variable(max(w, key=lambda x: longest_variable(x)))] for w in factorlist]
 
 def ffilter_leftmost_sum(factorlist):
-    return [[x for x in w if sum(i for i in range(len(x)) if x.startswith('[', i)) == min([sum(i for i in range(len(x)) if x.startswith('[', i)) for x in w])] for w in factorlist]
+    return [[x for x in w if type(x)!=str or sum(i for i in range(len(x)) if x.startswith('[', i)) == min([sum(i for i in range(len(x)) if x.startswith('[', i)) for x in w])] for w in factorlist]
 
 
 def filterbracketings(factorlist, functionlist, tablecap):
