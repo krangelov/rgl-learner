@@ -34,8 +34,8 @@ params = {
     "1": ("P1", "Person"),
     "2": ("P2", ["Formality"], "Person"),
     "3": ("P3", "Person"),
-    "INFM": ("Informal", "Politeness"),
-    "FORM": ("Formal", "Politeness"),
+    "INFM": ("Informal", "Formality"),
+    "FORM": ("Formal", "Formality"),
     "SG": ("Sg", "Number"),
     "PL": ("Pl", "Number"),
 }
