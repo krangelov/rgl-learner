@@ -263,6 +263,9 @@ def parse_ass(word, ass):
             word =  word[:-num1]
         num = int(ass[1])
         return word[num:]
+    elif ass[0] == "take":
+        num = int(ass[1])
+        return word[:num]
     else:
         return word
 
@@ -337,16 +340,17 @@ def prepare_data(df, feature_list, class_tags, how="suffix"):
 
 
 
-def coverage_score(token, forms):
+def coverage_score(token, forms, input=[]):
+    errors = []
     coverage = [1]
     for form, value in token.items():
-        if value != "-":
+        if value != "-" and form not in input:
             if forms.get(form) == value:
                 coverage.append(1)
             else:
                 coverage.append(0)
-                #print(forms.get(form), value)
-    return coverage
+                errors.append(form)
+    return coverage, errors
 
 def build_tree(X, y):
     tree = DecisionTreeClassifier()
