@@ -42,18 +42,27 @@ def preprocess(record):
         if 'Macedonian non-lemma forms' in categories:
             return False
 
+        found = False
+
         def extract_gender(categories):
+            nonlocal found
             if 'Macedonian masculine nouns' in categories:
+                found = True
                 return ["masculine"]
             elif 'Macedonian feminine nouns' in categories:
+                found = True
                 return ["feminine"]
             elif 'Macedonian neuter nouns' in categories:
+                found = True
                 return ["neuter"]
             return []
 
         record["tags"] = extract_gender(categories)
         for sense in record["senses"]:
             sense["tags"] = extract_gender(sense.get("categories",[]))
+
+        if not found:
+            record["tags"] = ["masculine"]
 
     # strip the stress annotation
     for form in record.get("forms",[]):
@@ -79,7 +88,7 @@ def filter_lemma(lemma, pos, table):
     if pos == "adv" and (lemma == "т.е." or lemma == "многумина"):
         return True
 
-    if pos == "pron" and (lemma == "моја"):
+    if pos == "pron" and (lemma in ["моја","т’","в’"]):
         return True
 
     if pos == "name":
@@ -111,14 +120,13 @@ def patchN(lemma,table):
     table["vocative"] = {"singular": table.pop("singular",{}).get("vocative","-"),
                          "plural": table.pop("plural",{}).get("vocative","-")
                         }
-    table["vocative"].setdefault("singular","-")
-    table["vocative"].setdefault("plural","-")
     table.pop("masculine",None)
     table.pop("feminine",None)
     table.pop("augmentative",None)
     table.pop("collective",None)
     table.pop("alternative",None)
     table.pop("general",None)
+    table.pop("relational",None)
 
 def patchV(lemma,table):
     if not table.get("present"):

@@ -4,7 +4,7 @@ from resource import *
 from collections import defaultdict
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
-from rgl_learner.utils import nested_key_exists
+from rgl_learner.utils import nested_key_exists, escape
 import itertools
 
 class GFType:
@@ -43,6 +43,9 @@ class GFParamType(GFType):
             for value in con.renderValues(d):
                 yield value
 
+    def renderOper(self,indent,vars):
+        return str(vars.pop(0))
+
 @dataclass(frozen=True)
 class GFParamConstr:
     name: str
@@ -67,6 +70,14 @@ class GFParamConstr:
                 if d > 0:
                     value = "(" + value + ")"
                 yield value
+
+@dataclass(frozen=True)
+class GFParamValue:
+    value: str
+    typ: GFParamType
+
+    def __str__(self):
+        return self.value
 
 @dataclass(frozen=True)
 class GFTable(GFType):
@@ -149,6 +160,8 @@ class GFRecord(GFType):
 def getTypeOf(source_plugin, lang_plugin, o):
     if type(o) is str:
         return GFStr(),[o]
+    elif type(o) is GFParamValue:
+        return o.typ, [o]
     else:
         params = lang_plugin.params or source_plugin.params
         params_keys = list(params.keys())
@@ -215,15 +228,22 @@ def get_order(source_plugin, lang_plugin, tag):
     else:
         return source_plugin.params_order.get(tag,10000000)
 
+def get_gtag(source_plugin, lang_plugin, tag):
+    if lang_plugin.params:
+        return lang_plugin.params.get(tag)
+    else:
+        return source_plugin.params.get(tag)
+
 def learn(source,lang):
     source_plugin = plugins[source]
     lang_plugin   = plugins[source,lang]
 
     lexicon=source_plugin.extract(lang)
 
+    noun_genders = set()
     lin_types = {}
     ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
-    for word, pos, forms, tags in lexicon:
+    for word, pos, forms, gtags in lexicon:
         table = {}
         for w,tags in forms:
             if 'multiword-construction' not in tags:
@@ -263,6 +283,14 @@ def learn(source,lang):
             if res:
                 table = res
 
+            if pos == "noun":
+                for tag in gtags:
+                    res = get_gtag(source_plugin, lang_plugin, tag)
+                    if res and res[1] == "Gender":
+                        table["g"] = GFParamValue(res[0],GFParamType(res[1],()))
+                        noun_genders.add(res[0])
+                        break
+
             if table:
                 typ, forms = getTypeOf(source_plugin, lang_plugin, table)
                 if type(typ) != GFRecord:
@@ -286,23 +314,27 @@ def learn(source,lang):
                     counts[lemma] = index+1
                 lexemes[i] = (ident, forms)
 
-    def escape(s):
-        s2 = ""
-        for c in s:
-            if c == "'":
-                s2 += "\\'"
-            elif c == "\\":
-                s2 += "\\\\"
-            else:
-                s2 += c
-        return "'"+s2+"'"
+    def to_value(form):
+        if type(form) == GFParamValue:
+            return form.value
+        elif form == "-":
+            return "nonExist"
+        else:
+            return '"'+form+'"'
+
+    noun_cat,noun_types = lin_types.get("noun") or lin_types.get("N")
+    new_gender_typ = GFParamType("Gender",tuple(GFParamConstr(gender,()) for gender in noun_genders))
+    items = list(noun_types.items())
+    noun_types.clear()
+    for noun_type,lexemes in items:
+        noun_type = GFRecord(tuple(((name,typ if name != "g" else new_gender_typ) for name,typ in noun_type.fields)))
+        noun_types[noun_type] = lexemes
 
     lang_code = lang_plugin.iso3
     with open('Res'+lang_code+'.gf','w') as fr, \
          open('Cat'+lang_code+'.gf','w') as fc, \
          open('Dict'+lang_code+'.gf','w') as fd, \
-         open('Dict'+lang_code+'Abs.gf','w') as fa, \
-         open('lexicon.tsv','w') as tsv:
+         open('Dict'+lang_code+'Abs.gf','w') as fa:
         fr.write('resource Res'+lang_code+' = {\n')
         fr.write('\n')
         fc.write('concrete Cat'+lang_code+' of Cat = open Res'+lang_code+' in {\n')
@@ -317,8 +349,11 @@ def learn(source,lang):
 
             for i,(typ,lexemes) in enumerate(sorted(types.items(),key=lambda x: -len(x[1]))):
                 type_name = tag.title()+(str(i) if i else "")
-                n_forms = len(lexemes[0][1])
-
+                n_forms  = len(lexemes[0][1])
+                n_params = 0
+                while type(lexemes[0][1][n_forms-1]) == GFParamValue:
+                    n_forms  -= 1
+                    n_params += 1
 
                 typ.printParamDefs(fr,pdefs)
                 fr.write("\n".join(["param "+name+" = "+" | ".join(str(constructor) for constructor in constructors)+" ;" for name, constructors in pdefs.items()]) + "\n")
@@ -332,15 +367,16 @@ def learn(source,lang):
                     fr.write('Str -> Str -> Str')
                 else:
                     fr.write('('+(',_'*n_forms)[1:]+' : Str)')
+                for i in range(n_forms,n_forms+n_params):
+                    fr.write(' -> '+str(lexemes[0][1][i].typ))
                 fr.write(' -> '+type_name+' =\n')
-                vars = ['f'+str(i) for i in range(1,n_forms+1)]
+                vars = ['f'+str(i) for i in range(1,n_forms+1)]+['g'+(str(i) if i else "") for i in range(0,n_params)]
                 fr.write('       \\'+','.join(vars)+' ->\n')
                 fr.write('          '+typ.renderOper(10,vars)+" ;\n")
                 fr.write('\n')
                 for ident,forms in lexemes:
                     fa.write('fun '+escape(ident)+' : '+cat_name+' ;\n')
-                    fd.write('lin '+escape(ident)+' = mk'+type_name+' '+' '.join(('"'+form+'"' if form != '-' else 'nonExist') for form in forms)+' ;\n')
-                    tsv.write(ident+'\t'+'\t'.join(forms)+'\n')
+                    fd.write('lin '+escape(ident)+' = mk'+type_name+' '+' '.join(to_value(form) for form in forms)+' ;\n')
 
             fr.write('\n')
         fa.write('\n')

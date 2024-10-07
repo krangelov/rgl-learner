@@ -6,6 +6,8 @@ from functools import reduce
 from dataclasses import dataclass
 import pickle
 from collections import defaultdict
+import math
+from rgl_learner.utils import escape
 
 
 # Wordgraph class to extract LCS
@@ -123,6 +125,8 @@ class wordgraph(object):
 
 
 def longest_variable(string):
+    if type(string) != str:
+        return 0
     thislen = 0
     maxlen = 0
     inside = 0
@@ -139,6 +143,8 @@ def longest_variable(string):
 
 def count_infix_segments(string):
     """Counts total number of infix segments, ignores @-strings."""
+    if type(string) != str:
+        return 0
     if u'[' not in string:
         return 0
     if u'@' in string:
@@ -167,6 +173,8 @@ def count_infixes(string):
 
 
 def string_to_varstring(string, vars):
+    if type(string) != str:
+        return str(string)
     if string == "-":
         return "nonExist"
     varpos = 0
@@ -221,6 +229,8 @@ def evalfact(lcs, c):
        Output: number of variables needed and the variables themselves in a list."""
     allbreaks = []
     for w in c:
+        if type(w) != str:
+            continue
         breaks = [0] * len(lcs)
         p = 0
         inside = 0
@@ -255,6 +265,9 @@ def evalfact(lcs, c):
 
 def findfactors(word, lcs):
     """Recursively finds the different ways to place an LCS in a string."""
+
+    if type(word) != str:
+        return []
 
     word = list(word)
     lcs = list(lcs)
@@ -300,7 +313,7 @@ class Paradigm:
     forms : list[str]
     typ : object
     var_insts : list[list[tuple[str,str]]]
-    assignments : list[str]
+    pattern : str
     tables : list[tuple[str,list[str]]]
 
     def compatible(self, other):
@@ -386,13 +399,13 @@ def unify_tables(paradigmlist):
     return unified
 
 def ffilter_lcp(factorlist):
-    flatten = lambda x: [y for l in x for y in flatten(l) if y != "-"] if type(x) is list else [x]
+    flatten = lambda x: [y for l in x for y in flatten(l) if type(y)==str and y != "-"] if type(x) is list else [x]
     lcprefix = lcp(flatten(factorlist))
-    factorlist = [[x for x in w if x == "-" or firstvarmatch(x, lcprefix)] for w in factorlist]
+    factorlist = [[x for x in w if x == "-" or type(x) != str or firstvarmatch(x, lcprefix)] for w in factorlist]
     return factorlist
 
 def ffilter_shortest_string(factorlist):
-    return [[x for x in w if len(x) == len(min(w, key=len))] for w in factorlist]
+    return [[x for x in w if type(x) != str or len(x) == len(min(w, key=len))] for w in factorlist]
 
 def ffilter_shortest_infix(factorlist):
     return [[x for x in w if count_infix_segments(x) == count_infix_segments(min(w, key=lambda x: count_infix_segments(x)))] for w in factorlist]
@@ -401,7 +414,7 @@ def ffilter_longest_single_var(factorlist):
     return [[x for x in w if longest_variable(x) == longest_variable(max(w, key=lambda x: longest_variable(x)))] for w in factorlist]
 
 def ffilter_leftmost_sum(factorlist):
-    return [[x for x in w if sum(i for i in range(len(x)) if x.startswith('[', i)) == min([sum(i for i in range(len(x)) if x.startswith('[', i)) for x in w])] for w in factorlist]
+    return [[x for x in w if type(x)!=str or sum(i for i in range(len(x)) if x.startswith('[', i)) == min([sum(i for i in range(len(x)) if x.startswith('[', i)) for x in w])] for w in factorlist]
 
 
 def filterbracketings(factorlist, functionlist, tablecap):
@@ -417,7 +430,7 @@ def learnparadigms(typ,inflectiontables):
     vartables = []
     TABLELIMIT = 16
     for ident, table in inflectiontables:
-        wg = [wordgraph.wordtograph(w) for w in table if w != "-"]
+        wg = [wordgraph.wordtograph(w) for w in table if type(w)==str and w != "-"]
         if not wg:
             variabletable = ['nonExist' for form in table]
             vartables.append((ident, table, [(table,variabletable,[],0,0)]))
@@ -425,7 +438,7 @@ def learnparadigms(typ,inflectiontables):
         result = reduce(lambda x, y: x & y, wg)
         lcss = result.longestwords
         if not lcss: # Table has no LCS - no variables
-            variabletable = ['"'+form+'"' for form in table]
+            variabletable = [('"'+form+'"' if type(form)==str else form) for form in table]
             vartables.append((ident, table, [(table,variabletable,[],0,0)]))
             continue
 
@@ -453,100 +466,97 @@ def learnparadigms(typ,inflectiontables):
 
 def correct_paradigms(cat,paradigms):
     mult_base_words = 0
-    for paradigm in paradigms:
+    for i,paradigm in enumerate(paradigms):
         # calculate the possible lengths of all bases
-        lens = {}
+        lens = defaultdict(lambda: defaultdict(lambda: [0,set()]))
         for xs in zip(*paradigm.var_insts):
             for base, form in xs:
-                lens.setdefault(base,set()).add(len(form))
+                stats = lens[base][len(form)]
+                stats[0] += 1
+                stats[1].add(form)
 
-        # parse the lemma into bases
-        ass   = []
-        elems = paradigm.forms[0].split('+')
+        maximum = (-1,{})
+        for base,l in lens.items():
+            total = sum((stats[0] for stats in l.values()))
+            entropy = 0
+            for stats in l.values():
+                p = stats[0]/total
+                entropy -= p*math.log(p)
+            if entropy > maximum[0]:
+                maximum = (entropy,l)
 
-        i = 0
-        start = 0
-        first = None
-        while i < len(elems):
-            elem = elems[i]
+        pattern = ""
+        for elem in paradigm.forms[0].split('+'):
             l = lens.get(elem)
+            if len(pattern) == 0:
+                pattern = elem
+            else:
+                pattern += "+"+elem
             if elem[0] == '"' and elem[-1] == '"':   # this is a string
-                start += len(elem)-2
+                pass
+            elif id(l) == id(maximum[1]):    # this is the variable segment
+                pass
             elif l and len(l) == 1:  # this is a base of a fixed length
                 l = next(iter(l))
-                if start > 0:
-                    expr = f"take {l} (drop {start} base)"
+                if l == 1:
+                    pattern += "@?"
                 else:
-                    expr = f"take {l} base"
-                if not first:
-                    first = (i,start)
-                start += l
-                ass.append(f"{elem} = {expr}")
-            else:
-                break              # nonExist or a variable length base
-            i += 1
-
-        if first and i == len(elems):
-            # This means that all bases are constant length. We treat
-            # the first base as variable and the rest as constant.
-            i,start = first
-            ass.clear()
-
-        j = len(elems)-1
-        end = 0
-        k = len(ass)
-        while j > i:
-            elem = elems[j]
-            l = lens.get(elem)
-            if elem[0] == '"' and elem[-1] == '"':   # this is a string
-                end += len(elem)-2
-            elif l and len(l) == 1:  # this is a base of a fixed length
-                l = next(iter(l))
-                if end > 0:
-                    expr = f"dp {l} (tk {end} base)"
+                    pattern += "@("+"+".join(["?"]*l)+")"
+            elif l:                              # low-entropy variable
+                max_count = max(count for count,forms in l.values())
+                pattern += "@("
+                first = True
+                max_count_l = None
+                for l,[count,forms] in l.items():
+                    if count == max_count and not max_count_l:
+                        max_count_l = l
+                    else:
+                        if first:
+                            first = False
+                        else:
+                            pattern += "|"
+                        pattern += "|".join('"'+form+'"' for form in forms)
+                if max_count_l == 1:
+                    pattern += "|?)"
                 else:
-                    expr = f"dp {l} base"
-                end += l
-                ass.insert(k,f"{elem} = {expr}")
+                    pattern += "|("+"+".join(["?"]*max_count_l)+"))"
             else:
+                pattern = None
+                if len(lens) > 1:
+                    mult_base_words += 1
                 break              # nonExist or a variable length base
-            j -= 1
 
-        if i == j:
-            elem = elems[i]
-            if lens.get(elem):
-                expr = "base"
-                if end > 0:
-                    expr = f"tk {end} {expr}"
-                if start > 0:
-                    expr = f"drop {start} ({expr})"
-                ass.insert(i,f"{elem} = {expr}")
+        if pattern == "base_1":
+            pattern = None
 
-            if len(ass) == len(lens):
-                paradigm.var_insts = [[("base",table[0])] for ident,table in paradigm.tables]
-                paradigm.assignments = ass
-        else:
-            mult_base_words += 1
+        if pattern:
+            paradigm.var_insts = [[("base",table[0])] for ident,table in paradigm.tables]
+        paradigm.pattern = pattern
 
     if mult_base_words > 0:
         print(f"Number of {cat} paradigms with more than 1 base: {mult_base_words}")
 
 def write_paradigm(i, max_i, par, cat):
-    names = [name for name, val in par.var_insts[0]]
+    if par.pattern == None:
+        names = [name for name, val in par.var_insts[0]]
+    else:
+        names = ["base"]
     s = "" if max_i == 1 else f"{i:03d}"
     code = f"""mk{cat}{s} : {len(names) * "Str -> "}{cat} ;\nmk{cat}{s} {" ".join(names)} =\n  """
-    if par.assignments:
-        code += "let "+" ;\n      ".join(par.assignments)+f"\n  in lin {cat}\n  "
+    if par.pattern:
+        code += "case base of {\n    "+par.pattern+f" => lin {cat}\n      "
+        code += par.typ.renderOper(6,par.forms)
+        code += ";\n    _ => error \"Can't apply paradigm mk"+cat+s+"\"\n  } ;"
     else:
         code += f"lin {cat}\n  "
-    code += par.typ.renderOper(2,par.forms) + " ;"
+        code += par.typ.renderOper(2,par.forms) + " ;"
     return code
 
 def write_lexicon(i, max_i, par, cat):
     code = ""
     s = "" if max_i == 1 else f"{i:03d}"
     for j,(ident,table) in enumerate(par.tables):
-        code += f"""lin '{ident}' = mk{cat}{s} {" ".join(('"'+val+'"' for name, val in par.var_insts[j]))} ;\n"""
+        code += f"""lin {escape(ident)} = mk{cat}{s} {" ".join(('"'+val+'"' for name, val in par.var_insts[j]))} ;\n"""
     return code
 
 

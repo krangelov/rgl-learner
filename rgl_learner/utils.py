@@ -117,3 +117,14 @@ def fix_table(table, param_order, params, fixed_names, num=0, exclude_list=[]):
         for extra_value in diff:
             new_table[extra_value] = {}
     return new_table
+
+def escape(s):
+    s2 = ""
+    for c in s:
+        if c == "'":
+            s2 += "\\'"
+        elif c == "\\":
+            s2 += "\\\\"
+        else:
+            s2 += c
+    return "'"+s2+"'"

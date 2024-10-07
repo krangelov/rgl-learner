@@ -5,6 +5,30 @@ ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-ta
                'multiword-construction', "error-unknown-tag", "analytic", "emphatic", "archaic", "dialectal",
                "active"]
 
+def preprocess(record):
+    if record.get("pos") == "noun":
+        found = False
+
+        def check_gender(tags):
+            nonlocal found
+            try:
+                tags.remove("neuter")
+            except:
+                pass
+            for g in ["masculine","feminine"]:
+                if g in tags:
+                    found = True
+                    break
+
+        check_gender(record.get("tags",[]))
+        for sense in record["senses"]:
+            check_gender(sense.get("tags",[]))
+
+        if not found:
+            record.setdefault("tags",[]).append("masculine")
+
+    return True
+
 def filter_lemma(lemma,tag,table):
     def is_multi(table):
         if type(table) == dict:
@@ -61,7 +85,7 @@ def patchN(lemma,table):
             c.setdefault("singular",table.pop(case,"-"))
             c.setdefault("plural","-")
 
-    indef = table.setdefault("indefinite",{})
+    indef = table.pop("indefinite",{})
     if type(indef) is dict:
         nom = indef.setdefault("nominative",{})
         if type(nom) is str:
@@ -74,12 +98,11 @@ def patchN(lemma,table):
             nom["plural"]   = indef.pop("plural",table.pop("plural","-"))
     elif type(indef) is str:
         indef = {"nominative": {"singular": indef, "plural": table.pop("plural","-")}}
-        table["indefinite"] = indef
     set_case(indef,"accusative")
     set_case(indef,"dative")
     set_case(indef,"ablative")
     indef.pop(None,None)
-    def_ = table.setdefault("definite",{})
+    def_ = table.pop("definite",{})
     if type(def_) is dict:
         nom = def_.setdefault("nominative",{})
         if type(nom) is str:
@@ -95,11 +118,12 @@ def patchN(lemma,table):
             nom["plural"]   = def_.pop("plural","-")
     elif type(def_) is str:
         def_ = {"nominative": {"singular": def_, "plural": "-"}}
-        table["definite"] = def_
     set_case(def_,"accusative")
     set_case(def_,"dative")
     set_case(def_,"ablative")
     def_.pop(None,None)
+
+    table["s"] = {"indefinite": indef, "definite": def_}
     table.pop("masculine",None)
     table.pop("feminine",None)
     table.pop("neuter",None)
