@@ -5,6 +5,7 @@ from collections import defaultdict
 import itertools
 import pandas as pd
 import pickle
+import re
 
 cat2tag = {
   'N': 'Noun',
@@ -246,53 +247,40 @@ def read_data(lang):
         langcode, tables = pickle.load(f)
     return langcode, tables
 
-def parse_ass(word, ass):
-    ass = ass.split()
-    if ass[0] == "dp":
-        if ass[2].strip("(") == "tk":
-            num1 = int(ass[3])
-            word = word[:-num1]
-        num = int(ass[1])
-        return word[-num:]
-    elif ass[0] == "tk":
-        num = int(ass[1])
-        return word[:-num]
-    elif ass[0] == "drop":
-        if ass[2].strip("(") == "tk":
-            num1 = int(ass[3])
-            word =  word[:-num1]
-        num = int(ass[1])
-        return word[num:]
-    elif ass[0] == "take":
-        num = int(ass[1])
-        return word[:num]
-    else:
-        return word
+def parse_pattern(word, pattern):
+    """Returns the dictionary of bases"""
+    after = False
+    start = 0
+    end = 0
+    stem_name = None
+    bases = []
 
-
-
-def form_tokens(tokens, assignments, forms, labels):
-    token_list = []
-   # print(assignments)
-    for token in tokens:
-        base, stem = token[0]
-        token_dict = {}
-        if assignments:
-            base_dict = {}
-            for assignment in assignments:
-                base, ass = assignment.split(" = ")
-                base_dict[base] = parse_ass(stem, ass)
-        else:
-            base_dict = {"base_1": stem}
-        for label, form in zip(labels, forms):
-            if form != "nonExist":
-                for base, morpheme in base_dict.items():
-                    form = form.replace(base, morpheme)
-                token_dict[label] = form.replace("+", "").replace('"', "")
+    pattern = pattern.replace('"', "").replace("(", "").replace(")", "").replace("*", "").replace("+?", "?")
+    regexp = pattern.replace('+', "")
+    for base in pattern.split("+"):
+        base = base.strip('"')
+        num_symbols = base.count("?")
+        if "base" in base:
+            if num_symbols > 0:
+                char = num_symbols
+                regexp = regexp.replace(base, f"(.{{{num_symbols}}})")
+                bases.append(re.sub(r'[\(|\)|\@|\?|\+]+', '', base))
             else:
-                token_dict[label] = "nonExist"
-        token_list.append(token_dict)
-    return token_list
+                after = True
+                char = 0
+                stem_name = base
+        else:
+            char = len(base)
+        if after:
+            end += char
+        else:
+            start += char
+
+    base_dict = {stem_name: word[start:-end]}
+    regexp = regexp.replace(stem_name, word[start:-end])
+    groups = re.findall(regexp, word)
+    base_dict.update(dict(zip(bases, groups)))
+    return base_dict
 
 def clean_forms(labels, forms):
     forms = {label: form.replace('"', "") for label, form in zip(labels, forms) if form != "nonExist"}
@@ -340,17 +328,7 @@ def prepare_data(df, feature_list, class_tags, how="suffix"):
 
 
 
-def coverage_score(token, forms, input=[]):
-    errors = []
-    coverage = [1]
-    for form, value in token.items():
-        if value != "-" and form not in input:
-            if forms.get(form) == value:
-                coverage.append(1)
-            else:
-                coverage.append(0)
-                errors.append(form)
-    return coverage, errors
+
 
 def build_tree(X, y):
     tree = DecisionTreeClassifier()

@@ -11,6 +11,7 @@ class GFType:
     def printParamDefs(self,f,pdefs):
         pass
 
+
 @dataclass(frozen=True)
 class GFStr(GFType):
     def __repr__(self):
@@ -33,6 +34,7 @@ class GFParamType(GFType):
     def __repr__(self):
         return self.name
 
+
     def printParamDefs(self,f,pdefs):
         pdefs[self.name].update(self.constructors)
         for constructor in self.constructors:
@@ -46,6 +48,9 @@ class GFParamType(GFType):
     def renderOper(self,indent,vars):
         return str(vars.pop(0))
 
+    def linearize(self):
+        return self.constructors
+
 @dataclass(frozen=True)
 class GFParamConstr:
     name: str
@@ -54,6 +59,12 @@ class GFParamConstr:
     def __repr__(self):
         if self.arg_types:
             return self.name+' '+' '.join(str(ty) for ty in self.arg_types)
+        else:
+            return self.name
+
+    def linearize(self):
+        if self.arg_types:
+            return [ty.linearize() for ty in self.arg_types]
         else:
             return self.name
 
@@ -79,6 +90,9 @@ class GFParamValue:
     def __str__(self):
         return self.value
 
+    def linearize(self):
+        return self.typ.linearize()
+
 @dataclass(frozen=True)
 class GFTable(GFType):
     arg_type: GFType
@@ -90,7 +104,11 @@ class GFTable(GFType):
     def linearize(self):
         labels = {}
         for lbl in self.arg_type.constructors:
-            labels[lbl] = self.res_type.linearize()
+            if type(lbl.linearize()) == list:
+                for l in lbl.linearize()[0]:
+                    labels[l] = self.res_type.linearize()
+            else:
+                labels[lbl] = self.res_type.linearize()
         return labels
 
     def renderOper(self,indent,vars):
