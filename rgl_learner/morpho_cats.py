@@ -46,6 +46,8 @@ class GFParamType(GFType):
                 yield value
 
     def renderOper(self,indent,vars):
+        if type(vars[0]) == tuple:
+            return str(vars.pop(0)[0])
         return str(vars.pop(0))
 
     def linearize(self):
@@ -114,13 +116,19 @@ class GFTable(GFType):
     def renderOper(self,indent,vars):
         s = 'table {\n'
         first = True
-        for value in self.arg_type.renderValues(0):
+        for num, value in enumerate(self.arg_type.renderValues(0)):
             if not first:
                 s += ' ;\n'
-            s += ' '*(indent+2)+value+' => '+self.res_type.renderOper(indent+len(value)+6,vars)
+            form = self.res_type.renderOper(indent+len(value)+6,vars)
+            if type(form) == tuple:
+                if form[1]:
+                    form = form[0] + " --guessed"
+                else:
+                    form = form[0]
+            s += ' '*(indent+2)+value+' => '+ form
             first = False
         s += '\n' + ' '*indent + '}'
-        return s
+        return s.replace ("--guessed ;", "; --guessed")
 
     def fillTagTable(self,tags,lst):
         for pcon in self.arg_type.constructors:
@@ -149,14 +157,20 @@ class GFRecord(GFType):
     def renderOper(self,indent,vars):
         s  = '{ '
         ind = 0
-        for lbl,ty in self.fields:
+        for num, (lbl,ty) in enumerate(self.fields):
             lbl = "".join([(c if c != '-' else '_') for c in str(lbl)])
             if ind > 0:
                 s += ' ;\n'
-            s += ' '*ind + lbl + ' = ' + ty.renderOper(indent+len(lbl)+5,vars)
+            form = ty.renderOper(indent+len(lbl)+5,vars)
+            if type(form) == tuple:
+                if form[1]:
+                    form = form[0] + " --guessed"
+                else:
+                    form = form[0]
+            s += ' '*ind + lbl + ' = ' + form
             ind = (indent+2)
         s += '\n' + ' '*indent + '}'
-        return s
+        return s.replace ("--guessed ;", "; --guessed")
 
     def fillTagTable(self,tags,lst):
         for lbl,ty in self.fields:

@@ -504,9 +504,9 @@ def guess_by_lemma(
             tokens.extend(preds)
 
 
-    with open(f"Inflection{langcode}.gf", "w") as f:
+    with open(f"Paradigms{langcode}.gf", "w") as f:
         f.write(
-            f"resource Inflection{langcode} = open Prelude, Res{langcode}, Paradigms{langcode} in {{\noper\n"
+            f"resource Paradigms{langcode} = open Prelude, Res{langcode}, Morpho{langcode} in {{\noper\n"
         )
         f.write(code)
         f.write("}")
