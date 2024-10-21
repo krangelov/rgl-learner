@@ -407,7 +407,7 @@ class LemmaTree:
 def write_gf_code(pos_tag, rules, other_forms, how):
     strings = " -> ".join(["Str",] * len(other_forms))
     forms = ", ".join([f"form{num+1}" for num in range(len(other_forms))])
-    gf_code = f"""mk{pos_tag}{len(other_forms)} : {strings} -> {cat2tag[pos_tag]}\n= \\{forms} -> case <{forms}> of {{\n"""
+    gf_code = f"""reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {cat2tag[pos_tag]}\n= \\{forms} -> case <{forms}> of {{\n"""
     for rule, (class_tag, entropy, _) in rules:
         rule_string = []
         num = 0
@@ -512,7 +512,7 @@ def guess_by_lemma(
 
             overload_code += f"mk{pos} = overload {{\n"
             for num in range(1, len(tree.other_forms)+1):
-                overload_code += f"mk{pos} : {' -> '.join(['Str',]*num)} -> {cat2tag[pos]} = mk{pos}{num}"
+                overload_code += f"mk{pos} : {' -> '.join(['Str',]*num)} -> {cat2tag[pos]} = reg{num if num > 1 else ""}{pos}"
                 if num == len(tree.other_forms):
                     overload_code += "\n"
                 else:
