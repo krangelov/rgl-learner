@@ -21,7 +21,7 @@ def form_token(stem, pattern, labels):
     else:
         base_dict = {"base_1": stem}
 
-    for label, form in labels.items():
+    for label, (form, _) in labels.items():
         if form != "nonExist":
             for base, morpheme in base_dict.items():
                 form = form.replace(base, morpheme)
@@ -406,28 +406,33 @@ class LemmaTree:
 def write_gf_code(pos_tag, rules, other_forms, how):
     strings = " -> ".join(["Str",] * len(other_forms))
     forms = ", ".join([f"form{num+1}" for num in range(len(other_forms))])
-    gf_code = f"""formBasedSelection{pos_tag} : {strings} -> {cat2tag[pos_tag]}\n= \\{forms} -> case <{forms}> of {{\n"""
+    gf_code = f"""mk{pos_tag}{len(other_forms)} : {strings} -> {cat2tag[pos_tag]}\n= \\{forms} -> case <{forms}> of {{\n"""
     for rule, (class_tag, entropy, _) in rules:
         rule_string = []
-        for num, (form, subrule) in enumerate(rule):
-            if num < len(other_forms) and other_forms[num] == form:
-                if how == "suffix":
-                    rule_string.append(f"_ + \"{subrule}\"")
+        num = 0
+        for req_form in other_forms:
+            if num < len(rule):
+                form, subrule = rule[num]
+                if req_form == form:
+                    if how == "suffix":
+                        rule_string.append(f"_ + \"{subrule}\"")
+                    else:
+                        rule_string.append(f"\"{subrule}\" + _")
+                    num += 1
                 else:
-                    rule_string.append(f"\"{subrule}\" + _")
-            else:
-                rule_string.append("_")
+                    rule_string.append("_")
         if len(rule_string) < len(other_forms):
             blanks = ["_",] * (len(other_forms) - len(rule_string))
             rule_string.extend(blanks)
 
         tag = str(class_tag + 1).zfill(3)
         if len(other_forms) > 1:
-            gf_code += f"""\t\t<{", ".join(rule_string)}> => mk{pos_tag}{tag} form1; --{entropy}\n """
+            gf_code += f"""\t\t<{", ".join(rule_string)}> => mk{pos_tag}{tag} form1;\n"""
         else:
-            gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form1; --{entropy}\n"""
-    gf_code += "} ;\n"
+            gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form1;\n"""
+    gf_code += "} ;\n\n"
     gf_code = gf_code.replace(";\n}", "\t\n}")
+    gf_code = gf_code.replace(";\n} ;", "\n} ;")
     return gf_code
 
 
@@ -444,7 +449,7 @@ def guess_by_lemma(
     lang,
     how="suffix",
     min_examples=2,
-    split=True,
+    split=False,
     t=None,
     max_depth=3,
     min_sample_leaf=3,
@@ -465,6 +470,7 @@ def guess_by_lemma(
     langcode, tables = read_data(lang)
     tokens = []
     code = ""
+    overload_code = ""
 
     for pos, forms in tables.items():
         if len(forms) > 1:
@@ -503,13 +509,21 @@ def guess_by_lemma(
             print(tree.other_forms)
             tokens.extend(preds)
 
+            overload_code += f"mk{pos} : overload {{\n"
+            for num in range(1, len(tree.other_forms)+1):
+                overload_code += f"mk{pos}: {'-> '.join(['Str',]*num)} -> mk{pos}{num};\n"
+            overload_code += "} ;\n\n"
+
+
 
     with open(f"Paradigms{langcode}.gf", "w") as f:
         f.write(
             f"resource Paradigms{langcode} = open Prelude, Res{langcode}, Morpho{langcode} in {{\noper\n"
         )
         f.write(code)
+        f.write(overload_code)
         f.write("}")
+
 
     unimorph_code = format_unimorph(tokens)
     with open(f"unimorph_{langcode}.tsv", "w") as f:
