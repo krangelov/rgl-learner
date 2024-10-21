@@ -24,6 +24,7 @@ def form_token(stem, pattern, labels):
     for label, (form, _) in labels.items():
         if form != "nonExist":
             for base, morpheme in base_dict.items():
+                morpheme = morpheme[0] if type(morpheme) == tuple else morpheme
                 form = form.replace(base, morpheme)
             form = re.sub(r"base_\d", r"", form)
             token_dict[label] = form.replace("+", "").replace('"', "")
@@ -509,9 +510,13 @@ def guess_by_lemma(
             print(tree.other_forms)
             tokens.extend(preds)
 
-            overload_code += f"mk{pos} : overload {{\n"
+            overload_code += f"mk{pos} = overload {{\n"
             for num in range(1, len(tree.other_forms)+1):
-                overload_code += f"mk{pos}: {'-> '.join(['Str',]*num)} -> mk{pos}{num};\n"
+                overload_code += f"mk{pos} : {' -> '.join(['Str',]*num)} -> {cat2tag[pos]} = mk{pos}{num}"
+                if num == len(tree.other_forms):
+                    overload_code += "\n"
+                else:
+                    overload_code += ";\n"
             overload_code += "} ;\n\n"
 
 
