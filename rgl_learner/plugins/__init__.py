@@ -10,6 +10,9 @@ class PluginWrapper:
         self.params_order = module.get("params_order", {})
         self.ignore_tags = module.get("ignore_tags", [])
         self.params_order = module.get("params_order", {})
+        self.default_params = module.get("default_params", {})
+        self.required_forms = module.get("required_forms", {})
+        self.separate_values = module.get("separate_values", {})
 
     def preprocess(self,*args):
         fn = self.module.get("preprocess")

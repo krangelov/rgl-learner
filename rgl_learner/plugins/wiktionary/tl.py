@@ -85,6 +85,9 @@ for tag, (_, param) in params.items():
     if param not in param_order:
         param_order.append(param)
 
+required_forms = {"V": ["root", ]}
+separate_values = {"V": "Voice"}
+
 
 def filter_lemma(lemma, pos, table):
     if pos == "pron" or pos == "prep" or pos == "name":
