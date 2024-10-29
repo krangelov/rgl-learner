@@ -450,6 +450,67 @@ def filter_tokens(tag, table, paradigm, required=None):
         return (table[0].split("_")[0].lower(), tag), forms
 
 
+boilerplate = {
+  "N": "mkN2 = overload {\n" +
+       "  mkN2 : N -> N2 = \\n -> lin N2 n ** {c2=noPrep};\n"+
+       "  mkN2 : N -> Prep -> N2 = \\n,p -> lin N2 n ** {c2=p};\n"+
+       "} ;\n"+
+       "\n"+
+       "mkPN : Str -> PN = \\s -> lin PN {s=s} ;\n"+
+       "mkLN : Str -> LN = \\s -> lin LN {s=s} ;\n"+
+       "mkGN : Str -> GN = \\s -> lin GN {s=s} ;\n"+
+       "mkSN : Str -> SN = \\s -> lin SN {s=s} ;\n\n",
+  "V": "mkV2 = overload {\n"+
+       "  mkV2 : V -> V2 = \\v -> v ** {c2=noPrep} ;\n"+
+       "  mkV2 : V -> Prep -> V2 = \\v,p -> v ** {c2=p} ;\n"+
+       "} ;\n"+
+       "\n"+
+       "mkVV : V -> VV = \\v -> lin VV v ;\n"+
+       "mkVS : V -> VS = \\v -> lin VS v ;\n"+
+       "mkVQ : V -> VQ = \\v -> lin VQ v ;\n"+
+       "mkVA : V -> VA = \\v -> lin VA v ;\n"+
+       "\n"+
+       "mkV2V = overload {\n"+
+       "  mkV2V : V -> V2V = \\v -> lin V2V v ** {c2,c3=noPrep} ;\n"+
+       "  mkV2V : V -> Prep -> Prep -> V2V = \\v,p2,p3 -> lin V2V v ** {c2=p2; c3=p3} ;\n"+
+       "} ;\n"+
+       "\n"+
+       "mkV2S = overload {\n"+
+       "  mkV2S : V -> V2S = \\v -> lin V2S v ** {c2,c3=noPrep} ;\n"+
+       "  mkV2S : V -> Prep -> Prep -> V2S = \\v,p2,p3 -> lin V2S v ** {c2=p2; c3=p3} ;\n"+
+       "} ;\n"+
+       "\n"+
+       "mkV2Q = overload {\n"+
+       "  mkV2Q : V -> V2Q = \\v -> lin V2Q v ** {c2,c3=noPrep} ;\n"+
+       "  mkV2Q : V -> Prep -> Prep -> V2Q = \\v,p2,p3 -> lin V2Q v ** {c2=p2; c3=p3} ;\n"+
+       "} ;\n"+
+       "\n"+
+       "mkV2A = overload {\n"+
+       "  mkV2A : V -> V2A = \\v -> lin V2A v ** {c2,c3=noPrep} ;\n"+
+       "  mkV2A : V -> Prep -> Prep -> V2A = \\v,p2,p3 -> lin V2A v ** {c2=p2; c3=p3} ;\n"+
+       "} ;\n"+
+       "\n"+
+       "mkV3 = overload {\n"+
+       "  mkV3 : V -> V3 = \\v -> lin V3 v ** {c2,c3=noPrep} ;\n"+
+       "  mkV3 : V -> Prep -> Prep -> V3 = \\v,p2,p3 -> lin V3 v ** {c2=p2; c3=p3} ;\n"+
+       "} ;\n\n",
+  "A": "mkA2 = overload {\n"+
+       "  mkA2 : A -> A2 = \\a -> lin A2 a ** {c2=noPrep} ;\n"+
+       "  mkA2 : A -> Prep -> A2 = \\a,p -> lin A2 a ** {c2=p} ;\n"+
+       "} ;\n\n",
+  "Adv": (
+       "mkAdv : Str -> Adv = \\s -> lin Adv {s=s} ;\n"+
+       "mkAdV : Str -> AdV = \\s -> lin AdV {s=s} ;\n"+
+       "mkAdA : Str -> AdA = \\s -> lin AdA {s=s} ;\n"+
+       "mkAdN : Str -> AdN = \\s -> lin AdN {s=s} ;\n\n"),
+  "Interj":
+       "mkInterj : Str -> Interj = \\s -> lin Interj {s=s} ;\n\n",
+  "Voc":
+       "mkVoc : Str -> Voc = \\s -> lin Voc {s=s} ;\n\n",
+  "Prep":
+       "mkPrep : Str -> Prep = \\s -> lin Prep {s=s} ;\n"+
+       "noPrep : Prep = lin Prep {s=\"\"} ;\n\n"
+  }
 
 def guess_by_lemma(
     lang,
@@ -517,14 +578,18 @@ def guess_by_lemma(
 
             overload_code += f"mk{pos} = overload {{\n"
             for num in range(1, len(tree.other_forms)+1):
-                overload_code += f"mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
+                overload_code += f"  mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
                 if num == len(tree.other_forms):
                     overload_code += "\n"
                 else:
                     overload_code += ";\n"
             overload_code += "} ;\n\n"
+            overload_code += boilerplate.get(pos,"")
 
-
+    overload_code+=boilerplate.get("Adv","")
+    overload_code+=boilerplate.get("Interj","")
+    overload_code+=boilerplate.get("Voc","")
+    overload_code+=boilerplate.get("Prep","")
 
     with open(f"Paradigms{langcode}.gf", "w") as f:
         f.write(

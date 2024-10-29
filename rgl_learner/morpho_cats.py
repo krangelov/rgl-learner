@@ -369,6 +369,7 @@ def learn(source,lang):
          open('Dict'+lang_code+'Abs.gf','w') as fa:
         fr.write('resource Res'+lang_code+' = {\n')
         fr.write('\n')
+        fr.write('oper Compl = {s : Str} ;\n\n')
         fc.write('concrete Cat'+lang_code+' of Cat = open Res'+lang_code+' in {\n')
         fc.write('\n')
         fd.write('concrete Dict'+lang_code+' of Dict'+lang_code+'Abs = Cat'+lang_code+' ** open Res'+lang_code+', Prelude in {\n')
@@ -377,7 +378,22 @@ def learn(source,lang):
         fa.write('\n')
         for tag, (cat_name, types) in lin_types.items():
             pdefs = defaultdict(set)
-            fc.write('lincat '+cat_name+' = '+tag.title()+' ;\n')
+
+            if cat_name == "N":
+                fc.write('lincat N = '+tag.title()+' ;\n')
+                fc.write('lincat N2 = '+tag.title()+' ** {c2 : Compl} ;\n')
+                fc.write('lincat N3 = '+tag.title()+' ** {c2,c3 : Compl} ;\n')
+            elif cat_name == "V":
+                fc.write('lincat V, VA, VV, VS, VQ = '+tag.title()+' ;\n')
+                fc.write('lincat V2, V2S, V2Q = '+tag.title()+' ** {c2 : Compl} ;\n')
+                fc.write('lincat V3, V2A, V2V = '+tag.title()+' ** {c2,c3 : Compl} ;\n')
+            elif cat_name == "A":
+                fc.write('lincat A = '+tag.title()+' ;\n')
+                fc.write('lincat A2 = '+tag.title()+' ** {c2 : Compl} ;\n')
+            elif cat_name == "Adv":
+                fc.write('lincat Adv, AdV, AdA, AdN = '+tag.title()+' ;\n')
+            else:
+                fc.write('lincat '+cat_name+' = '+tag.title()+' ;\n')
 
             for i,(typ,lexemes) in enumerate(sorted(types.items(),key=lambda x: -len(x[1]))):
                 type_name = tag.title()+(str(i) if i else "")
@@ -411,6 +427,11 @@ def learn(source,lang):
                     fd.write('lin '+escape(ident)+' = mk'+type_name+' '+' '.join(to_value(form) for form in forms)+' ;\n')
 
             fr.write('\n')
+
+        fc.write('lincat Prep = Compl ;\n')
+        fc.write('lincat Interj = {s : Str} ;\n')
+        fc.write('lincat Voc = {s : Str} ;\n')
+
         fa.write('\n')
         fa.write('}\n')
         fd.write('\n')
