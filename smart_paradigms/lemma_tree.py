@@ -406,8 +406,13 @@ class LemmaTree:
 
 def write_gf_code(pos_tag, rules, other_forms, how):
     strings = " -> ".join(["Str",] * len(other_forms))
-    forms = ", ".join([f"form{num+1}" for num in range(len(other_forms))])
-    gf_code = f"""reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {cat2tag[pos_tag]}\n= \\{forms} -> case <{forms}> of {{\n"""
+    if len(other_forms) == 1:
+        args = "form"
+        tupl = "form"
+    else:
+        args = ", ".join([f"form{num+1}" for num in range(len(other_forms))])
+        tupl = "<"+args+">"
+    gf_code = f"""reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {pos_tag}\n= \\{args} -> case {tupl} of {{\n"""
     for rule, (class_tag, entropy, _) in rules:
         rule_string = []
         num = 0
@@ -430,7 +435,7 @@ def write_gf_code(pos_tag, rules, other_forms, how):
         if len(other_forms) > 1:
             gf_code += f"""\t\t<{", ".join(rule_string)}> => mk{pos_tag}{tag} form1;\n"""
         else:
-            gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form1;\n"""
+            gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form;\n"""
     gf_code += "} ;\n\n"
     gf_code = gf_code.replace(";\n}", "\t\n}")
     gf_code = gf_code.replace(";\n} ;", "\n} ;")
@@ -512,7 +517,7 @@ def guess_by_lemma(
 
             overload_code += f"mk{pos} = overload {{\n"
             for num in range(1, len(tree.other_forms)+1):
-                overload_code += f"mk{pos} : {' -> '.join(['Str',]*num)} -> {cat2tag[pos]} = reg{num if num > 1 else ""}{pos}"
+                overload_code += f"mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
                 if num == len(tree.other_forms):
                     overload_code += "\n"
                 else:
@@ -523,7 +528,7 @@ def guess_by_lemma(
 
     with open(f"Paradigms{langcode}.gf", "w") as f:
         f.write(
-            f"resource Paradigms{langcode} = open Prelude, Res{langcode}, Morpho{langcode} in {{\noper\n"
+            f"resource Paradigms{langcode} = open Prelude, Cat{langcode}, Res{langcode}, Morpho{langcode} in {{\noper\n"
         )
         f.write(code)
         f.write(overload_code)
