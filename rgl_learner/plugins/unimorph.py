@@ -1,6 +1,7 @@
 import sys
 import re
 import glob
+import rgl_learner.plugins as plugins
 
 ignore_tags = ["LGSPEC1", "LGSPEC2"]
 
@@ -282,6 +283,8 @@ def filter_tags(tags):
 
 
 def extract(lang):
+    lang_plugin = plugins["unimorph",lang]
+
     d = {}
     datasets = glob.glob(f"data/{lang}/{lang}*")
     for dataset in datasets:
@@ -291,7 +294,7 @@ def extract(lang):
                     line = line.strip()
                     if line == "":
                         continue
-                    lemma, form, tags = line.split("\t")
+                    lemma, form, tags = lang_plugin.preprocess(line.split("\t"))
                     tags = filter_tags(tags)
                     for tag in tag2cat:
                         if tag in tags:

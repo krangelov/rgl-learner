@@ -47,6 +47,13 @@ for tag, param in params.items():
     if param[-1] not in param_order:
         param_order.append(param[-1])
 
+def preprocess(record):
+    # fixing latin to cyrilic letters
+    def fix(s):
+        return s.replace("a","а").replace("o","о").replace("p","р").replace("e","е").replace("x","х")
+    record[0] = fix(record[0])
+    record[1] = fix(record[1])
+    return record
 
 def merge_tags(pos, forms, w, tags):
     if "SBJV" in tags:
