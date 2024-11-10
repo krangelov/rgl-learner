@@ -593,7 +593,7 @@ def guess_by_lemma(
 
     with open(f"Paradigms{langcode}.gf", "w") as f:
         f.write(
-            f"resource Paradigms{langcode} = open Prelude, Cat{langcode}, Res{langcode}, Morpho{langcode} in {{\noper\n"
+            f"resource Paradigms{langcode} = Morpho{langcode}  ** open Prelude, Cat{langcode}, Res{langcode} in {{\noper\n"
         )
         f.write(code)
         f.write(overload_code)
