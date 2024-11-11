@@ -86,6 +86,17 @@ def patchV(lemma, table):
 
     new_table["SBJV"] = new_table["SBJV"]["noAspect"]["POS"]
     new_table["IMP"] = new_table["IMP"]["noAspect"]
+
+    for asp in ["PROG","noAspect"]:
+        for pol in ["POS","NEG"]:
+            new_table["IND"]["PRS"][asp][pol]["1"] = new_table["IND"]["PRS"][asp][pol]["1"]["noFormality"]
+            new_table["IND"]["PRS"][asp][pol]["3"] = new_table["IND"]["PRS"][asp][pol]["3"]["noFormality"]
+    for asp in ["PRF","PROG","noAspect"]:
+        for pol in ["POS","NEG"]:
+            new_table["IND"]["PST"][asp][pol]["1"] = new_table["IND"]["PST"][asp][pol]["1"]["noFormality"]
+            new_table["IND"]["PST"][asp][pol]["3"] = new_table["IND"]["PST"][asp][pol]["3"]["noFormality"]
+    new_table["SBJV"]["1"] = new_table["SBJV"]["1"]["noFormality"]
+    new_table["SBJV"]["3"] = new_table["SBJV"]["3"]["noFormality"]
     return new_table
 
 
