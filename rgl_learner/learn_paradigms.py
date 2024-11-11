@@ -467,9 +467,9 @@ def unify_tables(paradigmlist):
                for f, w in zip(form, weights):
                    possible_form[f] += w
                possible_form = sorted(possible_form.items(), key=lambda x: x[1], reverse=True)
-               if possible_form[0][0][0] == "nonExist" and len(possible_form) > 1 and possible_form[1][0][1] == num_bases:
+               if possible_form[0][0][0] == "nonExist" and len(possible_form) > 1 and possible_form[1][0][0] != "nonExist" and possible_form[1][0][1] == num_bases:
                    new_paradigm.append((possible_form[1][0][0], possible_form[1][0][2]))
-               elif possible_form[0][0][1] == num_bases:
+               elif possible_form[0][0][0] != "nonExist" and possible_form[0][0][1] == num_bases:
                    new_paradigm.append((possible_form[0][0][0], possible_form[0][0][2]))
                else:
                    new_paradigm.append(("nonExist", False))
