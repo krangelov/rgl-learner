@@ -316,194 +316,61 @@ class Paradigm:
     pattern : str
     tables : list[tuple[str,list[str]]]
 
-    def merge(self, other):
-        forms = []
-        for i in range(len(self.forms)):
-            forms.append(self.forms[i] if self.forms[i] != "nonExist" else other.forms[i])
-        return Paradigm(forms,self.typ,self.var_insts+other.var_insts,[],self.tables+other.tables)
-
     def compatible(self, other):
-        merge_by_form = True
+        if len(self.forms) != len(other.forms):
+            return False
+
         overlap = 0
-        stats = []
-        num_bases = len(self.var_insts[0])
-        for table in self.tables:
-            bases = []
-            paradigm = []
-            for par_form, table_form, old_form in zip(other.forms, table[1], self.forms):
-                if type(par_form) == str and type(table_form) == str:
-                    if par_form != "nonExist" and table_form != "-":
-                        if par_form == old_form:
-                            overlap += 1
-                        else:
-                            par_form = re.sub(r'(\+|\"|\)|\(|\*)', r'', par_form)
-                            par_form = re.sub(r'base_\d', r'(.+)', par_form)
-                            groups = re.findall(par_form, table_form)
-                            if len(groups) == 0:
-                                merge_by_form = False
-                            elif "" in groups or "" in groups[0]:
-                                merge_by_form = False
-                            else:
-                                overlap += 1
-                                bases.append(tuple(groups))
-                        paradigm.append((old_form, num_bases, False))
-                    elif table_form == "-" and par_form != "-":
-                        overlap += 1
-                        paradigm.append((par_form, len(other.var_insts[0]), True))
-                    else:
-                        paradigm.append((old_form, num_bases, False))
-                elif par_form != str(table_form):
-                    merge_by_form = False
-                    paradigm.append((old_form, num_bases, False))
-                else:
-                    overlap += 1
-                    paradigm.append((old_form, num_bases, False))
+        for i in range(len(self.forms)):
+            if self.forms[i] != "nonExist" and other.forms[i] != "nonExist":
+                if self.forms[i] != other.forms[i]:
+                    return False
+                overlap += 1
 
-            if len(set(bases)) > 1:
-                merge_by_form = False
-
-            if overlap:
-                stats.append(overlap/len(self.forms))
-
-        if merge_by_form:
-            return True
-        elif overlap:
-            return (paradigm, sum(stats)/len(stats))
-
-def check_by_form(table, paradigm):
-    merge = []
-    bases = []
-    for par_form, table_form in zip(paradigm.forms, table):
-        if type(par_form) == str and type(table_form) == str:
-            if par_form != "-" and table_form != "-":
-                par_form = re.sub(r'(\+|\"|\)|\(|\*)', r'', par_form)
-                par_form = re.sub(r'base_\d', r'(.+)', par_form)
-                groups = re.findall("^"+par_form+"$", table_form)
-               # print(par_form, table_form, groups)
-                if len(groups) == 0:
-                    merge.append(False)
-                else:
-                    merge.append(True)
-                    bases.append(tuple(groups))
-        elif par_form != str(table_form):
-            merge.append(False)
-        else:
-            merge.append(True)
-
-    if len(set(bases)) == 1:
-        if all(merge):
-            return True, True
-        elif any(merge):
-            return False, True
-
-    return False, False
+        return overlap
 
 def collapse_tables(typ,tables):
     """Input: list of tables
        Output: Collapsed paradigms."""
     paradigms_set = {}
     paradigms     = []
-    tables = sorted(tables, key=lambda x: x.count("-")/len(x), reverse=True)
     for ident,table,t in tables:
         key = tuple(t[1])
         p = paradigms_set.get(key)
         if not p:
-            found = False
-            for paradigm in paradigms:
-                collapse, merge = check_by_form(table, paradigm)
-                if collapse:
-                    found = True
-                    break
-            if found:
-                p = paradigm
-            else:
-                p = Paradigm(t[1], typ, [], [], [])
-                paradigms_set[key] = p
-                paradigms.append(p)
+            p = Paradigm(t[1], typ, [], [], [])
+            paradigms_set[key] = p
+            paradigms.append(p)
         p.var_insts.append(vars_to_string(t[2]))
         p.tables.append((ident,table))
     return paradigms
 
-def unify_tables(paradigmlist):
-    graph  = []
-    others = []
+def merge_paradigms(paradigmlist):
+    paradigms = {}
     for i,p1 in enumerate(paradigmlist):
-        edges = []
         possible_paradigms = []
         for j,p2 in enumerate(paradigmlist):
             if i !=j:
-                match = p1.compatible(p2)
-                if match == True:   # compatible
-                    edges.append(j)
-                elif match != None: # paradigms have something in common
-                    possible_paradigms.append(match)
-        graph.append(edges)
-        others.append(possible_paradigms)
+                overlap = p1.compatible(p2)
+                if overlap:
+                    possible_paradigms.append((overlap,p2))
+        possible_paradigms.sort(key=lambda x: x[0], reverse=True)
 
-    cliques = []
-    def bors_kerbosch(R, P, X):
-        nonlocal graph, cliques
-
-        if len(P) == 0 and len(X) == 0:
-            cliques.append(sorted(R))
-            return
-
-        (d, pivot) = max([(len(graph[v]), v) for v in P.union(X)])
-
-        for v in P.difference(graph[pivot]):
-            bors_kerbosch(R.union(set([v])), P.intersection(graph[v]), X.intersection(graph[v]))
-            P.remove(v)
-            X.add(v)
-
-    bors_kerbosch(set(), set(range(len(graph))), set())
-
-    def collapse_paradigm(forms, possible_paradigms, num_bases):
-        possible_paradigms, weights = zip(*possible_paradigms)
-        possible_paradigms = zip(*possible_paradigms)
-        new_paradigm = []
-        for orig_form, form in zip(forms,possible_paradigms):
-           if orig_form == "nonExist":
-               possible_form = defaultdict(int)
-               for f, w in zip(form, weights):
-                   possible_form[f] += w
-               possible_form = sorted(possible_form.items(), key=lambda x: x[1], reverse=True)
-               if possible_form[0][0][0] == "nonExist" and len(possible_form) > 1 and possible_form[1][0][0] != "nonExist" and possible_form[1][0][1] == num_bases:
-                   new_paradigm.append((possible_form[1][0][0], possible_form[1][0][2]))
-               elif possible_form[0][0][0] != "nonExist" and possible_form[0][0][1] == num_bases:
-                   new_paradigm.append((possible_form[0][0][0], possible_form[0][0][2]))
-               else:
-                   new_paradigm.append(("nonExist", False))
-           else:
-               new_paradigm.append((orig_form, False))
-        return new_paradigm
-
-    ambiguities = [0]*len(graph)
-    for clique in cliques:
-        for vertex in clique:
-            ambiguities[vertex] += 1
-
-    unified = []
-    for clique in cliques:
-        paradigm = None
-        possible_paradigms = []
-        for vertex in clique:
-            if ambiguities[vertex] == 1:
-                possible_paradigms += others[vertex]
-                if paradigm:
-                    paradigm = paradigm.merge(paradigmlist[vertex])
+        forms = []
+        for k in range(len(p1.forms)):
+            if p1.forms[k] == "nonExist":
+                for overlap, p2 in possible_paradigms:
+                    if p2.forms[k] != "nonExist":
+                        forms.append((p2.forms[k],True))
+                        break
                 else:
-                    paradigm = paradigmlist[vertex]
-        if paradigm:
-            paradigm.forms = collapse_paradigm(paradigm.forms, possible_paradigms, len(paradigm.var_insts[0]))
-            unified.append(paradigm)
+                    forms.append((p1.forms[k],False))
+            else:
+                forms.append((p1.forms[k],False))
 
-    for vertex in range(len(graph)):
-        if ambiguities[vertex] > 1:
-            paradigm = paradigmlist[vertex]
-            paradigm.forms = collapse_paradigm(paradigm.forms, others[vertex], len(paradigm.var_insts[0]))
-            unified.append(paradigm)
+        p1.forms = forms
 
-    return unified
+    return paradigmlist
 
 def ffilter_lcp(factorlist):
     flatten = lambda x: [y for l in x for y in flatten(l) if type(y)==str and y != "-"] if type(x) is list else [x]
@@ -568,7 +435,7 @@ def learnparadigms(typ,inflectiontables):
         filteredtables.append((ident, values, besttable))
 
     paradigmlist = collapse_tables(typ,filteredtables)
-    paradigmlist = unify_tables(paradigmlist)
+    paradigmlist = merge_paradigms(paradigmlist)
 
     return paradigmlist
 
