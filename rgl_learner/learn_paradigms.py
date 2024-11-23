@@ -542,7 +542,7 @@ def write_lexicon(i, max_i, par, cat):
 
 def learn(lang):
     with open(f"data/{lang}/lexicon.pickle", "rb") as f:
-        langcode, lexicon = pickle.load(f)
+        source, langcode, lexicon = pickle.load(f)
 
     print("Learning paradigms..")
     tables = defaultdict(list)
@@ -557,7 +557,7 @@ def learn(lang):
     print("Writing output files..")
 
     with open(f"data/{lang}/paradigms.pickle", "wb") as f:
-        pickle.dump((langcode, tables), f)
+        pickle.dump((source, langcode, tables), f)
 
     with open(f"Dict{langcode}.gf", "w") as dct, open(f"Morpho{langcode}.gf", "w") as para:
         dct.write(

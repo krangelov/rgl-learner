@@ -442,6 +442,6 @@ def learn(source,lang):
         fr.write('}\n')
 
     with open(f"data/{lang}/lexicon.pickle", "wb") as f:
-        pickle.dump((lang_code,lin_types),f)
+        pickle.dump((source,lang_code,lin_types),f)
 
     print(getrusage(RUSAGE_SELF))

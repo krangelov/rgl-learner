@@ -244,8 +244,7 @@ gf2unimorph = {'Indicative': 'IND',
 
 def read_data(lang):
     with open(f"data/{lang}/paradigms.pickle", "rb") as f:
-        langcode, tables = pickle.load(f)
-    return langcode, tables
+        return pickle.load(f)
 
 def parse_pattern(word, pattern):
     """Returns the dictionary of bases"""

@@ -32,7 +32,7 @@ def render(top,ty,expr):
 
 def learn(lang):
     with open(f"data/{lang}/lexicon.pickle", "rb") as f:
-        langcode, lexicon = pickle.load(f)
+        source, langcode, lexicon = pickle.load(f)
     with open(f"Documentation{langcode}.gf", "w") as d:
         d.write(f"concrete Documentation{langcode} of Documentation = Cat{langcode} ** open\n")
         d.write(f"  Res{langcode}, Prelude, HTML in {{\n")

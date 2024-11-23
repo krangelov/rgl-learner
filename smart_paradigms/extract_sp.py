@@ -6,7 +6,7 @@ import random
 
 def extract(lang, min_examples=2, split=True,
             t=[10, 50, 200], max_depth=3, min_sample_leaf=3, how="suffix", iters=4, rep=5):
-    langcode, tables = read_data(lang)
+    source, langcode, tables = read_data(lang)
     tokens = []
     avg_score = 0
     avg_len = 0

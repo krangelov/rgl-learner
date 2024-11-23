@@ -534,7 +534,7 @@ def guess_by_lemma(
         for form in read_forms:
             pos, form = form.split(";", maxsplit=1)
             required_forms[pos].append(form)
-    langcode, tables = read_data(lang)
+    source, langcode, tables = read_data(lang)
     tokens = []
     code = ""
     overload_code = ""

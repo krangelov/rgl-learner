@@ -4,7 +4,7 @@ from rgl_learner.learn_paradigms import write_paradigm
 
 def learn(lang):
     with open(f"data/{lang}/paradigms.pickle", "rb") as f:
-        langcode, tables = pickle.load(f)
+        source, langcode, tables = pickle.load(f)
 
     max_depth = 3
     min_count = 2
