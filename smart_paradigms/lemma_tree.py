@@ -414,7 +414,7 @@ def write_gf_code(pos_tag, rules, other_forms, how):
     else:
         args = ", ".join([f"form{num+1}" for num in range(len(other_forms))])
         tupl = "<"+args+">"
-    gf_code = f"""reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {pos_tag}\n= \\{args} -> case {tupl} of {{\n"""
+    gf_code = f"""  reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {pos_tag}   -- {"  ".join(other_forms)}\n    = \\{args} -> case {tupl} of {{\n"""
     for rule, (class_tag, entropy, _) in rules:
         rule_string = []
         num = 0
@@ -565,10 +565,7 @@ def guess_by_lemma(
             overload_code += f"mk{pos} = overload {{\n"
             for num in range(1, len(tree.other_forms)+1):
                 overload_code += f"  mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
-                if num == len(tree.other_forms):
-                    overload_code += "\n"
-                else:
-                    overload_code += ";\n"
+                overload_code += f'{";" if num < len(tree.other_forms) else ""}   -- {"  ".join(tree.other_forms[:num])}\n'
             overload_code += "} ;\n\n"
             overload_code += boilerplate.get(pos,"")
 
