@@ -7,8 +7,9 @@ from dataclasses import dataclass
 import pickle
 from collections import defaultdict, Counter
 import math
+import rgl_learner.plugins as plugins
 from rgl_learner.utils import escape
-
+from smart_paradigms.utils import reverse_dict
 
 # Wordgraph class to extract LCS
 
@@ -440,7 +441,7 @@ def learnparadigms(typ,inflectiontables):
     return paradigmlist
 
 
-def correct_paradigms(cat,paradigms):
+def correct_paradigms(lang_plugin,cat,paradigms):
     mult_base_words = 0
     for i, paradigm in enumerate(paradigms):
         # calculate the possible lengths of all bases
@@ -464,7 +465,13 @@ def correct_paradigms(cat,paradigms):
         pattern = ""
         forms, guessed = zip(*paradigm.forms)
 
-        for elem in forms[0].split('+'):
+        required_forms = lang_plugin.required_forms.get(cat)
+        if required_forms:
+            index = reverse_dict(paradigm.typ.linearize()).index(required_forms[0])
+        else:
+            index = 0
+
+        for elem in forms[index].split('+'):
             l = lens.get(elem)
             if len(pattern) == 0:
                 pattern = elem
@@ -544,6 +551,8 @@ def learn(lang):
     with open(f"data/{lang}/lexicon.pickle", "rb") as f:
         source, langcode, lexicon = pickle.load(f)
 
+    lang_plugin = plugins[source,lang]
+
     print("Learning paradigms..")
     tables = defaultdict(list)
     for pos_tag, (cat_name, table) in lexicon.items():
@@ -551,7 +560,7 @@ def learn(lang):
             print("Warning: the inflection tables are not unified yet, using the first one")
         typ,lexemes = next(iter(table.items()))
         paradigms = learnparadigms(typ,lexemes)
-        correct_paradigms(cat_name, paradigms)
+        correct_paradigms(lang_plugin, cat_name, paradigms)
         tables[cat_name].extend(paradigms)
 
     print("Writing output files..")
