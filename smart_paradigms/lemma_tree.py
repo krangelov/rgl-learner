@@ -409,36 +409,31 @@ class LemmaTree:
 def write_gf_code(pos_tag, rules, other_forms, how):
     strings = " -> ".join(["Str",] * len(other_forms))
     if len(other_forms) == 1:
-        args = "form"
+        args = ["form"]
         tupl = "form"
     else:
-        args = ", ".join([f"form{num+1}" for num in range(len(other_forms))])
-        tupl = "<"+args+">"
-    gf_code = f"""  reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {pos_tag}   -- {"  ".join(other_forms)}\n    = \\{args} -> case {tupl} of {{\n"""
+        args = [f"form{num+1}" for num in range(len(other_forms))]
+        tupl = "<"+", ".join(args)+">"
+    gf_code = f"""  reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {pos_tag}   -- {"  ".join(other_forms)}\n    = \\{", ".join(args)} -> case {tupl} of {{\n"""
     for rule, (class_tag, entropy, _) in rules:
         rule_string = []
-        num = 0
-        for req_form in other_forms:
-            if num < len(rule):
-                form, subrule = rule[num]
-                if req_form == form:
-                    if how == "suffix":
-                        rule_string.append(f"_ + \"{subrule}\"")
-                    else:
-                        rule_string.append(f"\"{subrule}\" + _")
-                    num += 1
+        if len(rule) == len(other_forms):
+            for form, subrule in rule:
+                if how == "suffix":
+                    rule_string.append(f"_ + \"{subrule}\"")
                 else:
-                    rule_string.append("_")
-        if len(rule_string) < len(other_forms):
-            blanks = ["_",] * (len(other_forms) - len(rule_string))
-            rule_string.extend(blanks)
+                    rule_string.append(f"\"{subrule}\" + _")
 
-        tag = str(class_tag + 1).zfill(3)
-        if len(other_forms) > 1:
-            gf_code += f"""\t\t<{", ".join(rule_string)}> => mk{pos_tag}{tag} form1;\n"""
-        else:
-            gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form;\n"""
-    gf_code += "} ;\n\n"
+            tag = str(class_tag + 1).zfill(3)
+            if len(other_forms) > 1:
+                gf_code += f"""\t\t<{", ".join(rule_string)}> => mk{pos_tag}{tag} form1;\n"""
+            else:
+                gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form;\n"""
+    if len(other_forms) > 1:
+        gf_code += f"""\t\t_ => reg{len(other_forms)-1 if len(other_forms) > 2 else ""}{pos_tag} {" ".join(args[:-1])};\n"""
+    else:
+        gf_code += f"""\t\t_ => error \"Cannot find an inflection rule\";\n"""
+    gf_code += "  } ;\n\n"
     gf_code = gf_code.replace(";\n}", "\t\n}")
     gf_code = gf_code.replace(";\n} ;", "\n} ;")
     return gf_code
