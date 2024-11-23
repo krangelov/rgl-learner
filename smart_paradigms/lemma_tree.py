@@ -363,11 +363,7 @@ class LemmaTree:
             table = self.forms[pred]
             pred_labels = self.form_distribution[pred]
 
-            if next(iter(token.values())) == "-":
-                base = lemma
-            else:
-                base = next(iter(token.values()))
-
+            base = token[self.other_forms[0]]
 
             pred_forms = form_token(base, table.pattern, pred_labels)
 
@@ -444,7 +440,7 @@ def filter_tokens(tag, table, paradigm, required=None):
     if required:
         return (forms[required], tag), forms
     else:
-        return (table[0].split("_")[0].lower(), tag), forms
+        return (forms[paradigm[0]], tag), forms
 
 
 boilerplate = {
