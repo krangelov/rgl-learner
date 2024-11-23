@@ -10,6 +10,7 @@ import re
 from random import shuffle, choice
 from Levenshtein import ratio, distance
 from pprint import pprint
+import rgl_learner.plugins as plugins
 
 
 def form_token(stem, pattern, labels):
@@ -258,7 +259,10 @@ class LemmaTree:
             print(scores)
             score.append(scores["coverage"])
             if errors and i < self.iters-1 and forms:
-                if self.sampling == "random":
+                if i+1 < len(required_forms):
+                    new_form = required_forms[i+1]
+                    self.other_forms.append(new_form)
+                elif self.sampling == "random":
                     new_form = choice(errors)[0]
                     while new_form in self.other_forms:
                         new_form = choice(errors)[0]
@@ -269,8 +273,6 @@ class LemmaTree:
                             new_form = error[0]
                             self.other_forms.append(new_form)
                             break
-                elif self.sampling == "given" and i+1 < len(required_forms):
-                    new_form = required_forms[i+1]
             else:
                 break
         return score, preds, code
@@ -520,21 +522,15 @@ def guess_by_lemma(
     t=None,
     max_depth=3,
     min_sample_leaf=3,
-    required_forms=None,
     sampling="entropy",
     iters=4
 ):
     print("Reading data..")
-    if required_forms: # might point at the form to start or list all forms to go through
-        #  use sampling = "oracle" to use it only for a starting point
-        #  use sampling = "given" if there are all forms
-        with open(required_forms) as f:
-            read_forms = f.read().splitlines()
-        required_forms = defaultdict(list)
-        for form in read_forms:
-            pos, form = form.split(";", maxsplit=1)
-            required_forms[pos].append(form)
     source, langcode, tables = read_data(lang)
+
+    lang_plugin = plugins[source,lang]
+    required_forms = lang_plugin.required_forms
+
     tokens = []
     code = ""
     overload_code = ""
@@ -542,22 +538,12 @@ def guess_by_lemma(
     for pos, forms in tables.items():
         if len(forms) > 1:
             print(f"=={pos}==")
-
-            if required_forms:
-                lemma2class = [
-                    filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), required_forms[pos][0])
-                    for tag, paradigm in enumerate(forms)
-                    for table in paradigm.tables
-                    if len(paradigm.tables) >= min_examples
-                ]
-                required_forms = required_forms[pos]
-            else:
-                lemma2class = [
-                    filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()))
-                    for tag, paradigm in enumerate(forms)
-                    for table in paradigm.tables
-                    if len(paradigm.tables) >= min_examples
-                ]
+            lemma2class = [
+                filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), required_forms.get(pos,[None])[0])
+                for tag, paradigm in enumerate(forms)
+                if len(paradigm.tables) >= min_examples
+                for table in paradigm.tables
+            ]
             tree = LemmaTree(
                 pos,
                 lemma2class,
@@ -571,7 +557,7 @@ def guess_by_lemma(
                 sampling=sampling,
                 iters=iters
             )
-            score, preds, pos_code = tree.fit(required_forms=required_forms)
+            score, preds, pos_code = tree.fit(required_forms=required_forms.get(pos,[]))
             code += pos_code
             print(tree.other_forms)
             tokens.extend(preds)

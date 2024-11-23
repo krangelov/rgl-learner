@@ -35,6 +35,12 @@ params = {
 
 params_order = dict(zip(params.keys(), range(len(params))))
 
+required_forms = {
+  "N": ['s;Indef;Sg', 's;Indef;Pl'],
+  "V": ['present;Sg;P3'],
+  "A": ['s;Indef;Masc', 's;Indef;Fem', 'adverb']
+}
+
 def preprocess(record):
     if record.get("pos") == "noun":
         categories = record.get("categories",[])
