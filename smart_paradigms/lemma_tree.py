@@ -327,7 +327,6 @@ class LemmaTree:
 
         most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else -1
         common_dist = [x for _, x in self.train]
-
         for (lemma, tag), token in zip(lemmas, tokens):
             y_true.append(tag)
             pred = most_common
@@ -526,6 +525,8 @@ def guess_by_lemma(
     code = ""
     overload_code = ""
 
+    all_rules = {}
+
     for pos, forms in tables.items():
         if len(forms) > 1:
             print(f"=={pos}==")
@@ -553,6 +554,8 @@ def guess_by_lemma(
             print(tree.other_forms)
             tokens.extend(preds)
 
+            all_rules[pos] = tree.rules
+
             overload_code += f"mk{pos} = overload {{\n"
             for num in range(1, len(tree.other_forms)+1):
                 overload_code += f"  mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
@@ -577,3 +580,7 @@ def guess_by_lemma(
     unimorph_code = format_unimorph(tokens)
     with open(f"unimorph_{langcode}.tsv", "w") as f:
         f.write(unimorph_code)
+
+
+    with open(f"data/{lang}/rules.pickle", "wb") as f:
+        pickle.dump((how,all_rules),f)
