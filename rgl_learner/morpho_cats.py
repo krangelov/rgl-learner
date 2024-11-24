@@ -266,6 +266,31 @@ def get_gtag(source_plugin, lang_plugin, tag):
     else:
         return source_plugin.params.get(tag)
 
+def collect_derivations(pos,word,table,derivations):
+    if pos == "noun":
+        masc = table.get("masculine")
+        if masc and type(masc) == str:
+            gender_pairs = derivations.setdefault("gender-pairs",set())
+            gender_pairs.add((masc,word))
+        fem = table.get("feminine")
+        if fem and type(fem) == str:
+            gender_pairs = derivations.setdefault("gender-pairs",set())
+            gender_pairs.add((word,fem))
+    elif pos == "verb":
+        imperfective = table.get("imperfective")
+        if imperfective and type(imperfective) == str:
+            aspect_pairs = derivations.setdefault("aspect-pairs",set())
+            aspect_pairs.add((word,imperfective))
+        perfective = table.get("perfective")
+        if perfective and type(perfective) == str:
+            aspect_pairs = derivations.setdefault("aspect-pairs",set())
+            aspect_pairs.add((perfective,word))
+    elif pos == "adj":
+        noun = table.get("abstract-noun")
+        if noun and type(noun) == str:
+            adj_noun_pairs = derivations.setdefault("adj-noun-pairs",set())
+            adj_noun_pairs.add((noun,word))
+
 def learn(source,lang):
     source_plugin = plugins[source]
     lang_plugin   = plugins[source,lang]
@@ -273,6 +298,7 @@ def learn(source,lang):
     lexicon=source_plugin.extract(lang)
 
     noun_genders = set()
+    derivations = {}
     lin_types = {}
     ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
     for word, pos, forms, gtags in lexicon:
@@ -311,6 +337,9 @@ def learn(source,lang):
             cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:
                 continue
+
+            collect_derivations(pos,word,table,derivations)
+
             res = lang_plugin.patch_inflection(cat_name,word,table)
             if res:
                 table = res
@@ -443,5 +472,11 @@ def learn(source,lang):
 
     with open(f"data/{lang}/lexicon.pickle", "wb") as f:
         pickle.dump((source,lang_code,lin_types),f)
+
+    with open(f"data/{lang}/derivations.pickle", "wb") as f:
+        pickle.dump(derivations,f)
+
+    if derivations:
+        print("found:", ", ".join(derivations.keys()))
 
     print(getrusage(RUSAGE_SELF))
