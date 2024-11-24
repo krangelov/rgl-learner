@@ -426,9 +426,9 @@ def write_gf_code(pos_tag, rules, other_forms, how):
             else:
                 gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form;\n"""
     if len(other_forms) > 1:
-        gf_code += f"""\t\t_ => reg{len(other_forms)-1 if len(other_forms) > 2 else ""}{pos_tag} {" ".join(args[:-1])};\n"""
+        gf_code += f"""\t\t_ => reg{len(other_forms)-1 if len(other_forms) > 2 else ""}{pos_tag} {" ".join(args[:-1])}\n"""
     else:
-        gf_code += f"""\t\t_ => error \"Cannot find an inflection rule\";\n"""
+        gf_code += f"""\t\t_ => error \"Cannot find an inflection rule\"\n"""
     gf_code += "  } ;\n\n"
     gf_code = gf_code.replace(";\n}", "\t\n}")
     gf_code = gf_code.replace(";\n} ;", "\n} ;")
@@ -454,8 +454,8 @@ boilerplate = {
        "mkGN : Str -> GN = \\s -> lin GN {s=s} ;\n"+
        "mkSN : Str -> SN = \\s -> lin SN {s=s} ;\n\n",
   "V": "mkV2 = overload {\n"+
-       "  mkV2 : V -> V2 = \\v -> v ** {c2=noPrep} ;\n"+
-       "  mkV2 : V -> Prep -> V2 = \\v,p -> v ** {c2=p} ;\n"+
+       "  mkV2 : V -> V2 = \\v -> lin V2 v ** {c2=noPrep} ;\n"+
+       "  mkV2 : V -> Prep -> V2 = \\v,p -> lin V2 v ** {c2=p} ;\n"+
        "} ;\n"+
        "\n"+
        "mkVV : V -> VV = \\v -> lin VV v ;\n"+

@@ -515,7 +515,7 @@ def correct_paradigms(lang_plugin,cat,paradigms):
             pattern = None
 
         if pattern:
-            paradigm.var_insts = [[("base",table[0])] for ident,table in paradigm.tables]
+            paradigm.var_insts = [[("base",table[index])] for ident,table in paradigm.tables]
         paradigm.pattern = pattern
 
     if mult_base_words > 0:
