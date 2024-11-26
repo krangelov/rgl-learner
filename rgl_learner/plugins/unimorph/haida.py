@@ -1,0 +1,10 @@
+params = {"LGSPEC7": ("Cl7", "Classifier"),
+"LGSPEC5": ("Cl5", "Classifier"),
+"LGSPEC8": ("Cl8", "Classifier"),
+"LGSPEC4": ("Cl4", "Classifier"),
+"LGSPEC3": ("Cl3", "Classifier"),
+"LGSPEC6": ("Cl6", "Classifier"),
+"LGSPEC1": ("Cl1", "Classifier"),
+"LGSPEC2": ("Cl2", "Classifier"),
+"LGSPEC9": ("Cl9", "Classifier"),
+          }
