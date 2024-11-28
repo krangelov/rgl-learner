@@ -8,9 +8,7 @@ import pickle
 from collections import defaultdict, Counter
 import math
 import rgl_learner.plugins as plugins
-from rgl_learner.utils import escape
-from smart_paradigms.utils import reverse_dict
-
+from rgl_learner.utils import escape, reverse_dict
 # Wordgraph class to extract LCS
 
 class wordgraph(object):
@@ -547,8 +545,8 @@ def write_lexicon(i, max_i, par, cat):
     return code
 
 
-def learn(lang):
-    with open(f"data/{lang}/lexicon.pickle", "rb") as f:
+def learn(lang, dirname="data"):
+    with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         source, langcode, lexicon = pickle.load(f)
 
     lang_plugin = plugins[source,lang]
@@ -565,7 +563,7 @@ def learn(lang):
 
     print("Writing output files..")
 
-    with open(f"data/{lang}/paradigms.pickle", "wb") as f:
+    with open(f"{dirname}/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((source, langcode, tables), f)
 
     with open(f"Dict{langcode}.gf", "w") as dct, open(f"Morpho{langcode}.gf", "w") as para:

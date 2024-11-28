@@ -1,6 +1,5 @@
 import pickle
-from rgl_learner.utils import escape
-from smart_paradigms.utils import reverse_dict
+from rgl_learner.utils import escape, reverse_dict
 
 def rewrite(lang):
     with open(f"data/{lang}/paradigms.pickle", "rb") as f:

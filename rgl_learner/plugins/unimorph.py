@@ -21,14 +21,17 @@ tag2cat = {
     "INTJ": "Interj",
     "ADP": "Prep",
     "NUM": "Digit",
-    "PART": "Particle",
-    # 'V.CVB': 'Converb',
-    "V.MSDR": "Masdar",
-    "V.PTCP": "Participle",
+    #"PART": "Particle",
 }
 
 params = {
     "INF": ("Infinitive", "Infinitive"),
+    "CONV": ("Converb", "Conberb"),
+    "CVB": ("Converb", "Conberb"),
+    "COP": ("Copula", "Copula"),
+    "PCTP": ("Participle", "Participle"),
+    "MSDR": ("Masdar", "Masdar"),
+    "PTCP": ("Particle", "Participle"),
     "IND": ("Indicative", "Mood"),
     "ADM": ("Admirative", "Mood"),
     "AUNPRP": ("Non_Purposive", "Mood"),
@@ -50,6 +53,8 @@ params = {
     "SIM": ("Simulative", "Mood"),
     "1DAY": ("1day", "Tense"),  # within 1 day
     "FUT": ("Fut", "Tense"),
+    "FUT1": ("Fut1", "Tense"),
+    "FUT2": ("Fut2", "Tense"),
     "HOD": ("Hodiernal", "Tense"),
     "IMMED": ("Immediate", "Tense"),
     "PRS": ("Pres", "Tense"),
@@ -97,7 +102,7 @@ params = {
     "SEMEL": ("Semelfactive", "Aktionsart"),
     "STAT": ("Stative", "Aktionsart"),
     "TEL": ("Telic", "Aktionsart"),
-    "ARGAC3S": ("3.sg Object (from feature template)", "Argument_Marking"),
+    "ARGAC3S": ("3Sg-Obj", "Argument_Marking"),
     "HAB": ("Habitual", "Aspect"),
     "IPFV": ("Imperfective", "Aspect"),
     "ITER": ("Iterative", "Aspect"),
@@ -105,7 +110,10 @@ params = {
     "PRF": ("Perfect", "Aspect"),
     "PROG": ("Progressive", "Aspect"),
     "PROSP": ("Prospective", "Aspect"),
+    "RES": ("Resultative", "Aspect"),
+    "CONN": ("Connegative", "Aspect"),
     "INDF": ("Indef", "Species"),
+    "NDEF": ("Indef", "Species"),
     "DEF": ("Def", "Species"),
     "NSPEC": ("Non_Spec", "Species"),
     "SPEC": ("Spec", "Species"),
@@ -119,6 +127,7 @@ params = {
     "ABL": ("Ablat", "Case"),
     "ESS": ("Ess", "Case"),
     "TRANS": ("Transl", "Case"),
+    "INS": ("Instr", "Case"),
     "INST": ("Instr", "Case"),
     "COM": ("Comit", "Case"),
     "LOC": ("Loc", "Case"),
@@ -210,6 +219,7 @@ params = {
     "SSADV": ("SS Adverbial", "Switch_Reference"),
     "APPL": ("Applicative", "Valency"),
     "CAUS": ("Causative", "Valency"),
+    "CAUSE": ("Causative", "Valency"),
     "IMPRS": ("Imprs", "Valency"),
     "INTR": ("Intransitive", "Valency"),
     "RECP": ("Reciprocal", "Valency"),
@@ -282,24 +292,33 @@ def filter_tags(tags):
     return new_tags
 
 
-def extract(lang):
-    lang_plugin = plugins["unimorph",lang]
+def extract(lang, filename):
+    def open_file(dataset):
+        d = {}
+        with open(dataset) as f:
+            for line in f:
+                line = line.strip()
+                if line == "":
+                    continue
+                lemma, form, tags = line.split("\t")
+                tags = tags.replace(":", ";").replace(".", ";")
+                tags = tags.replace("V;V", "V")
+                tags = filter_tags(tags)
+                for tag in tag2cat:
+                    if tag in tags:
+                        tags.remove(tag)
+                        d.setdefault((lemma, tag), []).append((form, tags))
+        return d
 
-    d = {}
-    datasets = glob.glob(f"data/{lang}/{lang}*")
-    for dataset in datasets:
-        if "derivations" not in dataset:
-            with open(dataset) as f:
-                for line in f:
-                    line = line.strip()
-                    if line == "":
-                        continue
-                    lemma, form, tags = lang_plugin.preprocess(line.split("\t"))
-                    tags = filter_tags(tags)
-                    for tag in tag2cat:
-                        if tag in tags:
-                            tags.remove(tag)
-                            d.setdefault((lemma, tag), []).append((form, tags))
+    if filename:
+        d = open_file(filename)
+    else:
+        d = {}
+        datasets = glob.glob(f"data/{lang}/{lang}*")
+        for dataset in datasets:
+            if "derivations" not in dataset and "segmentations" not in dataset:
+                d.update(open_file(dataset))
+
     res = []
     for (lemma, pos), forms in d.items():
         tags = []

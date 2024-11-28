@@ -1,30 +1,50 @@
 #!/usr/bin/env python3
 
 import sys
+import argparse
 import rgl_learner.morpho_cats
 import rgl_learner.morpho_cats_2
+import rgl_learner.morpho_cats_3
 import rgl_learner.learn_paradigms
 import rgl_learner.smart_paradigms
 import rgl_learner.smart_dictionary
 import rgl_learner.documentation
-import smart_paradigms.lemma_tree
-import construct_table.construct_table
-import smart_paradigms.extract_sp
+import rgl_learner.paradigm_builder
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("action")
+parser.add_argument("lang")
+parser.add_argument("--how", default=None)
+parser.add_argument("--min_examples", default=2)
+parser.add_argument("--iter", default=3)
+parser.add_argument("--sampling", default="oracle")
+parser.add_argument("--min_sample_leaf", default=2)
+parser.add_argument("--max_depth", default=3)
+parser.add_argument("--threshold", default=100)
+parser.add_argument("--split", action="store_true")
 
 if len(sys.argv) == 4 and sys.argv[1] == "morpho-cats":
     rgl_learner.morpho_cats.learn(sys.argv[2], sys.argv[3])
 elif len(sys.argv) == 4 and sys.argv[1] == "morpho-cats-2":
     rgl_learner.morpho_cats_2.learn(sys.argv[2], sys.argv[3])
-elif len(sys.argv) == 4 and sys.argv[1] == "construct-table":
-    construct_table.construct_table.construct(sys.argv[2], sys.argv[3])
+elif len(sys.argv) == 4 and sys.argv[1] == "morpho-cats-3":
+    rgl_learner.morpho_cats_3.learn(sys.argv[2], sys.argv[3])
 elif len(sys.argv) == 3 and sys.argv[1] == "learn-paradigms":
     rgl_learner.learn_paradigms.learn(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "smart-paradigms":
     rgl_learner.smart_paradigms.learn(sys.argv[2])
-elif len(sys.argv) == 3 and sys.argv[1] == "build-lemma-tree":
-    smart_paradigms.lemma_tree.guess_by_lemma(sys.argv[2])
-elif len(sys.argv) == 3 and sys.argv[1] == "extract-sp":
-    smart_paradigms.extract_sp.extract(sys.argv[2])
+elif len(sys.argv) >= 3 and sys.argv[1] == "build-paradigms":
+    args = parser.parse_args()
+    rgl_learner.paradigm_builder.guess_by_lemma(sys.argv[2],
+                                                how=args.how,
+                                                min_examples=int(args.min_examples),
+                                                iters=int(args.iter),
+                                                sampling=args.sampling,
+                                                min_sample_leaf=int(args.min_sample_leaf),
+                                                max_depth=int(args.max_depth),
+                                                t=int(args.threshold),
+                                                split=args.split)
 elif len(sys.argv) == 3 and sys.argv[1] == "smart-dictionary":
     rgl_learner.smart_dictionary.rewrite(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "documentation":
@@ -34,5 +54,5 @@ else:
     print(f"          {sys.argv[0]} construct-table <wiktionary|unimorph> <lang-code>")
     print(f"          {sys.argv[0]} learn-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
-    print(f"          {sys.argv[0]} build-lemma-tree <lang-code>")
+    print(f"          {sys.argv[0]} build-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-dictionary <lang-code>")

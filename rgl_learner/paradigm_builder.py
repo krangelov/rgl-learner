@@ -4,7 +4,7 @@ from collections import defaultdict, Counter
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 import numpy as np
-from smart_paradigms.utils import *
+from rgl_learner.utils import *
 from scipy.stats import entropy
 import re
 from random import shuffle, choice
@@ -55,12 +55,13 @@ class LemmaTree:
         pos: str,
         lemmas: list,
         forms: list,
+        test_lemmas: list = None,
         iters: int = 1,
         max_depth: int = 3,
         min_sample_leaf: int = 3,
         min_examples: int = 1,
         t: int = 200,
-        how: str = "suffix",
+        how: str = None,
         stopping: str = None,
         split: bool = False,
         sampling: str = "oracle"
@@ -79,10 +80,13 @@ class LemmaTree:
         self.other_forms.append(mc_lemma_form)
 
         if split:  # different ways to split data to train and test
-            shuffle(lemmas)
-            if t and t < len(lemmas):
-               train = lemmas[:t]
-               test = lemmas[t:]
+            if test_lemmas:
+                train = lemmas
+                test = test_lemmas
+            elif t and t < len(lemmas):
+                shuffle(lemmas)
+                train = lemmas[:t]
+                test = lemmas[t:]
             else:
                 train, test = train_test_split(lemmas, shuffle=True)
             labels, self.train_tokens = list(zip(*train))
@@ -107,7 +111,23 @@ class LemmaTree:
         self.min_sample_leaf = min_sample_leaf
         self.rules = defaultdict()
         self.regex = defaultdict()
-        self.how = how
+        if not how:
+            self.how = how
+        else:
+            self.how = self.define_affixation()
+
+    def define_affixation(self):
+        prefix_count = 0
+        suffix_count = 0
+        for token in self.train_tokens:
+            if token.startswith("base_"):
+                prefix_count += 1
+            elif token.endswith("base_", -6, -1):
+                suffix_count += 1
+        if prefix_count > suffix_count:
+            return "prefix"
+        return "suffix"
+
 
     def calculate_error_rate(self, form, true_value, pred_value, dist):
         if self.sampling == "oracle":
@@ -307,7 +327,7 @@ class LemmaTree:
         filtered_rules = sorted(rules.items(), key=lambda x: gen_list(x, iteration+1), reverse=True)
         return filtered_rules
 
-    def evaluate(self, i, test=True):
+    def evaluate(self, i, test=True, data=None):
         """Evaluation on train/test data"""
         y_true = []
         y_pred = []
@@ -316,13 +336,14 @@ class LemmaTree:
 
         forms_by_tag = defaultdict(list)
 
-        if test:
+        if data:
+            lemmas, tokens = list(zip(*data))
+        elif test:
             lemmas = self.test
             tokens = self.tokens
         else:
             lemmas = self.train
             tokens = self.train_tokens
-
 
 
         most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else -1
@@ -331,7 +352,6 @@ class LemmaTree:
             y_true.append(tag)
             pred = most_common
             pred_dist = common_dist
-
             for rule, (pred_tag, entropy, dist) in cur_rules:
                 passes = []
                 for form, subrule in rule:
@@ -506,7 +526,7 @@ boilerplate = {
 
 def guess_by_lemma(
     lang,
-    how="suffix",
+    how=None,
     min_examples=2,
     split=False,
     t=None,
@@ -540,7 +560,6 @@ def guess_by_lemma(
                 pos,
                 lemma2class,
                 forms,
-                how=how,
                 min_examples=min_examples,
                 split=split,
                 t=t,
