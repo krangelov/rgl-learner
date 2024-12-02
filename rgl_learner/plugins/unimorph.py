@@ -25,13 +25,13 @@ tag2cat = {
 }
 
 params = {
-    "INF": ("Infinitive", "Infinitive"),
-    "CONV": ("Converb", "Conberb"),
-    "CVB": ("Converb", "Conberb"),
+    "INF": ("Infinitive", "Verbform"),
+    "CONV": ("Converb", "Verbform"),
+    "CVB": ("Converb", "Verbform"),
     "COP": ("Copula", "Copula"),
-    "PCTP": ("Participle", "Participle"),
-    "MSDR": ("Masdar", "Masdar"),
-    "PTCP": ("Particle", "Participle"),
+    "PCTP": ("Participle", "Verbform"),
+    "MSDR": ("Masdar", "Verbform"),
+    "PTCP": ("Particle", "Verbform"),
     "IND": ("Indicative", "Mood"),
     "ADM": ("Admirative", "Mood"),
     "AUNPRP": ("Non_Purposive", "Mood"),

@@ -267,41 +267,6 @@ def get_gtag(source_plugin, lang_plugin, tag):
     else:
         return source_plugin.params.get(tag)
 
-def compress(table, val2param, param2val):
-    new_table = {}
-
-    if len(table.keys()) == 1 and "no" in next(iter(table.keys())):
-        new_value = next(iter(table.values()))
-        if isinstance(new_value, dict):
-            new_value = compress(new_value, val2param, param2val)
-
-        if isinstance(new_value, str):
-            return new_value
-        else:
-            table = new_value
-
-
-    for k, v in table.items():
-        if isinstance(v, dict):
-            new_table.setdefault(k, compress(v, val2param, param2val))
-        else:
-            new_table.setdefault(k, v)
-
-    if new_table:
-        k = next(iter(new_table.keys()))
-        param = val2param[k][1] if k in val2param else k.replace("no", "")
-
-       # param2val[param].append(f"no{param}")
-
-        for i in param2val[param]:
-            if i not in new_table:
-                if isinstance(new_table[k], str):
-                    new_table.setdefault(i, "-")
-                else:
-                    new_table.setdefault(i, new_table[k])
-
-    return new_table
-
 def learn(source, lang, filename=None, dirname="data"):
     source_plugin = plugins[source]
     lang_plugin = plugins[source, lang]
@@ -337,12 +302,24 @@ def learn(source, lang, filename=None, dirname="data"):
 
         order[pos], _ = list(zip(*sorted(pos_order.items(), key=lambda x: sum(x[1])/len(x[1]))))
 
+    if lang_plugin.order:
+        order = lang_plugin.order
+    else:
+        print(order)
+       # lang_plugin.order = order
+       # with open(f"rgl_learner/plugins/unimorph/{lang}.py", "a") as f:
+       #    f.write(order)
+
     print("Unknown tags:", set(unknown_tags))
 
     val2param = dict(filter(lambda x: x[0] in known_tags, params.items()))
 
+    default_table = defaultdict(list)
+    tables = defaultdict(list)
+
     # sort them properly
     for word, pos, corrected_forms, gtags in tqdm(lexicon):
+
         pos_order = order[pos]
         table = {}
 
@@ -362,9 +339,18 @@ def learn(source, lang, filename=None, dirname="data"):
                     form_table.append(f"no{param}")
                 #else:
                 #    form_table.append(param2val[param][0])
+            #  print("\t".join(form_table))
 
+            if form_table not in default_table[pos]:
+                default_table[pos].append(form_table)
 
-
+           # for num, form in enumerate(form_table):
+              #  if len(form_table) > num+1:
+                  #  if form
+                   # if form not in default_table[pos]:
+                   #     default_table[pos][form] = [form_table[num+1]]
+                   # elif form_table[num+1] not in default_table[pos][form]:
+                   #     default_table[pos][form].append(form_table[num+1])
             if form_table:
                 t = table
                 for value in form_table[:-1]:
@@ -375,14 +361,27 @@ def learn(source, lang, filename=None, dirname="data"):
                     t = t1
 
                 t[form_table[-1]] = w
-
         if table:
-            table = compress(table, val2param, param2val)
+            tables[pos].append((word,table))
+
+
+    def add_form(ddict, tables):
+        params = defaultdict(list)
+        for table in tables:
+            params[table[0]].append(table[1:])
+        for form1, ts in params.items():
+            if not ts[0]:
+                ddict.setdefault(form1, "-")
+            else:
+                ddict.setdefault(form1, {})
+                ddict.setdefault(form1, add_form(ddict[form1], ts))
+
+    for pos, ts in tables.items():
+        for (word, table) in ts:
+            add_form(table, default_table[pos])
             cat_name = source_plugin.tag2cat.get(pos)
             if not cat_name:
                 continue
-
-            #print(table)
 
             typ, forms = getTypeOf(source_plugin, lang_plugin, table)
             if type(typ) != GFRecord:
@@ -426,10 +425,11 @@ def learn(source, lang, filename=None, dirname="data"):
 
 
     lang_code = lang_plugin.iso3
-    with open('Res' + lang_code + '.gf', 'w') as fr, \
-            open('Cat' + lang_code + '.gf', 'w') as fc, \
-            open('Dict' + lang_code + '.gf', 'w') as fd, \
-            open('Dict' + lang_code + 'Abs.gf', 'w') as fa:
+    path = f"{dirname}/{lang}/"
+    with open(path +'Res' + lang_code + '.gf', 'w') as fr, \
+            open(path + 'Cat' + lang_code + '.gf', 'w') as fc, \
+            open(path + 'Dict' + lang_code + '.gf', 'w') as fd, \
+            open(path + 'Dict' + lang_code + 'Abs.gf', 'w') as fa:
         fr.write('resource Res' + lang_code + ' = {\n')
         fr.write('\n')
         fc.write('concrete Cat' + lang_code + ' of Cat = open Res' + lang_code + ' in {\n')

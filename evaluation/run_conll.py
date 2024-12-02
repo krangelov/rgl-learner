@@ -29,9 +29,7 @@ def extract(lang, level, min_examples=1, iters=4):
                        {"max_depth": 3, "min_sample_leaf": 1, "sampling": "random"}
                        ]
     datadict = {}
-    pos_tags = []
     for pos, forms in train.items():
-        pos_tags.append(pos)
         train_data = [
             filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()))
             for tag, paradigm in enumerate(forms)
@@ -55,22 +53,24 @@ def extract(lang, level, min_examples=1, iters=4):
         datadict[pos] = [train_data, dev_data, test_data]
     for hyperparameter in hyperparameters:
         print("hyperparameter: ", hyperparameter)
-        for pos in pos_tags:
+        for pos, ddict in datadict.items():
 
-            train_date, dev_data, test_data = datadict[pos]
+            train_data, dev_data, test_data = ddict
 
             tree = LemmaTree(
-                                pos,
-                                train_data,
-                                forms,
-                                test_lemmas=dev_data,
-                                min_examples=min_examples,
-                                split=True,
-                                max_depth=hyperparameter["max_depth"],
-                                min_sample_leaf=hyperparameter["min_sample_leaf"],
-                                iters=iters,
-                                sampling=hyperparameter["sampling"]
-                )
+                                    pos,
+                                    train_data,
+                                    train[pos],
+                                    test_lemmas=dev_data,
+                                    min_examples=min_examples,
+                                    split=True,
+                                    max_depth=hyperparameter["max_depth"],
+                                    min_sample_leaf=hyperparameter["min_sample_leaf"],
+                                    iters=iters,
+                                    sampling=hyperparameter["sampling"]
+                    )
+
+            print(tree.how)
 
 
             scores, preds, _ = tree.fit()
@@ -90,11 +90,13 @@ def extract(lang, level, min_examples=1, iters=4):
     print(max(results), best_hyp)
 
     test_scores = []
-    for pos in pos_tags:
+    for pos, data in datadict.items():
+        train_data, dev_data, test_data = data
         tree = LemmaTree(
             pos,
             train_data,
-            forms,
+            train[pos],
+            test_lemmas=dev_data,
             min_examples=min_examples,
             split=False,
             max_depth=best_hyp["max_depth"],
