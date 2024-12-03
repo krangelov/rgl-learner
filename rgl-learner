@@ -51,5 +51,4 @@ else:
     print(f"          {sys.argv[0]} construct-table <wiktionary|unimorph> <lang-code>")
     print(f"          {sys.argv[0]} learn-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
-    print(f"          {sys.argv[0]} build-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-dictionary <lang-code>")
