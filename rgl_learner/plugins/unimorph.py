@@ -292,7 +292,7 @@ def filter_tags(tags):
     return new_tags
 
 
-def extract(lang, filename):
+def extract(lang, filename=None):
     def open_file(dataset):
         d = {}
         with open(dataset) as f:
