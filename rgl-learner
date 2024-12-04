@@ -52,3 +52,4 @@ else:
     print(f"          {sys.argv[0]} learn-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-dictionary <lang-code>")
+    print(f"          {sys.argv[0]} documentation <lang-code>")
