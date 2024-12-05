@@ -42,6 +42,8 @@ def build(lang):
                 rules = all_rules.get(cat2)
 
                 if lemma:
+                    if cat2 == "N":
+                        lemma = lemma.lower()
                     tag = morpho.get(lemma+"_"+cat2)
                     if tag:
                         df = f'mk{cat2}{tag:03d} "{lemma}"'
