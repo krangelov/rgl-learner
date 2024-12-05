@@ -96,9 +96,13 @@ def patchN(lemma,table):
         else:
             nom["singular"] = indef.pop("singular",lemma)
             nom["plural"]   = indef.pop("plural",table.pop("plural","-"))
+        acc = indef.setdefault("accusative",{})
+        acc.setdefault("singular", nom["singular"])
+        acc.setdefault("plural", nom["plural"])
     elif type(indef) is str:
-        indef = {"nominative": {"singular": indef, "plural": table.pop("plural","-")}}
-    set_case(indef,"accusative")
+        pl = table.pop("plural","-")
+        indef = {"nominative": {"singular": indef, "plural": pl},
+                 "accusative": {"singular": indef, "plural": pl}}
     set_case(indef,"dative")
     set_case(indef,"ablative")
     indef.pop(None,None)
