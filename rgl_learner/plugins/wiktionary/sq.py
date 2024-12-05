@@ -1,4 +1,4 @@
-iso3 = "Alb"
+iso3 = "Sqi"
 
 
 ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template',
@@ -27,7 +27,7 @@ def preprocess(record):
         if not found:
             record.setdefault("tags",[]).append("masculine")
 
-    record["word"] = record["word"].replace("ó","o").replace("í","i").replace("ú","u")
+    record["word"] = record["word"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
     for form in record.get("forms",[]):
         if form["form"] == "arnautë／arnautllárë":
             form["form"] = "arnautë"
@@ -37,7 +37,7 @@ def preprocess(record):
             if form["form"] == "{{{1}}}a":
                 form["form"] = "tezja"
         else:
-            form["form"] = form["form"].replace("ó","o").replace("í","i").replace("ú","u")
+            form["form"] = form["form"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
 
     return True
 
