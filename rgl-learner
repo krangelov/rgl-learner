@@ -9,6 +9,7 @@ import rgl_learner.learn_paradigms
 import rgl_learner.smart_dictionary
 import rgl_learner.documentation
 import rgl_learner.paradigm_builder
+import rgl_learner.build_wordnet
 
 
 parser = argparse.ArgumentParser()
@@ -46,6 +47,8 @@ elif len(sys.argv) == 3 and sys.argv[1] == "smart-dictionary":
     rgl_learner.smart_dictionary.rewrite(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "documentation":
     rgl_learner.documentation.learn(sys.argv[2])
+elif len(sys.argv) == 3 and sys.argv[1] == "build-wordnet":
+    rgl_learner.build_wordnet.build(sys.argv[2])
 else:
     print(f"Synopsis: {sys.argv[0]} morpho-cats <wiktionary|unimorph> <lang-code>")
     print(f"          {sys.argv[0]} construct-table <wiktionary|unimorph> <lang-code>")
@@ -53,3 +56,4 @@ else:
     print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-dictionary <lang-code>")
     print(f"          {sys.argv[0]} documentation <lang-code>")
+    print(f"          {sys.argv[0]} build-wordnet <lang-code>")
