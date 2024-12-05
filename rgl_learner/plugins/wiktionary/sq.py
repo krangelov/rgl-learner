@@ -27,6 +27,18 @@ def preprocess(record):
         if not found:
             record.setdefault("tags",[]).append("masculine")
 
+    record["word"] = record["word"].replace("ó","o").replace("í","i").replace("ú","u")
+    for form in record.get("forms",[]):
+        if form["form"] == "arnautë／arnautllárë":
+            form["form"] = "arnautë"
+        elif record["word"] == "teze":
+            if form["form"] == "{{{1}}}e":
+                form["form"] = "tezje"
+            if form["form"] == "{{{1}}}a":
+                form["form"] = "tezja"
+        else:
+            form["form"] = form["form"].replace("ó","o").replace("í","i").replace("ú","u")
+
     return True
 
 def filter_lemma(lemma,tag,table):
@@ -105,6 +117,7 @@ def patchN(lemma,table):
                  "accusative": {"singular": indef, "plural": pl}}
     set_case(indef,"dative")
     set_case(indef,"ablative")
+
     indef.pop(None,None)
     def_ = table.pop("definite",{})
     if type(def_) is dict:
@@ -112,20 +125,19 @@ def patchN(lemma,table):
         if type(nom) is str:
             def_["nominative"] = {"singular": nom, "plural": "-"}
         if nom:
-            nom.setdefault("singular", def_.pop("singular","-"))
+            nom.setdefault("singular", def_.pop("singular",def_.pop(None,"-")))
             nom.setdefault("plural", def_.pop("plural","-"))
             acc = nom.pop("accusative",None)
             if acc:
                 def_.setdefault("accusative", {}).setdefault("singular", acc)
         else:
-            nom["singular"] = def_.pop("singular","-")
+            nom["singular"] = def_.pop("singular",def_.pop(None,"-"))
             nom["plural"]   = def_.pop("plural","-")
     elif type(def_) is str:
         def_ = {"nominative": {"singular": def_, "plural": "-"}}
     set_case(def_,"accusative")
     set_case(def_,"dative")
     set_case(def_,"ablative")
-    def_.pop(None,None)
 
     table["s"] = {"indefinite": indef, "definite": def_}
     table.pop("masculine",None)
