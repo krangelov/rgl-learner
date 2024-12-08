@@ -27,7 +27,11 @@ def preprocess(record):
         if not found:
             record.setdefault("tags",[]).append("masculine")
 
-    record["word"] = record["word"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
+    f = record["word"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
+    ws = f.split()
+    if len(ws) > 1 and ws[0] in ["i","e","të","së"]:
+        f = ws[1]
+    record["word"] = f
     for form in record.get("forms",[]):
         if form["form"] == "arnautë／arnautllárë":
             form["form"] = "arnautë"
@@ -37,7 +41,11 @@ def preprocess(record):
             if form["form"] == "{{{1}}}a":
                 form["form"] = "tezja"
         else:
-            form["form"] = form["form"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
+            f = form["form"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
+            ws = f.split()
+            if len(ws) > 1 and ws[0] in ["i","e","të","së"]:
+                f = ws[1]
+            form["form"] = f
 
     return True
 
@@ -236,8 +244,9 @@ def patchA(lemma,table):
     fem = table.pop("feminine",None)
     if fem:
         if type(fem) == str:
-            fem = {"singular": fem}
-        fem.setdefault("singular",fem.pop(None,"-"))
+            fem = {"singular": fem, "plural": fem}
+        else:
+            fem.setdefault("singular",fem.pop(None,lemma))
         nom.setdefault("feminine",fem)
     else:
         fem = nom.get("feminine")
@@ -260,8 +269,8 @@ def patchA(lemma,table):
         t1 = table.setdefault(case, {})
         for gender in ["masculine", "feminine"]:
             t2 = t1.setdefault(gender, {})
-            t2.setdefault("singular","-")
-            t2.setdefault("plural","-")
+            t2.setdefault("singular",lemma)
+            t2.setdefault("plural",lemma)
 
     table.pop("often",None)
 
