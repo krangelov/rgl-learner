@@ -92,7 +92,7 @@ def patchPOS(lemma,tag,table):
     if tag == 'verb' and lemma == "hjedhë":
         return "noun"
     if tag == 'adv' and lemma == "ngaldaltë":
-        return "noun"
+        return "adj"
     return tag
 
 def patchN(lemma,table):
