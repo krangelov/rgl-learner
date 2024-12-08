@@ -20,12 +20,12 @@ def build(lang):
         how, all_rules = pickle.load(f)
 
     with open('../gf-wordnet/data/predictions.tsv','r') as f:
-        d = {}
+        predictions = {}
         parse = "Parse"+"Sqi"
         for line in f:
             fields = line.split("\t")
             if fields[1] == parse:
-                d[fields[0]] = fields[2]
+                predictions[fields[0]] = (fields[2],eval(fields[3]))
 
     print(f"Generate ../gf-wordnet/WordNet{langcode}.gf")
     with open("../gf-wordnet/WordNet.gf", "r") as f, open(f"../gf-wordnet/WordNet{langcode}.gf", "w") as out:
@@ -38,10 +38,12 @@ def build(lang):
                 if cat == "DConj":
                     cat = "Conj"
                 cat2  = cat2cat.get(cat,cat)
-                lemma = d.get(ident)
-                rules = all_rules.get(cat2)
+                info = predictions.get(ident)
 
-                if lemma:
+                if info:
+                    lemma,(o,s,w,l,c,d) = info
+                    rules = all_rules.get(cat2)
+
                     if cat2 == "N":
                         lemma = lemma.lower()
                     tag = morpho.get(lemma+"_"+cat2)
@@ -56,9 +58,20 @@ def build(lang):
                             else:
                                 df = None
                     if df:
+                        if s == 1 and l > 1:
+                            status = ""
+                        elif w == 0 and l > 1:
+                            status = ""
+                        elif w == 0 and s == 1:
+                            status = ""
+                        elif s == 1:
+                            status = " --unchecked"
+                        else:
+                            status = " --guessed"
+
                         if cat != cat2:
                             df = f'mk{cat} ({df})'
-                        out.write(f'lin {ident} = {df} ;\n')
+                        out.write(f'lin {ident} = {df} ;{status}\n')
                     else:
                         out.write(f'lin {ident} = variants {{}} ;\n')
                 else:
