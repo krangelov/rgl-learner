@@ -89,7 +89,7 @@ ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-ta
 
 params_order = dict(zip(params.keys(), range(len(params))))
 
-def extract(lang):
+def extract(lang, filename=None):
     dir = "data/"+lang
     Path(dir).mkdir(parents=True, exist_ok=True)
     fpath = dir+"/wiktionary.pickle"

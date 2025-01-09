@@ -7,72 +7,49 @@ import rgl_learner.morpho_cats_3
 import rgl_learner.learn_paradigms
 
 def prepare_lang(lang):
+    train_high = f"conll2017/all/task2/{lang}-train-high"
+    train_medium = f"conll2017/all/task2/{lang}-train-medium"
+    train_low = f"conll2017/all/task2/{lang}-train-low"
+    dev = f"conll2017/all/task2/{lang}-uncovered-dev"
+    test = f"conll2017/answers/task2/{lang}-uncovered-test"
 
-    for root, dirs, files in tqdm(os.walk("conll2017/all/task2")):
-        for f in files:
-            if lang in f:
-                print("Processing {}".format(os.path.join(root, f)))
-                pathname = None
-                if "train" in f:
-                    lang, split, level = f.rsplit("-", maxsplit=2)
-                    pathname = f"data/{split}/{level}/"
-                elif "uncovered-dev" in f:
-                    lang, _, split = f.rsplit("-", maxsplit=2)
-                    pathname = f"data/{split}/"
-                if pathname:
-                    if not os.path.isdir(pathname + lang):
-                        os.mkdir(pathname + lang)
-
-                    print(f"Running morpho_cats on {lang}")
-                    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, os.path.join(root, f),
-                                                                       dirname=pathname)
-
-                    print(f"Running learn_paradigms on {lang}")
-                    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
-
-                    for root, dirs, files in os.walk("../conll2017/all/task2"):
-                        for f in files:
-                            if lang in f:
-                                print("Processing {}".format(os.path.join(root, f)))
-                                pathname = None
-                                if "train" in f:
-                                    lang, split, level = f.rsplit("-", maxsplit=2)
-                                    pathname = f"data/{split}/{level}/"
-                                elif "uncovered-dev" in f:
-                                    lang, _, split = f.rsplit("-", maxsplit=2)
-                                    pathname = f"data/{split}/"
-                                if pathname:
-                                    if not os.path.isdir(pathname + lang):
-                                        os.mkdir(pathname + lang)
-
-                                    # try:
-                                    print(f"Running morpho_cats on {lang}")
-                                    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, os.path.join(root, f),
-                                                                                   dirname=pathname)
-
-                                    print(f"Running learn_paradigms on {lang}")
-                                    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
+    pathname = f"data/train/medium/"
+    if not os.path.exists(os.path.join(pathname, lang)):
+        os.makedirs(os.path.join(pathname, lang))
+    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_medium,
+                                                   dirname=pathname)
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
 
 
+    pathname = f"data/train/low/"
+    if not os.path.exists(os.path.join(pathname, lang)):
+        os.makedirs(os.path.join(pathname, lang))
+    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_low,
+                                                   dirname=pathname)
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
 
-    for root, dirs, files in os.walk("conll2017/answers/task2"):
-        for f in files:
-                            if lang in f:
-                                print("Processing {}".format(os.path.join(root, f)))
-                                pathname = None
-                                if "train" in f:
-                                    lang, split, level = f.rsplit("-", maxsplit=2)
-                                    pathname = f"data/{split}/{level}/"
-                                elif "uncovered-test" in f:
-                                    lang, _, split = f.rsplit("-", maxsplit=2)
-                                    pathname = f"data/{split}/"
-                                if pathname:
-                                    if not os.path.isdir(pathname + lang):
-                                        os.mkdir(pathname + lang)
+    if os.path.exists(train_high):
+        pathname = f"data/train/high/"
+        if not os.path.exists(os.path.join(pathname, lang)):
+            os.makedirs(os.path.join(pathname, lang))
+        unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_high,
+                                                                           dirname=pathname)
+        rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
 
-                                    print(f"Running morpho_cats on {lang}")
-                                    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, os.path.join(root, f),
-                                                                                       dirname=pathname)
 
-                                    print(f"Running learn_paradigms on {lang}")
-                                    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
+    pathname = f"data/dev/"
+    if not os.path.exists(os.path.join(pathname, lang)):
+        os.makedirs(os.path.join(pathname, lang))
+    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, dev,
+                                                   dirname=pathname)
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
+
+
+    pathname = f"data/test/"
+    if not os.path.exists(os.path.join(pathname, lang)):
+        os.makedirs(os.path.join(pathname, lang))
+    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, test,
+                                                   dirname=pathname)
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
+
+

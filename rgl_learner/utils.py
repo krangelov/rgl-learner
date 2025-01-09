@@ -275,12 +275,50 @@ def parse_pattern(word, pattern):
             end += char
         else:
             start += char
+    temp_regexp = regexp.replace("base_1", "(.+)")
+    groups = re.findall(temp_regexp, word)
+    full_match_dict = dict(zip(["base_1", ] + bases, groups))
 
-    base_dict = {stem_name: word[start:-end]}
-    regexp = regexp.replace(stem_name, word[start:-end])
+    replace_word = None
+
+    if not stem_name:
+        stem_form = word
+        stem_name = "base_1"
+        regexp = stem_form
+    else:
+        end = len(word) - end
+        pattern_split = pattern.split("+")
+        if stem_name in pattern_split and pattern_split.index(stem_name) + 1 < len(pattern_split):
+          #  print(pattern)
+           # prev_word = pattern.split("+")[pattern.split("+").index(stem_name) - 1]
+            next_word = pattern_split[pattern_split.index(stem_name) + 1]
+            next_word_idx = 0
+           # prev_word_idx = 0
+            if not next_word.startswith("base"):
+                for num, char in enumerate(word):
+                    if num >= end:
+                        if next_word_idx < len(next_word) and char != next_word[next_word_idx]:
+                            end += 1
+                            next_word_idx += 1
+                        else:
+                            break
+
+            new_next_word = next_word[next_word_idx:]
+            stem_form = word[start:end]
+
+            regexp = regexp.replace(stem_name, stem_form).replace(next_word, new_next_word)
+            replace_word = next_word[:next_word_idx]
+        else:
+            stem_form = word[start:end]
+
+
+    base_dict = {stem_name: stem_form}
     groups = re.findall(regexp, word)
+    groups = groups[0] if groups and isinstance(groups[0], tuple) else groups
+
     base_dict.update(dict(zip(bases, groups)))
-    return base_dict
+    #second part
+    return full_match_dict, base_dict, replace_word, stem_name
 
 def clean_forms(labels, forms):
     forms = {label: form.replace('"', "") for label, form in zip(labels, forms) if form != "nonExist"}

@@ -1,5 +1,7 @@
 import codecs
+import json
 import sys
+import os
 import itertools
 import re
 from functools import reduce
@@ -439,7 +441,17 @@ def learnparadigms(typ,inflectiontables):
     return paradigmlist
 
 
-def correct_paradigms(lang_plugin,cat,paradigms):
+def correct_paradigms(lang, lang_plugin,cat,paradigms):
+    def get_index(reverse_forms, required_forms):
+        if reverse_forms[0].startswith("s;") and not required_forms[0].startswith("s;"):
+            return reverse_forms.index("s;" + required_forms[0])
+        elif not reverse_forms[0].startswith("s;"):
+            new_form = re.sub("^s;", "", required_forms[0])
+            return reverse_forms.index(new_form)
+        else:
+            return reverse_forms.index(required_forms[0])
+
+    cat2idx = defaultdict(list)
     mult_base_words = 0
     for i, paradigm in enumerate(paradigms):
         # calculate the possible lengths of all bases
@@ -449,6 +461,7 @@ def correct_paradigms(lang_plugin,cat,paradigms):
                 stats = lens[base][len(form)]
                 stats[0] += 1
                 stats[1].add(form)
+
 
         maximum = (-1,{})
         for base,l in lens.items():
@@ -461,13 +474,21 @@ def correct_paradigms(lang_plugin,cat,paradigms):
                 maximum = (entropy,l)
 
         pattern = ""
+
         forms, guessed = zip(*paradigm.forms)
 
         required_forms = lang_plugin.required_forms.get(cat)
+        reverse_forms = reverse_dict(paradigm.typ.linearize())
         if required_forms:
-            index = reverse_dict(paradigm.typ.linearize()).index(required_forms[0])
+            index = get_index(reverse_forms, required_forms)
+        elif os.path.exists(f"{lang}_forms.json"): # temporary file
+            with open(f"{lang}_forms.json") as f:
+                required_forms = json.load(f)
+            index =  get_index(reverse_forms, required_forms[cat])
         else:
             index = 0
+
+
 
         for elem in forms[index].split('+'):
             l = lens.get(elem)
@@ -518,6 +539,7 @@ def correct_paradigms(lang_plugin,cat,paradigms):
 
     if mult_base_words > 0:
         print(f"Number of {cat} paradigms with more than 1 base: {mult_base_words}")
+    return cat2idx
 
 def write_paradigm(i, max_i, par, cat):
     if par.pattern == None:
@@ -552,21 +574,25 @@ def learn(lang, dirname="data"):
     lang_plugin = plugins[source,lang]
 
     print("Learning paradigms..")
+    cat2idx = {}
     tables = defaultdict(list)
     for pos_tag, (cat_name, table) in lexicon.items():
         if len(table) > 1:
             print("Warning: the inflection tables are not unified yet, using the first one")
         typ,lexemes = next(iter(table.items()))
         paradigms = learnparadigms(typ,lexemes)
-        correct_paradigms(lang_plugin, cat_name, paradigms)
+        cat2idx.update(correct_paradigms(lang, lang_plugin, cat_name, paradigms))
         tables[cat_name].extend(paradigms)
 
     print("Writing output files..")
 
+    req_forms = {cat: Counter(lst).most_common(1)[0][0] for cat, lst in cat2idx.items()}
+
+
     with open(f"{dirname}/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((source, langcode, tables), f)
 
-    with open(f"Dict{langcode}.gf", "w") as dct, open(f"Morpho{langcode}.gf", "w") as para:
+    with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
         dct.write(
             f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Morpho{langcode}, Prelude in {{\n\n""")
         para.write(f"""resource Morpho{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")

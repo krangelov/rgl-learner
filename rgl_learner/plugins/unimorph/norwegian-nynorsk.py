@@ -1,3 +1,4 @@
+default_vals = {"Number": "SG"}
 def merge_tags(pos, forms, w, tags):
     new_forms = []
     new_tags = ["SG+PL", "MASC+FEM"]

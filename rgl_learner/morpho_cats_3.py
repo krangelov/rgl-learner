@@ -1,12 +1,14 @@
 import pickle
 
 from resource import *
-from collections import defaultdict
+from collections import defaultdict, Counter
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
-from rgl_learner.utils import nested_key_exists, escape
+from rgl_learner.utils import nested_key_exists, escape, reverse_dict
 import itertools
 from tqdm.auto import tqdm
+import os
+import json
 
 class GFType:
     def printParamDefs(self,f,pdefs):
@@ -250,9 +252,11 @@ def getTypeOf(source_plugin, lang_plugin, o):
             pcons = tuple((pcon for pcon, _, _  in pcons))
             return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
-            record.sort(key=lambda p: get_order(source_plugin,lang_plugin,p[0]))
+           # print(record)
+            record.sort(key=lambda p: p[0])
+            #record.sort(key=lambda p: get_order(source_plugin,lang_plugin,p[0]))
             forms = sum((forms for _, _, forms in record), [])
-            fields = tuple(((tag, val_type) for tag, val_type, _  in record))
+            fields = tuple(((source_plugin.convert2gf(tag, params), val_type) for tag, val_type, _ in record))
             return GFRecord(fields), forms
 
 def get_order(source_plugin, lang_plugin, tag):
@@ -280,12 +284,16 @@ def learn(source, lang, filename=None, dirname="data"):
 
     known_tags = []
     unknown_tags = []
-    order = defaultdict(list)
+    temp_order = defaultdict(list)
     param2val = defaultdict(list)
+
+    # Step 1: extract parameter order and fix annotation issues
+
     for _, pos, forms, _ in lexicon:
         corrected_forms = []
         pos_order = defaultdict(list)
         for w, tags in forms:
+            tags = list(dict.fromkeys(tags)) # remove duplicates
             tags = lang_plugin.fix_tags(tags)
             new_forms = lang_plugin.merge_tags(pos, forms, w, tags)
             for num, tag in enumerate(tags):
@@ -300,24 +308,35 @@ def learn(source, lang, filename=None, dirname="data"):
             corrected_forms.extend(new_forms)
 
 
-        order[pos], _ = list(zip(*sorted(pos_order.items(), key=lambda x: sum(x[1])/len(x[1]))))
+
+        if pos_order:
+            temp_order[pos], _ = list(zip(*sorted(pos_order.items(), key=lambda x: sum(x[1])/len(x[1]))))
+        else:
+            temp_order[pos] = []
 
     if lang_plugin.order:
         order = lang_plugin.order
+    elif os.path.exists(f"{lang}_order.json"): # temporary solution to store order
+         with open(f"{lang}_order.json") as f:
+             order = json.load(f)
     else:
-        print(order)
-       # lang_plugin.order = order
-       # with open(f"rgl_learner/plugins/unimorph/{lang}.py", "a") as f:
-       #    f.write(order)
+        order = {}
+
+    for pos, linorder in temp_order.items():
+        if pos not in order:
+            order[pos] = linorder
+
+    with open(f"{lang}_order.json", "w") as f: # temporary solution for evaluation
+        json.dump(order, f)
+
 
     print("Unknown tags:", set(unknown_tags))
 
-    val2param = dict(filter(lambda x: x[0] in known_tags, params.items()))
+    # Step 2: create tables for lexemes and a template for an inflectional class
 
     default_table = defaultdict(list)
     tables = defaultdict(list)
 
-    # sort them properly
     for word, pos, corrected_forms, gtags in tqdm(lexicon):
 
         pos_order = order[pos]
@@ -330,27 +349,14 @@ def learn(source, lang, filename=None, dirname="data"):
                 if i < len(tags) and tags[i] in param2val[param]:
                     form_table.append(tags[i])
                     i += 1
-                #elif param in lang_plugin.default_params: # and lang_plugin.default_params[param] not in form_table: # TODO: check that it doesn't exist
-                #    #form_table.append(lang_plugin.default_params[param])
-                #    print(param2val[param][0])
-                #    form_table.append(param2val[param][0])
-               # elif param in ["Possesion", "Argument_Marking"]:
+                elif param in lang_plugin.default_params:
+                    form_table.append(lang_plugin.default_vals[param])
                 else:
                     form_table.append(f"no{param}")
-                #else:
-                #    form_table.append(param2val[param][0])
-            #  print("\t".join(form_table))
 
             if form_table not in default_table[pos]:
                 default_table[pos].append(form_table)
 
-           # for num, form in enumerate(form_table):
-              #  if len(form_table) > num+1:
-                  #  if form
-                   # if form not in default_table[pos]:
-                   #     default_table[pos][form] = [form_table[num+1]]
-                   # elif form_table[num+1] not in default_table[pos][form]:
-                   #     default_table[pos][form].append(form_table[num+1])
             if form_table:
                 t = table
                 for value in form_table[:-1]:
@@ -364,17 +370,38 @@ def learn(source, lang, filename=None, dirname="data"):
         if table:
             tables[pos].append((word,table))
 
+    # Step 3: normalize tables and convert to GF types
 
     def add_form(ddict, tables):
         params = defaultdict(list)
         for table in tables:
             params[table[0]].append(table[1:])
-        for form1, ts in params.items():
+
+        params = sorted(params.items(), key=lambda x: x[0])
+
+        for form1, ts in params:
             if not ts[0]:
                 ddict.setdefault(form1, "-")
             else:
                 ddict.setdefault(form1, {})
                 ddict.setdefault(form1, add_form(ddict[form1], ts))
+
+    def compress(ddict):
+        if len(ddict) == 1 and next(iter(ddict)).startswith("no"):
+            if isinstance(next(iter(ddict.values())), dict):
+                ddict = next(iter(ddict.values()))
+            else:
+                return next(iter(ddict.values()))
+        for param, values in ddict.items():
+            if isinstance(values, dict):
+                if len(values.keys()) == 1:
+                    val = next(iter(values))
+                    if val.startswith("no"):
+                        ddict[param] = compress(values[val]) if isinstance(values[val], dict) else values[val]
+                else:
+                    ddict[param] = compress(values)
+
+        return ddict
 
     for pos, ts in tables.items():
         for (word, table) in ts:
@@ -383,9 +410,12 @@ def learn(source, lang, filename=None, dirname="data"):
             if not cat_name:
                 continue
 
+            table = compress(table)
             typ, forms = getTypeOf(source_plugin, lang_plugin, table)
+
             if type(typ) != GFRecord:
                 typ = GFRecord((("s", typ),))
+
             lin_types.setdefault(pos, (cat_name, {}))[1].setdefault(typ, []).append((word, forms))
 
 
@@ -439,9 +469,22 @@ def learn(source, lang, filename=None, dirname="data"):
         fd.write('\n')
         fa.write('abstract Dict' + lang_code + 'Abs = Cat ** {\n')
         fa.write('\n')
+
+        cat2idx = defaultdict(list)
         for tag, (cat_name, types) in lin_types.items():
             pdefs = defaultdict(set)
             fc.write('lincat ' + cat_name + ' = ' + tag.title() + ' ;\n')
+
+
+            typ, tables = next(iter(types.items()))
+            forms = reverse_dict(typ.linearize())
+
+
+            lemma_form = [(num, form[0]) for table in tables for num, (form, word) in
+                          enumerate(zip(forms, table[1])) if table[0].split("_")[0] == word]
+
+            mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
+            cat2idx[cat_name].append(forms[mc_lemma_form])#".lower())
 
 
             for i, (typ, lexemes) in enumerate(sorted(types.items(), key=lambda x: -len(x[1]))):
@@ -451,6 +494,7 @@ def learn(source, lang, filename=None, dirname="data"):
                 while type(lexemes[0][1][n_forms - 1]) == GFParamValue:
                     n_forms -= 1
                     n_params += 1
+
 
 
                 typ.printParamDefs(fr, pdefs)
@@ -494,7 +538,20 @@ def learn(source, lang, filename=None, dirname="data"):
     with open(f"{dirname}/{lang}/lexicon.pickle", "wb") as f:
         pickle.dump((lang_code, source, lin_types), f)
 
-    print(getrusage(RUSAGE_SELF))
+    temp_forms = {}
+    if os.path.exists(f"{lang}_forms.json"):
+        with open(f"{lang}_forms.json") as f:
+            temp_forms = json.load(f)
+
+
+    for cat in cat2idx:
+        if cat not in temp_forms:
+            temp_forms[cat] = cat2idx[cat]
+
+
+    with open(f"{lang}_forms.json", "w") as f:
+        json.dump(temp_forms, f)
+
     return unknown_tags
 
 
