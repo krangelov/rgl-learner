@@ -656,12 +656,36 @@ def guess_by_lemma(
 
     with open(f"Paradigms{langcode}.gf", "w") as f:
         f.write(
-            f"resource Paradigms{langcode} = Morpho{langcode}  ** open Prelude, Cat{langcode}, Res{langcode} in {{\noper\n"
+            f"resource Paradigms{langcode} = Morpho{langcode}  ** open Predef, Prelude, Cat{langcode}, Res{langcode} in {{\noper\n"
         )
         f.write(code)
         f.write(overload_code)
         f.write("}")
 
+    with open(f"Lexicon{langcode}.gf", "w") as f:
+        f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
+        f.write("}")
+
+    with open(f"Lang{langcode}.gf", "w") as f:
+        f.write("--# -path=.:../abstract\n")
+        f.write(f"concrete Lang{langcode} of Lang =\n")
+        f.write(f"  Lexicon{langcode}\n")
+        f.write("  ** {\n")
+        f.write("\n")
+        f.write("flags startcat = Phr ;\n")
+        f.write("\n")
+        f.write("}")
+
+    with open(f"All{langcode}Abs.gf", "w") as f:
+        f.write(f"abstract All{langcode}Abs =\n")
+        f.write(f"  Lang\n")
+        f.write("  ** {}")
+
+    with open(f"All{langcode}.gf", "w") as f:
+        f.write(f"concrete All{langcode} of All{langcode}Abs =\n")
+        f.write(f"  Lang{langcode}\n")
+        f.write("  **\n")
+        f.write("    {} ;\n")
 
     unimorph_code = format_unimorph(tokens)
     with open(f"unimorph_{langcode}.tsv", "w") as f:

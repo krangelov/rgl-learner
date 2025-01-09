@@ -6,10 +6,10 @@ import rgl_learner.morpho_cats
 import rgl_learner.morpho_cats_2
 import rgl_learner.morpho_cats_3
 import rgl_learner.learn_paradigms
-import rgl_learner.smart_paradigms
 import rgl_learner.smart_dictionary
 import rgl_learner.documentation
 import rgl_learner.paradigm_builder
+import rgl_learner.build_wordnet
 
 
 parser = argparse.ArgumentParser()
@@ -32,9 +32,7 @@ elif len(sys.argv) == 4 and sys.argv[1] == "morpho-cats-3":
     rgl_learner.morpho_cats_3.learn(sys.argv[2], sys.argv[3])
 elif len(sys.argv) == 3 and sys.argv[1] == "learn-paradigms":
     rgl_learner.learn_paradigms.learn(sys.argv[2])
-elif len(sys.argv) == 3 and sys.argv[1] == "smart-paradigms":
-    rgl_learner.smart_paradigms.learn(sys.argv[2])
-elif len(sys.argv) >= 3 and sys.argv[1] == "build-paradigms":
+elif len(sys.argv) >= 3 and sys.argv[1] == "smart-paradigms":
     args = parser.parse_args()
     rgl_learner.paradigm_builder.guess_by_lemma(sys.argv[2],
                                                 how=args.how,
@@ -49,10 +47,13 @@ elif len(sys.argv) == 3 and sys.argv[1] == "smart-dictionary":
     rgl_learner.smart_dictionary.rewrite(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "documentation":
     rgl_learner.documentation.learn(sys.argv[2])
+elif len(sys.argv) == 3 and sys.argv[1] == "build-wordnet":
+    rgl_learner.build_wordnet.build(sys.argv[2])
 else:
     print(f"Synopsis: {sys.argv[0]} morpho-cats <wiktionary|unimorph> <lang-code>")
     print(f"          {sys.argv[0]} construct-table <wiktionary|unimorph> <lang-code>")
     print(f"          {sys.argv[0]} learn-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
-    print(f"          {sys.argv[0]} build-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-dictionary <lang-code>")
+    print(f"          {sys.argv[0]} documentation <lang-code>")
+    print(f"          {sys.argv[0]} build-wordnet <lang-code>")

@@ -115,6 +115,10 @@ def preprocess(record):
         if 'Irish non-lemma forms' in sense.get('categories',[]):
             return False
 
+    tags = record.setdefault("tags",[])
+    if "masculine" not in tags and "feminine" not in tags:
+        tags.append("masculine")
+
     return True
 
 def filter_lemma(lemma, pos, table):

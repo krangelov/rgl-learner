@@ -1,29 +1,53 @@
 import pickle
 from rgl_learner.morpho_cats import GFRecord, GFTable, GFStr
 
+def sizeOf(ty):
+    size = 0
+    match ty:
+        case GFRecord(fields):
+            for lbl,ty in fields:
+                size += sizeOf(ty)
+        case GFTable(arg_type,res_type):
+            size = len(list(arg_type.renderValues(0))) * sizeOf(res_type)
+        case GFStr():
+            size = 1
+    return size
+
 def render(top,ty,expr):
     s = ""
     match ty:
         case GFRecord(fields):
             first = True
             for lbl,ty in fields:
-                if not first:
-                    s += " ++\n"
-                if top:
-                    s += '           tr (th \"'+str(lbl)+'"'+render(False,ty,expr+'.'+lbl)
-                else:
-                    s += ' ++ th \"'+str(lbl)+'"'+render(False,ty,expr+'.'+lbl)
-                top   = True
-                first = False
+                size = sizeOf(ty)
+                if size > 0:
+                    if not first:
+                        s += " ++\n"
+                    if size == 1:
+                        th = "th"
+                    else:
+                        th = f'intagAttr "th" "rowspan=\\"{size}\\""'
+                    if top:
+                        s += '           tr ('+th+' \"'+str(lbl)+'"'+render(False,ty,expr+'.'+lbl)
+                    else:
+                        s += ' ++ '+th+' \"'+str(lbl)+'"'+render(False,ty,expr+'.'+lbl)
+                    top   = True
+                    first = False
         case GFTable(arg_type,res_type):
+            size = sizeOf(res_type)
+            if size == 1:
+                th = "th"
+            else:
+                th = f'intagAttr "th" "rowspan=\\"{size}\\""'
+
             first = True
             for value in arg_type.renderValues(0):
                 if not first:
                     s += " ++\n"
                 if top:
-                    s += '           tr (th "'+str(value)+'"'+render(False,res_type,expr+" ! "+str(value))
+                    s += '           tr ('+th+' "'+str(value)+'"'+render(False,res_type,expr+" ! "+str(value))
                 else:
-                    s += ' ++ th "'+str(value)+'"'+render(False,res_type,expr+" ! "+str(value))
+                    s += ' ++ '+th+' "'+str(value)+'"'+render(False,res_type,expr+" ! "+str(value))
                 top   = True
                 first = False
         case GFStr():
@@ -60,3 +84,14 @@ def learn(lang):
         d.write('  MkTag i = {s = i.t} ;')
 
         d.write("}\n")
+
+    with open(f"Lang{langcode}.gf", "w") as f:
+        f.write("--# -path=.:../abstract\n")
+        f.write(f"concrete Lang{langcode} of Lang =\n")
+        f.write(f"  Lexicon{langcode}\n")
+        f.write(f"  ,Documentation{langcode} --# notpresent\n")
+        f.write("  ** {\n")
+        f.write("\n")
+        f.write("flags startcat = Phr ;\n")
+        f.write("\n")
+        f.write("}")

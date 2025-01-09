@@ -1,4 +1,4 @@
-iso3 = "Alb"
+iso3 = "Sqi"
 
 
 ignore_tags = ['adjective', 'canonical', 'diminutive', 'romanization', 'table-tags', 'inflection-template',
@@ -26,6 +26,26 @@ def preprocess(record):
 
         if not found:
             record.setdefault("tags",[]).append("masculine")
+
+    f = record["word"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
+    ws = f.split()
+    if len(ws) > 1 and ws[0] in ["i","e","të","së"]:
+        f = ws[1]
+    record["word"] = f
+    for form in record.get("forms",[]):
+        if form["form"] == "arnautë／arnautllárë":
+            form["form"] = "arnautë"
+        elif record["word"] == "teze":
+            if form["form"] == "{{{1}}}e":
+                form["form"] = "tezje"
+            if form["form"] == "{{{1}}}a":
+                form["form"] = "tezja"
+        else:
+            f = form["form"].replace("ó","o").replace("í","i").replace("ú","u").replace("á","a")
+            ws = f.split()
+            if len(ws) > 1 and ws[0] in ["i","e","të","së"]:
+                f = ws[1]
+            form["form"] = f
 
     return True
 
@@ -72,7 +92,7 @@ def patchPOS(lemma,tag,table):
     if tag == 'verb' and lemma == "hjedhë":
         return "noun"
     if tag == 'adv' and lemma == "ngaldaltë":
-        return "noun"
+        return "adj"
     return tag
 
 def patchN(lemma,table):
@@ -96,11 +116,16 @@ def patchN(lemma,table):
         else:
             nom["singular"] = indef.pop("singular",lemma)
             nom["plural"]   = indef.pop("plural",table.pop("plural","-"))
+        acc = indef.setdefault("accusative",{})
+        acc.setdefault("singular", nom["singular"])
+        acc.setdefault("plural", nom["plural"])
     elif type(indef) is str:
-        indef = {"nominative": {"singular": indef, "plural": table.pop("plural","-")}}
-    set_case(indef,"accusative")
+        pl = table.pop("plural","-")
+        indef = {"nominative": {"singular": indef, "plural": pl},
+                 "accusative": {"singular": indef, "plural": pl}}
     set_case(indef,"dative")
     set_case(indef,"ablative")
+
     indef.pop(None,None)
     def_ = table.pop("definite",{})
     if type(def_) is dict:
@@ -108,20 +133,19 @@ def patchN(lemma,table):
         if type(nom) is str:
             def_["nominative"] = {"singular": nom, "plural": "-"}
         if nom:
-            nom.setdefault("singular", def_.pop("singular","-"))
+            nom.setdefault("singular", def_.pop("singular",def_.pop(None,"-")))
             nom.setdefault("plural", def_.pop("plural","-"))
             acc = nom.pop("accusative",None)
             if acc:
                 def_.setdefault("accusative", {}).setdefault("singular", acc)
         else:
-            nom["singular"] = def_.pop("singular","-")
+            nom["singular"] = def_.pop("singular",def_.pop(None,"-"))
             nom["plural"]   = def_.pop("plural","-")
     elif type(def_) is str:
         def_ = {"nominative": {"singular": def_, "plural": "-"}}
     set_case(def_,"accusative")
     set_case(def_,"dative")
     set_case(def_,"ablative")
-    def_.pop(None,None)
 
     table["s"] = {"indefinite": indef, "definite": def_}
     table.pop("masculine",None)
@@ -220,8 +244,9 @@ def patchA(lemma,table):
     fem = table.pop("feminine",None)
     if fem:
         if type(fem) == str:
-            fem = {"singular": fem}
-        fem.setdefault("singular",fem.pop(None,"-"))
+            fem = {"singular": fem, "plural": fem}
+        else:
+            fem.setdefault("singular",fem.pop(None,lemma))
         nom.setdefault("feminine",fem)
     else:
         fem = nom.get("feminine")
@@ -244,8 +269,8 @@ def patchA(lemma,table):
         t1 = table.setdefault(case, {})
         for gender in ["masculine", "feminine"]:
             t2 = t1.setdefault(gender, {})
-            t2.setdefault("singular","-")
-            t2.setdefault("plural","-")
+            t2.setdefault("singular",lemma)
+            t2.setdefault("plural",lemma)
 
     table.pop("often",None)
 
