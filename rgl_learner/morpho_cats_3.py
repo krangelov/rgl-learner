@@ -198,7 +198,7 @@ def getTypeOf(source_plugin, lang_plugin, o):
     elif type(o) is GFParamValue:
         return o.typ, [o]
     else:
-        params = lang_plugin.params | source_plugin.params
+        params = source_plugin.params | lang_plugin.params
         params_keys = list(params.keys())
 
         def decodePolishSequence(o,types):
@@ -252,26 +252,14 @@ def getTypeOf(source_plugin, lang_plugin, o):
             pcons = tuple((pcon for pcon, _, _  in pcons))
             return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
-           # print(record)
             record.sort(key=lambda p: p[0])
-            #record.sort(key=lambda p: get_order(source_plugin,lang_plugin,p[0]))
             forms = sum((forms for _, _, forms in record), [])
             fields = tuple(((source_plugin.convert2gf(tag, params), val_type) for tag, val_type, _ in record))
             return GFRecord(fields), forms
 
-def get_order(source_plugin, lang_plugin, tag):
-    if lang_plugin.params_order:
-        return lang_plugin.params_order.get(tag,10000000)
-    else:
-        return source_plugin.params_order.get(tag,10000000)
-
-def get_gtag(source_plugin, lang_plugin, tag):
-    if lang_plugin.params:
-        return lang_plugin.params.get(tag)
-    else:
-        return source_plugin.params.get(tag)
-
-def learn(source, lang, filename=None, dirname="data"):
+def learn(source, lang, filename=None,
+          dirname="data", level=None,
+          compress=True):
     source_plugin = plugins[source]
     lang_plugin = plugins[source, lang]
 
@@ -282,6 +270,7 @@ def learn(source, lang, filename=None, dirname="data"):
     ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
     params = lang_plugin.params | source_plugin.params
 
+
     known_tags = []
     unknown_tags = []
     temp_order = defaultdict(list)
@@ -289,35 +278,47 @@ def learn(source, lang, filename=None, dirname="data"):
 
     # Step 1: extract parameter order and fix annotation issues
 
-    for _, pos, forms, _ in lexicon:
+    pos_order = defaultdict(dict)
+    corrected_lexicon = []
+    for word, pos, forms, gtags in lexicon:
+        if lang_plugin.filter_form(word):
+            continue
+
+        pos = source_plugin.tag2cat.get(pos)
+        if not pos:
+            continue
+
         corrected_forms = []
-        pos_order = defaultdict(list)
         for w, tags in forms:
             tags = list(dict.fromkeys(tags)) # remove duplicates
+            tags = [tag for tag in tags if tag not in ignore_tags]
             tags = lang_plugin.fix_tags(tags)
             new_forms = lang_plugin.merge_tags(pos, forms, w, tags)
-            for num, tag in enumerate(tags):
+            new_tags = [tag for t in new_forms for tag in t[1]]
+            for num, tag in enumerate(new_tags):
                 if tag in params:
                     known_tags.append(tag)
-                    pos_order[params[tag][1]].append(num)
+                    if params[tag][1] in pos_order[pos]:
+                        pos_order[pos][params[tag][1]].append(num)
+                    else:
+                        pos_order[pos][params[tag][1]] = [num,]
                     if tag not in param2val[params[tag][1]]:
                         param2val[params[tag][1]].append(tag)
                 elif tag not in ignore_tags:
                     unknown_tags.append(tag)
 
             corrected_forms.extend(new_forms)
+        corrected_lexicon.append((word, pos, corrected_forms, gtags))
 
 
+    for pos, val in pos_order.items():
+        temp_order[pos], _ = list(zip(*sorted(val.items(), key=lambda x: sum(x[1])/len(x[1]))))
 
-        if pos_order:
-            temp_order[pos], _ = list(zip(*sorted(pos_order.items(), key=lambda x: sum(x[1])/len(x[1]))))
-        else:
-            temp_order[pos] = []
 
     if lang_plugin.order:
         order = lang_plugin.order
-    elif os.path.exists(f"{lang}_order.json"): # temporary solution to store order
-         with open(f"{lang}_order.json") as f:
+    elif level and os.path.exists(f"{lang}_order_{level}.json"): # temporary solution to store order
+         with open(f"{lang}_order_{level}.json") as f:
              order = json.load(f)
     else:
         order = {}
@@ -326,33 +327,40 @@ def learn(source, lang, filename=None, dirname="data"):
         if pos not in order:
             order[pos] = linorder
 
-    with open(f"{lang}_order.json", "w") as f: # temporary solution for evaluation
+    filename = f"{lang}_order_{level}.json" if level else f"{lang}_order.json"
+    with open(filename, "w") as f: # temporary solution for evaluation
         json.dump(order, f)
 
 
     print("Unknown tags:", set(unknown_tags))
+
 
     # Step 2: create tables for lexemes and a template for an inflectional class
 
     default_table = defaultdict(list)
     tables = defaultdict(list)
 
-    for word, pos, corrected_forms, gtags in tqdm(lexicon):
 
-        pos_order = order[pos]
+    for word, pos, forms, gtags in corrected_lexicon:
+        pos_order = order.get(pos, [])
         table = {}
 
-        for w, tags in corrected_forms:
+        for w, tags in forms:
+
             form_table = []
             i = 0
+            tags = [t for t in tags if t in params and params[t][1] in pos_order]
+            tags = sorted(tags, key=lambda x: pos_order.index(params[x][1]))
+
             for param in pos_order:
                 if i < len(tags) and tags[i] in param2val[param]:
                     form_table.append(tags[i])
                     i += 1
                 elif param in lang_plugin.default_params:
-                    form_table.append(lang_plugin.default_vals[param])
+                    form_table.append(lang_plugin.default_params[param])
                 else:
                     form_table.append(f"no{param}")
+
 
             if form_table not in default_table[pos]:
                 default_table[pos].append(form_table)
@@ -368,7 +376,12 @@ def learn(source, lang, filename=None, dirname="data"):
 
                 t[form_table[-1]] = w
         if table:
+            if lang_plugin.filter_lemma(word,pos,table):
+                continue
+
+            pos = lang_plugin.patchPOS(word, pos, table)
             tables[pos].append((word,table))
+
 
     # Step 3: normalize tables and convert to GF types
 
@@ -387,38 +400,45 @@ def learn(source, lang, filename=None, dirname="data"):
                 ddict.setdefault(form1, add_form(ddict[form1], ts))
 
     def compress(ddict):
-        if len(ddict) == 1 and next(iter(ddict)).startswith("no"):
-            if isinstance(next(iter(ddict.values())), dict):
+        default = lang_plugin.default_params.values()
+        while len(ddict) == 1 and (next(iter(ddict)).startswith("no") or next(iter(ddict)) in default):
+            val = next(iter(ddict.values()))
+            if isinstance(val, dict):
                 ddict = next(iter(ddict.values()))
             else:
                 return next(iter(ddict.values()))
         for param, values in ddict.items():
             if isinstance(values, dict):
-                if len(values.keys()) == 1:
+                if len(values) == 1 and (next(iter(values)).startswith("no") or next(iter(values)) in default):
                     val = next(iter(values))
-                    if val.startswith("no"):
-                        ddict[param] = compress(values[val]) if isinstance(values[val], dict) else values[val]
+                    ddict[param] = compress(values[val]) if isinstance(values[val], dict) else values[val]
                 else:
                     ddict[param] = compress(values)
-
         return ddict
 
     for pos, ts in tables.items():
         for (word, table) in ts:
-            add_form(table, default_table[pos])
-            cat_name = source_plugin.tag2cat.get(pos)
-            if not cat_name:
-                continue
 
-            table = compress(table)
+            add_form(table, default_table[pos])
+            if compress:
+                table = compress(table)
+
+            res = lang_plugin.patch_inflection(pos, word, table)
+            if res:
+                table = res
+            if isinstance(table, dict):
+                table["lemma"] = word
+            else:
+                table = {"lemma": word}
+
             typ, forms = getTypeOf(source_plugin, lang_plugin, table)
 
             if type(typ) != GFRecord:
                 typ = GFRecord((("s", typ),))
 
-            lin_types.setdefault(pos, (cat_name, {}))[1].setdefault(typ, []).append((word, forms))
+            lin_types.setdefault(pos, (pos, {}))[1].setdefault(typ, []).append((word, forms))
 
-
+    cat2idx = {}
     for tag, (cat_name, types) in lin_types.items():
         counts = {}
         for typ, lexemes in types.items():
@@ -480,11 +500,13 @@ def learn(source, lang, filename=None, dirname="data"):
             forms = reverse_dict(typ.linearize())
 
 
-            lemma_form = [(num, form[0]) for table in tables for num, (form, word) in
+            lemma_form = [(num, form) for table in tables for num, (form, word) in
                           enumerate(zip(forms, table[1])) if table[0].split("_")[0] == word]
 
+            #print(Counter(lemma_form))
+
             mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
-            cat2idx[cat_name].append(forms[mc_lemma_form])#".lower())
+            cat2idx[cat_name].append(forms[mc_lemma_form])
 
 
             for i, (typ, lexemes) in enumerate(sorted(types.items(), key=lambda x: -len(x[1]))):
@@ -538,19 +560,21 @@ def learn(source, lang, filename=None, dirname="data"):
     with open(f"{dirname}/{lang}/lexicon.pickle", "wb") as f:
         pickle.dump((lang_code, source, lin_types), f)
 
-    temp_forms = {}
-    if os.path.exists(f"{lang}_forms.json"):
-        with open(f"{lang}_forms.json") as f:
-            temp_forms = json.load(f)
 
 
-    for cat in cat2idx:
-        if cat not in temp_forms:
-            temp_forms[cat] = cat2idx[cat]
+    filename = f"{lang}_forms_{level}.json" if level else f"{lang}_forms.json"
+    prev_cat2idx = {}
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            prev_cat2idx = json.load(f)
 
 
-    with open(f"{lang}_forms.json", "w") as f:
-        json.dump(temp_forms, f)
+    for k, v in cat2idx.items():
+        if k not in prev_cat2idx:
+            prev_cat2idx[k] = v
+
+    with open(filename, "w") as f:
+        json.dump(prev_cat2idx, f)
 
     return unknown_tags
 

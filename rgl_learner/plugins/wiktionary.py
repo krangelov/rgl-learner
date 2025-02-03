@@ -17,8 +17,8 @@ tag2cat = {
   }
 
 params = {
-  "infinitive": ("Infinitive", "Infinitive"),
-    "past_participle": ("Past_Part", "Participle"),
+    "reflexive": ("Reflexive", "Voice"),
+   "past_participle": ("Past_Part", "Participle"),
   'positive': ('Pos', 'Comparison'),
   'comparative': ('Comp', 'Comparison'),
   'superlative': ('Superlat', 'Comparison'),
@@ -61,6 +61,8 @@ params = {
   'past_habitual': ("Past_habitual", "Tense"),
   'present': ('Pres','Tense'),
   'past': ('Past','Tense'),
+    'past-i': ('Past1','Tense'),
+  'past-ii': ('Past2','Tense'),
   'aorist': ('Aorist','Tense'),
   'aorist-ii': ('Aorist2','Tense'),
   'future': ('Fut','Tense'),
@@ -72,6 +74,8 @@ params = {
   'pluperfect': ('Pluperf','Tense'),
   'past-perfect': ('PastPerfect','Tense'),
   'future-perfect': ('PastPerfect','Tense'),
+    'passive': ('Passive','Voice'),
+    'participle': ('Participle', 'Participle'),
     'masculine': ('Masc', 'Gender'),
     'feminine': ('Fem', 'Gender'),
     'neuter': ('Neuter', 'Gender'),
@@ -97,9 +101,9 @@ def extract(lang, filename=None):
     lang_plugin = plugins["wiktionary",lang]
 
     if not os.path.exists(fpath):
-        print(f"Extracting data from raw-wiktextract-data.json.gz for {lang}.")
+        print(f"Extracting data from raw-wiktextract-data.jsonl.gz for {lang}.")
         lexicon = []
-        with gzip.open('raw-wiktextract-data.json.gz','r') as f:
+        with gzip.open('raw-wiktextract-data.jsonl.gz','r') as f:
             for line in f:
                 record = json.loads(line)
                 if record.get("lang_code")==lang:

@@ -7,7 +7,8 @@ import numpy as np
 from rgl_learner.utils import *
 from scipy.stats import entropy
 import re
-from random import shuffle, choice
+from random import shuffle, choice, seed
+import random
 from Levenshtein import ratio, distance
 from pprint import pprint
 import rgl_learner.plugins as plugins
@@ -16,22 +17,16 @@ from rgl_learner.learn_paradigms import Paradigm
 evaluate = True
 normalize = lambda x: re.sub(r"^s;", "",x).lower() if evaluate else x
 
-
-
-
-
 def format_unimorph(tokens):
     """Format output to unimorph format"""
     unimorph = []
     for pos, lemma, forms, true_forms, y_pred, y_true in tokens:
         for (tag, form), true_form in zip(forms.items(), true_forms):
             um_tag = ";".join(
-                [
-                    pos,
-                ]
+                [pos,]
                 + [gf2unimorph[t] for t in tag.split(";") if t in gf2unimorph]
             )
-            unimorph.append("\t".join([lemma, true_form, form, um_tag]))
+            unimorph.append("\t".join([lemma, true_form, form, um_tag, tag]))
     return "\n".join(unimorph)
 
 
@@ -50,7 +45,9 @@ class LemmaTree:
         how: str = None,
         stopping: str = None,
         split: bool = False,
-        sampling: str = "oracle"
+        sampling: str = "oracle",
+        mc_lemma_form: str = None,
+        shuffle_data: str = True
     ):
 
         self.pos = pos
@@ -61,24 +58,33 @@ class LemmaTree:
 
         self.form_distribution = [dict(zip([normalize(x) for x in reverse_dict(p.typ.linearize())], [x[0] for x in p.forms])) for p in forms]
 
+        lemmas = list(filter(lambda x: x, lemmas))
+
         lemma_form = [form for table in lemmas for form, word in table[1].items() if word == table[0][0]]
-        mc_lemma_form = Counter(lemma_form).most_common(1)[0][0]
+        if not mc_lemma_form:
+            mc_lemma_form = Counter(lemma_form).most_common(1)[0][0]
+        else:
+            mc_lemma_form = normalize(mc_lemma_form)
         self.other_forms.append(mc_lemma_form)
 
-        if split:  # different ways to split data to train and test
-            if test_lemmas:
-                train = lemmas
-                test = test_lemmas
-            elif t and t < len(lemmas):
-                shuffle(lemmas)
-                train = lemmas[:t]
-                test = lemmas[t:]
-            else:
-                train, test = train_test_split(lemmas, shuffle=True)
+        if test_lemmas:
+            train = lemmas
+            test = test_lemmas
             labels, self.train_tokens = list(zip(*train))
             count_labels = Counter(list(zip(*labels))[1])
             self.train = [x for x in labels if count_labels[x[1]] >= min_examples]
-
+        elif split:  # different ways to split data to train and test
+            if t and t < len(lemmas):
+                if shuffle_data:
+                    shuffle(lemmas)
+                train = lemmas[:t]
+                test = lemmas[t:]
+            else:
+                train, test = train_test_split(lemmas, shuffle=shuffle_data,
+                                               random_state=42)
+            labels, self.train_tokens = list(zip(*train))
+            count_labels = Counter(list(zip(*labels))[1])
+            self.train = [x for x in labels if count_labels[x[1]] >= min_examples]
         else:
             train = lemmas
             test = train
@@ -86,8 +92,7 @@ class LemmaTree:
 
         self.test, self.tokens = list(zip(*test))
 
-       # print(len(self.train))
-       # print(len(self.test))
+
 
         if stopping == "max_length":
             self.max_depth = max([len(x[0]) for x in self.train]) + 1
@@ -102,53 +107,60 @@ class LemmaTree:
         else:
             self.how = self.define_affixation()
 
-    def update_paradigms(self, labels, pattern):
-        found = False
-
+    def update_paradigms(self, base, labels, pattern):
         for num, form in enumerate(self.forms):
-            #print(form)
             if all([f[0] == l for f, l in zip(form.forms, labels.values())]):
-                found = True
                 return num
-        if not found:
-            new_paradigm = Paradigm(forms=[(l, True) for l in labels.values()],
+        new_paradigm = Paradigm(forms=[(l, True) for l in labels.values()],
                                     typ=self.forms[0].typ,
                                     var_insts=[],
                                     pattern=pattern,
                                     tables=[]
                                     )
-            self.forms.append(new_paradigm)
-        return num+1
+        num = len(self.forms)
+        self.rules[((self.other_forms[0], base[:self.max_depth]),)] = (num, 0, [num])
+        self.forms.append(new_paradigm)
+        self.form_distribution.append(labels)
+        return num
 
 
 
-    def form_token(self, stem, pattern, labels, test=False):
+    def form_token(self, stem, pattern, labels, iter, test=True):
         """Form tokens based on predicted forms by
         matching patterns"""
         token_dict = {}
+
         if pattern:
             full_match, base_dict, new_pattern, stem_name = parse_pattern(stem, pattern)
-            if test:
-                base_dict = full_match
-
-            elif not full_match:
+            #if not test or full_match:
+            if full_match:
+                if full_match and isinstance(full_match["base_1"], tuple):
+                    base_dict = {f"base_{i+1}": base for i, base in enumerate(full_match["base_1"])}
+                else:
+                    base_dict = full_match
+            else:
                 new_labels = {}
                 for label, word in labels.items():
                     word_split = word.split('+')
                     if stem_name in word_split and word_split.index(stem_name) + 1 < len(word_split) and new_pattern:
                         replace_word_idx = word_split.index(stem_name) + 1
-                        #print(word_split)
-                       #print(new_pattern)
                         new_word = [w.replace(new_pattern, "").replace('+""', "") if num == replace_word_idx else w for num, w in enumerate(word_split) ]
-                        new_labels[label] = "+".join(new_word)
-                        upd_pattern = pattern.replace(new_pattern, "")
+                        new_labels[label] = "+".join(new_word).replace('+""', "").replace('""+', '')
                     else:
                         new_labels[label] = word
-                        upd_pattern = pattern
                 labels = new_labels
-                class_num = self.update_paradigms(labels, upd_pattern)
+                if new_pattern:
+                    upd_pattern = ("+".join([x.replace(new_pattern, "") if "base" not in x else x
+                                            for x in pattern.split("+")]).replace('+""', "")
+                                   .replace('""+', ''))
+                else:
+                    upd_pattern = pattern
+                class_num = self.update_paradigms(stem, labels, upd_pattern)
         else:
             base_dict = {"base_1": stem}
+
+        #print(base_dict, stem, pattern)
+
 
         for label, form in labels.items():
             label = normalize(label)
@@ -160,6 +172,7 @@ class LemmaTree:
                 token_dict[label] = form.replace("+", "").replace('"', "")
             else:
                 token_dict[label] = "-"
+        #print(token_dict)
 
         return token_dict
 
@@ -195,12 +208,12 @@ class LemmaTree:
 
         return ""
 
-    def coverage_score(self, token, forms, dist=None, input=[]):
+    def coverage_score(self, token, forms, dist=None):
         errors = []
         coverage = []
 
         for form, value in token.items():
-            if value != "-" and form not in input:
+            if value != "-" and form != "lemma":
                 if forms.get(form) == value:
                     coverage.append(1)
                 else:
@@ -246,8 +259,11 @@ class LemmaTree:
                 class_name: one_class / sum(classes.values())
                 for class_name, one_class in classes.items()
             }
-            label2entropy[label] = (entropy(list(class_dist.values())),
-                                    dict(sorted(class_dist.items(), key=lambda x: -x[1])))
+            label2entropy[label] = (
+                entropy(list(class_dist.values())),
+                dict(sorted(class_dist.items(), key=lambda x: -x[1]))
+            )
+
         return label2entropy
 
     def build_node(self, lemmas, position):
@@ -265,6 +281,7 @@ class LemmaTree:
                    add_all=True, entropy=10000):
         "Building a tree for a given form"
         entropy_scores, label2classes = self.build_node(lemmas, position)
+        #print(lemmas, entropy_scores, label2classes)
         position += 1
         for label, (entropy_score, class_dist) in entropy_scores.items():
             if entropy_score == 0:
@@ -303,48 +320,46 @@ class LemmaTree:
         score = []
         cov = []
         code = ""
+        possible_forms = list(self.train_tokens[0].keys())
+
         for i in range(self.iters):
             if i == 0:
                 prefix = []
-                self.build_tree(self.train, prefix=prefix, cur_form = self.other_forms[0])
+                self.build_tree(lemmas=self.train, prefix=prefix, cur_form=self.other_forms[0])
                 preds, scores, avg, length, errors, forms = self.evaluate(i, test=False)
-                #print(scores["coverage"])
             else:
                 all_forms = {}
                 for (affix, entropy), form in forms.items():
-                    lemma2class = [
-                        ((tokens[new_form], tag), tokens)
-                        for tokens, tag in form]
-                    self.train, self.train_tokens = list(zip(*lemma2class))
-                    if self.train:
-                        self.build_tree(self.train, prefix=list(affix),
-                                        cur_form=new_form, entropy=entropy)
 
-                        preds, scores, avg, length, errors, new_forms = self.evaluate(i, test=False)
-                        cov.extend(avg)
-                        all_forms.update(new_forms)
+                    if entropy != 0:
+                        lemma2class = [
+                            ((tokens[new_form], tag), tokens)
+                            for tokens, tag in form]
+                        self.train, self.train_tokens = list(zip(*lemma2class))
+                        if self.train:
+                            self.build_tree(self.train, prefix=list(affix),
+                                                cur_form=new_form, entropy=entropy)
+
+                            preds, scores, avg, length, errors, new_forms = self.evaluate(i, test=False)
+                            cov.extend(avg)
+                            all_forms.update(new_forms)
                 forms = all_forms
-
-
-            tokens = []
-            if forms:
-                tokens = list(forms.values())[0][0][0].keys()
 
             preds, scores, avg, length, errors = self.evaluate(i)
             code += write_gf_code(self.pos, self.sort_rules(self.rules, i), self.other_forms, self.how)
             score.append(scores["coverage"])
             if errors: # and i < self.iters-1 and forms:
-                if i+1 < len(required_forms):
+                if self.sampling == "given" and i+1 < len(required_forms):
                     new_form = required_forms[i+1]
                     self.other_forms.append(new_form)
                 elif self.sampling == "random":
                     new_form = choice(errors)[0]
-                    while new_form in self.other_forms or (forms and error[0] not in tokens):
+                    while new_form in self.other_forms or new_form not in possible_forms:
                         new_form = choice(errors)[0]
                     self.other_forms.append(new_form)
                 elif self.sampling in ["oracle", "edit-distance", "entropy"]:
                     for error in errors:  # sample a new form
-                        if error[0] not in self.other_forms and (error[0] in tokens or not forms):
+                        if error[0] not in self.other_forms and error[0] in possible_forms:
                             new_form = error[0]
                             self.other_forms.append(new_form)
                             break
@@ -352,30 +367,8 @@ class LemmaTree:
                 break
             if not new_form:
                 return score, preds, code
+
         return score, preds, code
-
-    def build_regex(self, rule):
-        regex = defaultdict(list)
-        regex_str = ""
-
-        for x in rule:
-            for num, c in enumerate(x[::-1]):
-                regex[num].append(c)
-
-        for c in list(regex.values())[::-1]:
-            if len(c) == len(rule):
-                regex_str += f"({'|'.join(set(c))})" if len(set(c)) > 1 else c[0]
-            else:
-                regex_str += f"({'|'.join(set(c))})?" if len(set(c)) > 1 else f"{c[0]}?"
-        return regex_str
-
-    def linearize_tree(self):
-        class2labels = defaultdict(list)
-        for label, tag in self.rules.items():
-            class2labels[tag].append(label)
-
-        for tag, rule in class2labels.items():
-            self.regex[tag] = self.build_regex(rule)
 
     def sort_rules(self, rules, iteration):
         def gen_list(x, i):
@@ -403,7 +396,7 @@ class LemmaTree:
             tokens = self.train_tokens
 
 
-        most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else -1
+        most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else 0
         common_dist = [x for _, x in self.train]
         for (lemma, tag), token in zip(lemmas, tokens):
             y_true.append(tag)
@@ -441,17 +434,17 @@ class LemmaTree:
 
             base = token[self.other_forms[0]]
 
-            pred_forms = self.form_token(base, table.pattern, pred_labels, test=form_pattern)
+            pred_forms = self.form_token(base, table.pattern, pred_labels, test=form_pattern, iter=i)
+            true_values = [token.get(v, "-") for v in pred_forms]
 
-            preds.append((self.pos, lemma, pred_forms, list(token.values()), pred, tag))
+
+            preds.append((self.pos, lemma, pred_forms, true_values, pred, tag))
 
             cscore, token_errors = self.coverage_score(token, pred_forms, pred_dist)
 
             coverage.extend(cscore)
             errors.extend(token_errors)
 
-       # print(self.sampling)
-       # print(errors)
 
         if self.sampling == "oracle":
             error_list = list(sorted(Counter(errors).items(), key=lambda x: -x[1]))
@@ -514,17 +507,19 @@ def write_gf_code(pos_tag, rules, other_forms, how):
     return gf_code
 
 
-def filter_tokens(tag, table, morphoforms, paradigm, required=None):
-    forms = {normalize(p): form for p, form in zip(morphoforms, table[1]) if type(form) == str}
-    if required and isinstance(required, int):
-        return (forms[normalize(morphoforms[required])], tag), forms
-    elif required:
-        return (forms[normalize(required)], tag), forms
-    else:
-        lemma_form = [(num, form[0]) for lemma, table in paradigm.tables for num, (form, word) in
-                      enumerate(zip(paradigm.forms, table)) if lemma.split("_")[0] == word]
-        mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
-        return (forms[normalize(morphoforms[mc_lemma_form])], tag), forms
+def filter_tokens(tag, table, morphoforms, paradigm, required=None, train=False):
+    if not train or ("base" in paradigm.forms[0][0]):
+        forms = {normalize(p): form for p, form in zip(morphoforms, table[1]) if type(form) == str}
+        if required and isinstance(required, int):
+            return (forms[normalize(morphoforms[required])], tag), forms
+        elif required:
+            return (forms[normalize(required)], tag), forms
+        else:
+            lemma_form = [(num, form[0]) for lemma, table in paradigm.tables for num, (form, word) in
+                          enumerate(zip(paradigm.forms, table)) if lemma.split("_")[0] == word]
+            mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
+            return (forms[normalize(morphoforms[mc_lemma_form])], tag), forms
+
 
 
 boilerplate = {
@@ -592,16 +587,17 @@ boilerplate = {
 def guess_by_lemma(
     lang,
     how=None,
-    min_examples=2,
+    min_examples=3,
     split=True,
     t=None,
     max_depth=3,
-    min_sample_leaf=2,
+    min_sample_leaf=3,
     sampling="oracle",
-    iters=4
+    iters=4,
+    shuffle=True
 ):
     print("Reading data..")
-    print(min_examples, t, split, iters)
+    print(f"Parameters\nNumber of examples: {t}\nSplit: {split}\nIterations: {iters}\nShuffle: {shuffle}")
     source, langcode, tables = read_data(lang)
 
     lang_plugin = plugins[source,lang]
@@ -633,12 +629,13 @@ def guess_by_lemma(
                 max_depth=max_depth,
                 min_sample_leaf=min_sample_leaf,
                 sampling=sampling,
-                iters=iters
+                iters=iters,
+                shuffle_data=shuffle
             )
             score, preds, pos_code = tree.fit(required_forms=required_forms.get(pos,[]))
             code += pos_code
             tokens.extend(preds)
-            print(score)
+            print("\n".join([f"N={i+1}: {s}" for i, s in enumerate(score)]))
 
             all_rules[pos] = tree.rules
 

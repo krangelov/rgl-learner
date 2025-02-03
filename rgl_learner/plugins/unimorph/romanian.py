@@ -6,7 +6,7 @@ def merge_tags(pos, forms, w, tags):
             tag1, tag2 = new_tag.split("/")
             tags_1 = list(map(lambda x: x.replace(new_tag, tag1), tags))
             tags_2 = list(map(lambda x: x.replace(new_tag, tag2), tags))
-            new_forms.append((w, tags_1))
-            new_forms.append((w, tags_2))
+            new_forms.extend(merge_tags(pos, forms, w, tags_1))
+            new_forms.extend(merge_tags(pos, forms, w, tags_2))
             return new_forms
-    return forms
+    return [(w, tags)]

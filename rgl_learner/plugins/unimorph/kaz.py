@@ -42,6 +42,14 @@ params = {
 
 param_order = []
 parameters = defaultdict(set)
+
+default_params = {"Polarity": "Pos", "Mood": "Indicative"}
+
+required_forms = {
+  "N": ['s;Nom;Sg'],
+   "V": ["infinitive"],
+}
+
 for tag, param in params.items():
     parameters[param[-1]].add(tag)
     if param[-1] not in param_order:
@@ -69,40 +77,11 @@ def merge_tags(pos, forms, w, tags):
     if "LSSPEC2" in tags:
         tags.remove("LSSPEC2")
         tags.append("INFM")
-    return forms, tags
-
-
-def patchV(lemma, table):
-    table.setdefault("INF", lemma)
-    new_table = fill_empty(
-        fix_table(
-            table,
-            param_order,
-            parameters,
-            fixed_names={"Polarity": "POS", "Mood": "IND"},
-            exclude_list=["Tense", "Person", "Politeness", "Infinitive", "Possession", "Case"],
-        )
-    )
-
-    new_table["SBJV"] = new_table["SBJV"]["noAspect"]["POS"]
-    new_table["IMP"] = new_table["IMP"]["noAspect"]
-
-    for asp in ["PROG","noAspect"]:
-        for pol in ["POS","NEG"]:
-            new_table["IND"]["PRS"][asp][pol]["1"] = new_table["IND"]["PRS"][asp][pol]["1"]["noFormality"]
-            new_table["IND"]["PRS"][asp][pol]["3"] = new_table["IND"]["PRS"][asp][pol]["3"]["noFormality"]
-    for asp in ["PRF","PROG","noAspect"]:
-        for pol in ["POS","NEG"]:
-            new_table["IND"]["PST"][asp][pol]["1"] = new_table["IND"]["PST"][asp][pol]["1"]["noFormality"]
-            new_table["IND"]["PST"][asp][pol]["3"] = new_table["IND"]["PST"][asp][pol]["3"]["noFormality"]
-    new_table["SBJV"]["1"] = new_table["SBJV"]["1"]["noFormality"]
-    new_table["SBJV"]["3"] = new_table["SBJV"]["3"]["noFormality"]
-    return new_table
+    return [(w, tags)]
 
 
 def patchN(lemma, table):
     case_types = ["NOM", "ACC", "DAT", "LOC", "GEN", "INST", "ABL"]
-    pos_types = ["PSS1S", "PSS2S", "PSS3S", "PSS2P", "PSS3P", "PSS1P"]
 
     table["s"] = {}
     for case in case_types:
@@ -111,26 +90,9 @@ def patchN(lemma, table):
         table["s"].update({case: table.get(case, {})})
         table.pop(case, {})
 
-    table.setdefault("PSS2S", {}).setdefault("FORM", {}).setdefault("SG", "-")
-    table.setdefault("PSS2S", {}).setdefault("INFM", {}).setdefault("SG", "-")
-    table.setdefault("PSS2S", {}).setdefault("FORM", {}).setdefault("PL", "-")
-    table.setdefault("PSS2S", {}).setdefault("INFM", {}).setdefault("PL", "-")
-    table.setdefault("PSS2P", {}).setdefault("FORM", {}).setdefault("PL", "-")
-    table.setdefault("PSS2P", {}).setdefault("INFM", {}).setdefault("PL", "-")
-    table.setdefault("PSS2P", {}).setdefault("FORM", {}).setdefault("SG", "-")
-    table.setdefault("PSS2P", {}).setdefault("INFM", {}).setdefault("SG", "-")
-    for pos_type in pos_types:
-        if pos_type not in ["PSS2S", "PSS2P"]:
-            table.setdefault(pos_type, {}).setdefault("SG", "-")
-            table.setdefault(pos_type, {}).setdefault("PL", "-")
 
-    table["poss"] = {
-        "SG": {"1": table.pop("PSS1S", {}),
-               "2": table.pop("PSS2S", {}),
-               "3": table.pop("PSS3S", {})
-              },
-        "PL": {"1": table.pop("PSS1P", {}),
-               "2": table.pop("PSS2P", {}),
-               "3": table.pop("PSS3P", {})
-              }
-    }
+    table["poss"] = table.pop("noCase", {})
+    return table
+
+def patchV(lemma, table):
+    table["infinitive"] = lemma

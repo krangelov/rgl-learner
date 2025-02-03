@@ -2,15 +2,81 @@ iso3 = "Kmr"
 
 ignore_tags = ["LGSPEC1", "LGSPEC2"]
 
+order = {"N": ["Species", "Case", "Number"],
+         "A": ["Species", "Person", "Case", "Number", "Mood", "Aspect", "Polarity", "Tense", "Verbform"],
+         "V": ["Mood",  "Tense", "Polarity", "Person", "Number", "Species", "Copula", "Case",  "Aspect",  "Verbform"],
+         "Prep": ["Species", "Case", "Number"],
+         "Adv": ["Species", "Case", "Number"],
+         "Det": ["Species", "Case", "Number"],
+         "Pron": ["Species", "Case", "Number"]}
+
+default_params = {"Polarity": "POS"}
+
+required_forms = {"N": ["s;Def;Nom;Sg"],
+                  "V": []}
+
 def filter_lemma(lemma, pos, table):
-    if pos in ["V.MSDR", "V.PTCP", "PRO", "DET", "PART", "NUM", "ADP"]:
+    if pos in ["V.MSDR", "V.PTCP", "PRO", "DET", "PART", "NUM", "ADP", "Num", "Adp", "Digit", "Det", "Pron"]:
+        return True
+    if lemma.startswith("pereng"):
         return True
     return False
+
+def merge_tags(pos, forms, w, tags):
+    new_forms = []
+    if "PL" in tags and "SG" in tags:
+        tags_1 = list(map(lambda x: x.replace("PL", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("SG", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "ACC" in tags and "VOC" in tags:
+        tags_1 = list(map(lambda x: x.replace("ACC", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("VOC", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "ACC" in tags and "NOM" in tags:
+        tags_1 = list(map(lambda x: x.replace("ACC", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("NOM", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "PRS" in tags and "PST" in tags:
+        tags_1 = list(map(lambda x: x.replace("PST", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("PRS", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "2" in tags and "3" in tags:
+        tags_1 = list(map(lambda x: x.replace("2", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("3", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "1" in tags and "3" in tags:
+        tags_1 = list(map(lambda x: x.replace("1", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("3", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "1" in tags and "2" in tags:
+        tags_1 = list(map(lambda x: x.replace("1", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("2", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "IMP" in tags and "SUBJ" in tags:
+        tags_1 = list(map(lambda x: x.replace("IMP", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("SUBJ", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "IPFV" in tags and "PROG" in tags:
+        tags_1 = list(map(lambda x: x.replace("IPFV", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("PROG", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    if new_forms:
+        return new_forms
+    return [(w, tags)]
 
 def patchN(lemma, table):
     pass
     df = table.pop("DEF",{})
-    nom_def = df.get("NOM",{})
+    nom_def = df.get("noPerson", {}).get("NOM",{})
     nom_def.update(nom_def.pop("ACC",{}))
     nom_def.update(table.pop("IND",{}).get("PST",{}).get("PFV",{}).get("DEF",{}).get("NOM",{}).get("POS",{}).get("1",{}).get("2",{}).get("3",{}))
     nom_def = nom_def.pop("MASC",{}).pop("FEM",nom_def)
@@ -41,6 +107,8 @@ def patchN(lemma, table):
     voc.setdefault("PL", "-")
     table["voc"] = voc
 
+    table.pop("noSpecies")
+
     
     
 
@@ -52,7 +120,7 @@ def patchAdv(lemma, table):
     table.clear()
     table["s"] = lemma
 
-def patchV(lemma, table):
+def patchVerb(lemma, table):
     table.pop("ACC",None)
 
     ind = table.get("IND",{})

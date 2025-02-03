@@ -62,7 +62,7 @@ class PluginWrapper:
         fn = self.module.get("merge_tags")
         if fn:
             return fn(pos, forms, w, tags)
-        return forms, tags
+        return [(w, tags)]
 
 class PluginManager:
     def __getitem__(self,key):

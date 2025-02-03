@@ -12,7 +12,7 @@ cat2tag = {
   'N': 'Noun',
   'V':'Verb',
   'A': 'Adj',
-   'PN': 'Name',
+  'PN': 'Name',
   'Pron': 'Pron',
   'Adv': 'Adv',
   'Det': 'Det',
@@ -254,6 +254,7 @@ def parse_pattern(word, pattern):
     end = 0
     stem_name = None
     bases = []
+    word = word.replace(".", "\.")
 
     pattern = pattern.replace('"', "").replace("(", "").replace(")", "").replace("*", "").replace("+?", "?")
     regexp = pattern.replace('+', "")
@@ -275,12 +276,12 @@ def parse_pattern(word, pattern):
             end += char
         else:
             start += char
-    temp_regexp = regexp.replace("base_1", "(.+)")
+    temp_regexp = "^" + regexp.replace("base_1", "(.+)") + "$"
     groups = re.findall(temp_regexp, word)
     full_match_dict = dict(zip(["base_1", ] + bases, groups))
+    #print(temp_regexp, full_match_dict)
 
     replace_word = None
-
     if not stem_name:
         stem_form = word
         stem_name = "base_1"
@@ -310,14 +311,22 @@ def parse_pattern(word, pattern):
             replace_word = next_word[:next_word_idx]
         else:
             stem_form = word[start:end]
+           #s print(word, stem_form, start, end)
+            regexp = regexp.replace(stem_name, stem_form)
+
+
 
 
     base_dict = {stem_name: stem_form}
-    groups = re.findall(regexp, word)
+
+
+    groups = re.findall(regexp, word) if regexp else []
     groups = groups[0] if groups and isinstance(groups[0], tuple) else groups
 
-    base_dict.update(dict(zip(bases, groups)))
-    #second part
+    base_dict.update(dict(zip(bases, map(lambda x: x.replace('\.', "."), groups))))
+
+
+    #print(full_match_dict, base_dict, word, pattern)
     return full_match_dict, base_dict, replace_word, stem_name
 
 def clean_forms(labels, forms):

@@ -13,43 +13,73 @@ def prepare_lang(lang):
     dev = f"conll2017/all/task2/{lang}-uncovered-dev"
     test = f"conll2017/answers/task2/{lang}-uncovered-test"
 
-    pathname = f"data/train/medium/"
+    pathname = f"data/medium/train/"
     if not os.path.exists(os.path.join(pathname, lang)):
         os.makedirs(os.path.join(pathname, lang))
     unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_medium,
-                                                   dirname=pathname)
-    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
+                                                   dirname=pathname, level="medium")
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="medium")
 
-
-    pathname = f"data/train/low/"
-    if not os.path.exists(os.path.join(pathname, lang)):
-        os.makedirs(os.path.join(pathname, lang))
-    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_low,
-                                                   dirname=pathname)
-    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
-
-    if os.path.exists(train_high):
-        pathname = f"data/train/high/"
-        if not os.path.exists(os.path.join(pathname, lang)):
-            os.makedirs(os.path.join(pathname, lang))
-        unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_high,
-                                                                           dirname=pathname)
-        rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
-
-
-    pathname = f"data/dev/"
+    pathname = f"data/medium/dev/"
     if not os.path.exists(os.path.join(pathname, lang)):
         os.makedirs(os.path.join(pathname, lang))
     unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, dev,
-                                                   dirname=pathname)
-    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
+                                                   dirname=pathname, level="medium")
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="medium")
 
 
-    pathname = f"data/test/"
+    pathname = f"data/medium/test/"
     if not os.path.exists(os.path.join(pathname, lang)):
         os.makedirs(os.path.join(pathname, lang))
     unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, test,
-                                                   dirname=pathname)
-    rgl_learner.learn_paradigms.learn(lang, dirname=pathname)
+                                                   dirname=pathname, level="medium")
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="medium")
+
+    pathname = f"data/low/train/"
+    if not os.path.exists(os.path.join(pathname, lang)):
+        os.makedirs(os.path.join(pathname, lang))
+    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_low,
+                                                   dirname=pathname, level="low")
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="low")
+
+    pathname = f"data/low/dev/"
+    if not os.path.exists(os.path.join(pathname, lang)):
+        os.makedirs(os.path.join(pathname, lang))
+    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, dev,
+                                                   dirname=pathname, level="low")
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="low")
+
+    pathname = f"data/low/test/"
+    if not os.path.exists(os.path.join(pathname, lang)):
+        os.makedirs(os.path.join(pathname, lang))
+    unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, test,
+                                                   dirname=pathname, level="low")
+    rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="low")
+
+    if os.path.exists(train_high):
+        pathname = f"data/high/train/"
+        if not os.path.exists(os.path.join(pathname, lang)):
+            os.makedirs(os.path.join(pathname, lang))
+        unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, train_high,
+                                                                           dirname=pathname,
+                                                                            level="high")
+        rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="high")
+
+
+        pathname = f"data/high/dev/"
+        if not os.path.exists(os.path.join(pathname, lang)):
+            os.makedirs(os.path.join(pathname, lang))
+        unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, dev,
+                                                       dirname=pathname, level="high")
+        rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="high")
+
+        pathname = f"data/high/test/"
+        if not os.path.exists(os.path.join(pathname, lang)):
+            os.makedirs(os.path.join(pathname, lang))
+        unknown_tags = rgl_learner.morpho_cats_3.learn("unimorph", lang, test,
+                                                       dirname=pathname, level="high")
+        rgl_learner.learn_paradigms.learn(lang, dirname=pathname, level="high")
+
+
 
 

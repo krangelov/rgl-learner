@@ -11,6 +11,7 @@ from collections import defaultdict, Counter
 import math
 import rgl_learner.plugins as plugins
 from rgl_learner.utils import escape, reverse_dict
+from pprint import  pprint
 # Wordgraph class to extract LCS
 
 class wordgraph(object):
@@ -321,14 +322,13 @@ class Paradigm:
         if len(self.forms) != len(other.forms):
             return False
 
-        overlap = 0
-        for i in range(len(self.forms)):
-            if self.forms[i] != "nonExist" and other.forms[i] != "nonExist":
-                if self.forms[i] != other.forms[i]:
+        for i, form in enumerate(self.forms):
+            other_form = other.forms[i][0] if isinstance(other.forms[i], tuple) else other.forms[i]
+            if form != "nonExist" and other_form != "nonExist":
+                if form != other_form:
                     return False
-                overlap += 1
 
-        return overlap
+        return True
 
 def collapse_tables(typ,tables):
     """Input: list of tables
@@ -347,27 +347,27 @@ def collapse_tables(typ,tables):
     return paradigms
 
 def merge_paradigms(paradigmlist):
-    paradigms = {}
     for i,p1 in enumerate(paradigmlist):
         possible_paradigms = []
         for j,p2 in enumerate(paradigmlist):
-            if i !=j:
+            if i != j:
                 overlap = p1.compatible(p2)
                 if overlap:
                     possible_paradigms.append((overlap,p2))
         possible_paradigms.sort(key=lambda x: x[0], reverse=True)
 
         forms = []
-        for k in range(len(p1.forms)):
-            if p1.forms[k] == "nonExist":
+        for k, form in enumerate(p1.forms):
+            if form == "nonExist":
                 for overlap, p2 in possible_paradigms:
-                    if p2.forms[k] != "nonExist":
-                        forms.append((p2.forms[k],True))
+                    other_form = p2.forms[k][0] if isinstance(p2.forms[k], tuple) else p2.forms[k]
+                    if other_form != "nonExist":
+                        forms.append((other_form,True))
                         break
                 else:
-                    forms.append((p1.forms[k],False))
+                    forms.append((form,False))
             else:
-                forms.append((p1.forms[k],False))
+                forms.append((form,False))
 
         p1.forms = forms
 
@@ -438,10 +438,11 @@ def learnparadigms(typ,inflectiontables):
     paradigmlist = collapse_tables(typ,filteredtables)
     paradigmlist = merge_paradigms(paradigmlist)
 
+
     return paradigmlist
 
 
-def correct_paradigms(lang, lang_plugin,cat,paradigms):
+def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None):
     def get_index(reverse_forms, required_forms):
         if reverse_forms[0].startswith("s;") and not required_forms[0].startswith("s;"):
             return reverse_forms.index("s;" + required_forms[0])
@@ -451,7 +452,6 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms):
         else:
             return reverse_forms.index(required_forms[0])
 
-    cat2idx = defaultdict(list)
     mult_base_words = 0
     for i, paradigm in enumerate(paradigms):
         # calculate the possible lengths of all bases
@@ -481,13 +481,12 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms):
         reverse_forms = reverse_dict(paradigm.typ.linearize())
         if required_forms:
             index = get_index(reverse_forms, required_forms)
-        elif os.path.exists(f"{lang}_forms.json"): # temporary file
-            with open(f"{lang}_forms.json") as f:
+        elif os.path.exists(f"{lang}_forms_{level}.json"): # temporary file
+            with open(f"{lang}_forms_{level}.json") as f:
                 required_forms = json.load(f)
-            index =  get_index(reverse_forms, required_forms[cat])
+            index = get_index(reverse_forms, required_forms[cat])
         else:
             index = 0
-
 
 
         for elem in forms[index].split('+'):
@@ -537,9 +536,9 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms):
             paradigm.var_insts = [[("base",table[index])] for ident,table in paradigm.tables]
         paradigm.pattern = pattern
 
+
     if mult_base_words > 0:
         print(f"Number of {cat} paradigms with more than 1 base: {mult_base_words}")
-    return cat2idx
 
 def write_paradigm(i, max_i, par, cat):
     if par.pattern == None:
@@ -562,37 +561,36 @@ def write_paradigm(i, max_i, par, cat):
 def write_lexicon(i, max_i, par, cat):
     code = ""
     s = "" if max_i == 1 else f"{i:03d}"
+
     for j,(ident,table) in enumerate(par.tables):
         code += f"""lin {escape(ident)} = mk{cat}{s} {" ".join(('"'+val+'"' for name, val in par.var_insts[j]))} ;\n"""
     return code
 
 
-def learn(lang, dirname="data"):
+def learn(lang, dirname="data", level=None):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
-        source, langcode, lexicon = pickle.load(f)
+        langcode, source, lexicon = pickle.load(f)
 
     lang_plugin = plugins[source,lang]
 
+
     print("Learning paradigms..")
-    cat2idx = {}
     tables = defaultdict(list)
     for pos_tag, (cat_name, table) in lexicon.items():
         if len(table) > 1:
             print("Warning: the inflection tables are not unified yet, using the first one")
         typ,lexemes = next(iter(table.items()))
         paradigms = learnparadigms(typ,lexemes)
-        cat2idx.update(correct_paradigms(lang, lang_plugin, cat_name, paradigms))
+        correct_paradigms(lang, lang_plugin, cat_name, paradigms, level=level)
         tables[cat_name].extend(paradigms)
 
     print("Writing output files..")
-
-    req_forms = {cat: Counter(lst).most_common(1)[0][0] for cat, lst in cat2idx.items()}
 
 
     with open(f"{dirname}/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((source, langcode, tables), f)
 
-    with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
+    with open(f"{dirname}/{lang}/Dict{langcode}_{level}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
         dct.write(
             f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Morpho{langcode}, Prelude in {{\n\n""")
         para.write(f"""resource Morpho{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")

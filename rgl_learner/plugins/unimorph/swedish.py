@@ -6,4 +6,4 @@ def merge_tags(pos, forms, w, tags):
         new_forms.append((w, tags_1))
         new_forms.append((w, tags_2))
         return new_forms
-    return forms
+    return [(w, tags)]

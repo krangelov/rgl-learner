@@ -2,10 +2,8 @@ params = {"PLDEF": ("PlDef", "Species"),
         "SGDEF": ("SgDef", "Species")}
 
 
+ignore_tags = ["N"]
 
-def fix_tags(tags):
-    if "N" in tags:
-        tags.remove("N")
-    return tags
+
 
 
