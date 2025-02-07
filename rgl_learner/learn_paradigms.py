@@ -446,7 +446,8 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None):
     def get_index(reverse_forms, required_forms):
         if reverse_forms[0].startswith("s;") and not required_forms[0].startswith("s;"):
             return reverse_forms.index("s;" + required_forms[0])
-        elif not reverse_forms[0].startswith("s;"):
+        elif not any(map(lambda x: x.startswith("s;"), reverse_forms)):
+            #print(reverse_forms)
             new_form = re.sub("^s;", "", required_forms[0])
             return reverse_forms.index(new_form)
         else:

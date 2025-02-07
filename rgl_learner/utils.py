@@ -1,5 +1,5 @@
 from collections import defaultdict, abc
-from sklearn.model_selection import train_test_split
+from itertools import product
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.metrics import accuracy_score
 from collections import defaultdict
@@ -254,7 +254,8 @@ def parse_pattern(word, pattern):
     end = 0
     stem_name = None
     bases = []
-    word = word.replace(".", "\.")
+
+    pattern = pattern.replace(".", "\.")
 
     pattern = pattern.replace('"', "").replace("(", "").replace(")", "").replace("*", "").replace("+?", "?")
     regexp = pattern.replace('+', "")
@@ -262,24 +263,39 @@ def parse_pattern(word, pattern):
         base = base.strip('"')
         num_symbols = base.count("?")
         if "base" in base:
+            option_regexp = []
+            if "|" in base:
+                base_name, options = base.split("@", maxsplit=1)
+                for option in options.split("|"):
+                    if "?" in option:
+                        break
+                    else:
+                        option_regexp.append(option)
+            else:
+                base_name = base
             if num_symbols > 0:
                 char = num_symbols
-                regexp = regexp.replace(base, f"(.{{{num_symbols}}})")
-                bases.append(re.sub(r'[\(|\)|\@|\?|\+]+', '', base))
+                n_sym = f"(.{{{num_symbols}}})"
+                option_regexp.append(n_sym)
+
             else:
                 after = True
                 char = 0
                 stem_name = base
+            if option_regexp:
+                options = "("+"|".join(option_regexp)+")" if len(option_regexp) > 1 else option_regexp[0]
+                regexp = regexp.replace(base, options)
+                bases.append(re.sub(r'[\(|\)|\@|\?|\+]+', '', base_name))
         else:
             char = len(base)
         if after:
             end += char
         else:
             start += char
-    temp_regexp = "^" + regexp.replace("base_1", "(.+)") + "$"
+
+    temp_regexp = "^" + regexp.replace(stem_name, "(.+)") + "$" if stem_name else "^" + regexp.replace("base_1", "(.+)") + "$"
     groups = re.findall(temp_regexp, word)
     full_match_dict = dict(zip(["base_1", ] + bases, groups))
-    #print(temp_regexp, full_match_dict)
 
     replace_word = None
     if not stem_name:
@@ -306,7 +322,6 @@ def parse_pattern(word, pattern):
 
             new_next_word = next_word[next_word_idx:]
             stem_form = word[start:end]
-
             regexp = regexp.replace(stem_name, stem_form).replace(next_word, new_next_word)
             replace_word = next_word[:next_word_idx]
         else:
@@ -318,15 +333,12 @@ def parse_pattern(word, pattern):
 
 
     base_dict = {stem_name: stem_form}
-
-
-    groups = re.findall(regexp, word) if regexp else []
+    groups = re.findall(regexp, word)
     groups = groups[0] if groups and isinstance(groups[0], tuple) else groups
+    groups = list(map(lambda x:x.replace("\.", "."), groups))
 
-    base_dict.update(dict(zip(bases, map(lambda x: x.replace('\.', "."), groups))))
+    base_dict.update(dict(zip(bases, groups)))
 
-
-    #print(full_match_dict, base_dict, word, pattern)
     return full_match_dict, base_dict, replace_word, stem_name
 
 def clean_forms(labels, forms):

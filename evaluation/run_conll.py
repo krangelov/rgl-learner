@@ -37,7 +37,7 @@ def extract(lang, level, min_examples=1, iters=5):
         req_forms = json.load(f)
 
 
-    for pos, forms in train.items():
+    for pos, forms in test.items():
         new_forms_ids = []
         ids_to_remove = []
         for i, form in enumerate(forms):
@@ -64,8 +64,9 @@ def extract(lang, level, min_examples=1, iters=5):
 
 
         train_data = list(filter(lambda x: x, [
-            filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm, required="lemma", train=True)
-            for tag, paradigm in enumerate(forms)
+            filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm, required=req_forms.get(pos,[None])[0],
+                          train=True)
+            for tag, paradigm in enumerate(train[pos])
             for table in paradigm.tables
 
         ]))
@@ -73,7 +74,7 @@ def extract(lang, level, min_examples=1, iters=5):
 
 
         dev_data = [
-            filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm, required="lemma")
+            filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm, required=req_forms.get(pos,[None])[0],)
             for tag, paradigm in enumerate(dev[pos])
             for table in paradigm.tables
         ]
@@ -81,75 +82,85 @@ def extract(lang, level, min_examples=1, iters=5):
 
 
         test_data = [
-            filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm, required="lemma")
-            for tag, paradigm in enumerate(test[pos])
+            filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm, required=req_forms.get(pos,[None])[0],)
+            for tag, paradigm in enumerate(forms)
             for table in paradigm.tables
         ]
 
-        if test_data:
-            datadict[pos] = [train_data, dev_data, test_data]
+        datadict[pos] = [train_data, dev_data, test_data]
+
 
     best_hyp = defaultdict(list)
 
     for pos, ddict in datadict.items():
         results = []
         train_data, dev_data, _ = ddict
-        for hyperparameter in hyperparameters:
-            tree = LemmaTree(
-                        pos,
-                        train_data,
-                        train[pos],
-                        test_lemmas=dev_data,
-                        min_examples=min_examples,
-                        split=True,
-                        max_depth=hyperparameter["max_depth"],
-                        min_sample_leaf=hyperparameter["min_sample_leaf"],
-                        iters=iters,
-                        sampling=hyperparameter["sampling"],
-                        mc_lemma_form="lemma"
-                    )
+        if train_data:
+            for hyperparameter in hyperparameters:
+                tree = LemmaTree(
+                            pos,
+                            train_data,
+                            train[pos],
+                            test_lemmas=dev_data,
+                            min_examples=min_examples,
+                            split=True,
+                            max_depth=hyperparameter["max_depth"],
+                            min_sample_leaf=hyperparameter["min_sample_leaf"],
+                            iters=iters,
+                            sampling=hyperparameter["sampling"],
+                            mc_lemma_form="lemma"
+                        )
 
-            scores, preds, _ = tree.fit()
-            num_pp = scores.index(max(scores))
+                scores, preds, _ = tree.fit()
+                num_pp = scores.index(max(scores))
 
-            preds, scores, coverage, cov, error_list = tree.evaluate(num_pp, test=True, data=dev_data)
-            cov_scores.extend(coverage)
-            hyperparameter["num_pp"] = num_pp
+                preds, scores, coverage, cov, error_list = tree.evaluate(num_pp, test=True, data=dev_data)
+                cov_scores.extend(coverage)
+                hyperparameter["num_pp"] = num_pp
 
-            results.append(sum(cov_scores) / len(cov_scores))
+                results.append(sum(cov_scores) / len(cov_scores))
+            best_hyp[pos] = hyperparameters[results.index(max(results))]
+            # print(max(results), best_hyp)
+        else:
+            cov_scores.extend([0,] * len(test_data))
 
-        best_hyp[pos] = hyperparameters[results.index(max(results))]
-   # print(max(results), best_hyp)
+
 
     test_scores = []
     pos_scores = {}
     code = ""
+    print(datadict.keys())
     for pos, data in datadict.items():
         print(f"=={pos}==")
 
-        train_data, dev_data, test_data = data
-        tree = LemmaTree(
-            pos,
-            train_data,
-            train[pos],
-            test_lemmas=dev_data,
-            min_examples=min_examples,
-            split=True,
-            max_depth=best_hyp[pos]["max_depth"],
-            min_sample_leaf=best_hyp[pos]["min_sample_leaf"],
-            iters=5,
-            sampling=best_hyp[pos]["sampling"],
-            mc_lemma_form=req_forms[pos][0]
-        )
 
-        scores, preds, pos_code = tree.fit()
-        num_pp = scores.index(max(scores))
-        preds, scores, coverage, cov, error_list = tree.evaluate(num_pp, test=True, data=test_data,
-                                                                 form_pattern=False)
-        test_scores.extend(coverage)
-        pos_scores[pos] = scores["coverage"]
-        tokens.extend(preds)
-        code += pos_code
+        train_data, dev_data, test_data = data
+        if train_data:
+            tree = LemmaTree(
+                pos,
+                train_data,
+                train[pos],
+                test_lemmas=dev_data,
+                min_examples=min_examples,
+                split=True,
+                max_depth=best_hyp[pos]["max_depth"],
+                min_sample_leaf=best_hyp[pos]["min_sample_leaf"],
+                iters=5,
+                sampling=best_hyp[pos]["sampling"],
+                mc_lemma_form="lemma"
+            )
+
+            scores, preds, pos_code = tree.fit()
+            num_pp = scores.index(max(scores))
+            preds, scores, coverage, cov, error_list = tree.evaluate(num_pp, test=True, data=test_data,
+                                                                     form_pattern=False)
+            test_scores.extend(coverage)
+            pos_scores[pos] = scores["coverage"]
+            tokens.extend(preds)
+            code += pos_code
+            print(scores)
+        else:
+            test_scores.extend([0,]*len(test_data))
 
         print("Test set: ", len(test_data))
 
@@ -165,6 +176,6 @@ def extract(lang, level, min_examples=1, iters=5):
         )
         f.write(code)
         f.write("}")
-    #print(test_scores)
-    return len(datadict),sum(test_scores) / len(test_scores), pos_scores, best_hyp
+
+    return len(datadict), sum(test_scores) / len(test_scores), pos_scores, best_hyp
 

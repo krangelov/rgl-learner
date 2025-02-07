@@ -42,6 +42,7 @@ class LemmaTree:
         min_sample_leaf: int = 3,
         min_examples: int = 1,
         t: int = 200,
+        limit_test: int = None,
         how: str = None,
         stopping: str = None,
         split: bool = False,
@@ -56,9 +57,15 @@ class LemmaTree:
         self.iters = iters
         self.other_forms = []
 
+        self.dev = True if test_lemmas else False
+
         self.form_distribution = [dict(zip([normalize(x) for x in reverse_dict(p.typ.linearize())], [x[0] for x in p.forms])) for p in forms]
 
         lemmas = list(filter(lambda x: x, lemmas))
+
+
+        self.forms = forms
+        #self.forms = list(filter(lambda x: x[1], forms))
 
         lemma_form = [form for table in lemmas for form, word in table[1].items() if word == table[0][0]]
         if not mc_lemma_form:
@@ -78,7 +85,7 @@ class LemmaTree:
                 if shuffle_data:
                     shuffle(lemmas)
                 train = lemmas[:t]
-                test = lemmas[t:]
+                test = lemmas[t:t+limit_test] if limit_test else lemmas[t:]
             else:
                 train, test = train_test_split(lemmas, shuffle=shuffle_data,
                                                random_state=42)
@@ -132,8 +139,7 @@ class LemmaTree:
 
         if pattern:
             full_match, base_dict, new_pattern, stem_name = parse_pattern(stem, pattern)
-            #if not test or full_match:
-            if full_match:
+            if not test or full_match:
                 if full_match and isinstance(full_match["base_1"], tuple):
                     base_dict = {f"base_{i+1}": base for i, base in enumerate(full_match["base_1"])}
                 else:
@@ -141,13 +147,15 @@ class LemmaTree:
             else:
                 new_labels = {}
                 for label, word in labels.items():
-                    word_split = word.split('+')
-                    if stem_name in word_split and word_split.index(stem_name) + 1 < len(word_split) and new_pattern:
-                        replace_word_idx = word_split.index(stem_name) + 1
-                        new_word = [w.replace(new_pattern, "").replace('+""', "") if num == replace_word_idx else w for num, w in enumerate(word_split) ]
-                        new_labels[label] = "+".join(new_word).replace('+""', "").replace('""+', '')
-                    else:
-                        new_labels[label] = word
+                    if isinstance(word, str):
+                        word_split = word.split('+')
+                        if stem_name in word_split and word_split.index(stem_name) + 1 < len(word_split) and new_pattern:
+                            replace_word_idx = word_split.index(stem_name) + 1
+                            new_word = [w.replace(new_pattern, "").replace('+""', "")
+                                        if num == replace_word_idx else w for num, w in enumerate(word_split)]
+                            new_labels[label] = "+".join(new_word).replace('+""', "").replace('""+', '')
+                        else:
+                            new_labels[label] = word
                 labels = new_labels
                 if new_pattern:
                     upd_pattern = ("+".join([x.replace(new_pattern, "") if "base" not in x else x
@@ -164,7 +172,7 @@ class LemmaTree:
 
         for label, form in labels.items():
             label = normalize(label)
-            if form != "nonExist":
+            if form != "nonExist" and isinstance(form, str):
                 for base, morpheme in base_dict.items():
                     morpheme = morpheme[0] if type(morpheme) == tuple else morpheme
                     form = form.replace(base, morpheme)
@@ -172,7 +180,6 @@ class LemmaTree:
                 token_dict[label] = form.replace("+", "").replace('"', "")
             else:
                 token_dict[label] = "-"
-        #print(token_dict)
 
         return token_dict
 
@@ -218,9 +225,9 @@ class LemmaTree:
                     coverage.append(1)
                 else:
                     coverage.append(0)
-                    #print(forms.get(form), value)
-                    errors_by_token = self.calculate_error_rate(form, value, forms.get(form), dist)
-                    errors.append(errors_by_token)
+                    if forms.get(form) != "-":
+                        errors_by_token = self.calculate_error_rate(form, value, forms.get(form), dist)
+                        errors.append(errors_by_token)
         return coverage, errors
 
 
@@ -345,7 +352,9 @@ class LemmaTree:
                             all_forms.update(new_forms)
                 forms = all_forms
 
-            preds, scores, avg, length, errors = self.evaluate(i)
+            preds, scores, avg, length, errors_test = self.evaluate(i)
+            if self.dev:
+                errors = errors_test
             code += write_gf_code(self.pos, self.sort_rules(self.rules, i), self.other_forms, self.how)
             score.append(scores["coverage"])
             if errors: # and i < self.iters-1 and forms:
@@ -396,6 +405,7 @@ class LemmaTree:
             tokens = self.train_tokens
 
 
+        # find a suitable paradigm
         most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else 0
         common_dist = [x for _, x in self.train]
         for (lemma, tag), token in zip(lemmas, tokens):
@@ -406,6 +416,7 @@ class LemmaTree:
                 passes = []
                 for form, subrule in rule:
                     val = False
+
                     if (
                         self.how == "suffix" and token[form].endswith(subrule)
                     ) or (
@@ -427,16 +438,14 @@ class LemmaTree:
         preds = []
         errors = []
 
-
+        # compare and calculate coverage score
         for (lemma, tag), token, pred, pred_dist in zip(lemmas, tokens, y_pred, distribution):
             table = self.forms[pred]
             pred_labels = self.form_distribution[pred]
 
             base = token[self.other_forms[0]]
-
             pred_forms = self.form_token(base, table.pattern, pred_labels, test=form_pattern, iter=i)
             true_values = [token.get(v, "-") for v in pred_forms]
-
 
             preds.append((self.pos, lemma, pred_forms, true_values, pred, tag))
 
@@ -508,8 +517,8 @@ def write_gf_code(pos_tag, rules, other_forms, how):
 
 
 def filter_tokens(tag, table, morphoforms, paradigm, required=None, train=False):
-    if not train or ("base" in paradigm.forms[0][0]):
-        forms = {normalize(p): form for p, form in zip(morphoforms, table[1]) if type(form) == str}
+    forms = {normalize(p): form for p, form in zip(morphoforms, table[1]) if isinstance(form, str)}
+    if not train or not paradigm.pattern or ("base" in paradigm.pattern):
         if required and isinstance(required, int):
             return (forms[normalize(morphoforms[required])], tag), forms
         elif required:
@@ -519,6 +528,7 @@ def filter_tokens(tag, table, morphoforms, paradigm, required=None, train=False)
                           enumerate(zip(paradigm.forms, table)) if lemma.split("_")[0] == word]
             mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
             return (forms[normalize(morphoforms[mc_lemma_form])], tag), forms
+
 
 
 
@@ -603,6 +613,8 @@ def guess_by_lemma(
     lang_plugin = plugins[source,lang]
     required_forms = lang_plugin.required_forms
 
+
+
     tokens = []
     code = ""
     overload_code = ""
@@ -613,11 +625,13 @@ def guess_by_lemma(
         if len(forms) > 1:
             print(f"=={pos}==")
             lemma2class = [
-                filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm, required=required_forms.get(pos,[None])[0])
+                filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm,
+                              required=required_forms.get(pos,[None])[0])
                 for tag, paradigm in enumerate(forms)
                 if len(paradigm.tables) >= min_examples
                 for table in paradigm.tables
             ]
+
 
             tree = LemmaTree(
                 pos,
@@ -691,3 +705,4 @@ def guess_by_lemma(
 
     with open(f"data/{lang}/rules.pickle", "wb") as f:
         pickle.dump((how,all_rules),f)
+

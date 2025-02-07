@@ -259,7 +259,7 @@ def getTypeOf(source_plugin, lang_plugin, o):
 
 def learn(source, lang, filename=None,
           dirname="data", level=None,
-          compress=True):
+          compress_table=True):
     source_plugin = plugins[source]
     lang_plugin = plugins[source, lang]
 
@@ -341,6 +341,7 @@ def learn(source, lang, filename=None,
     tables = defaultdict(list)
 
 
+
     for word, pos, forms, gtags in corrected_lexicon:
         pos_order = order.get(pos, [])
         table = {}
@@ -420,7 +421,7 @@ def learn(source, lang, filename=None,
         for (word, table) in ts:
 
             add_form(table, default_table[pos])
-            if compress:
+            if compress_table:
                 table = compress(table)
 
             res = lang_plugin.patch_inflection(pos, word, table)
@@ -505,8 +506,16 @@ def learn(source, lang, filename=None,
 
             #print(Counter(lemma_form))
 
-            mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
-            cat2idx[cat_name].append(forms[mc_lemma_form])
+            #mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
+            idx = 0
+            if lemma_form:
+                counter = Counter(lemma_form).most_common(1)[0]
+                if counter[-1] > len(tables) / 2:
+                    idx = counter[0][0]
+                else:
+                    idx = counter[-1]
+            cat2idx[cat_name].append(forms[idx])
+            #cat2idx[cat_name].append(forms[mc_lemma_form])
 
 
             for i, (typ, lexemes) in enumerate(sorted(types.items(), key=lambda x: -len(x[1]))):
