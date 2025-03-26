@@ -1,5 +1,6 @@
+import json
 import pickle
-from rgl_learner.morpho_cats import GFRecord, GFTable, GFStr
+from rgl_learner.morpho_cats import GFRecord, GFTable, GFParamType, GFParamConstr, GFStr
 
 def sizeOf(ty):
     size = 0
@@ -13,7 +14,13 @@ def sizeOf(ty):
             size = 1
     return size
 
-def render(top,ty,expr):
+def parens(d1,d2,expr):
+    if d1 < d2:
+        return '('+expr+')'
+    else:
+        return expr
+
+def render(top,ty,d,expr):
     s = ""
     match ty:
         case GFRecord(fields):
@@ -28,9 +35,9 @@ def render(top,ty,expr):
                     else:
                         th = f'intagAttr "th" "rowspan=\\"{size}\\""'
                     if top:
-                        s += '           tr ('+th+' \"'+str(lbl)+'"'+render(False,ty,expr+'.'+lbl)
+                        s += '           tr ('+th+' \"'+str(lbl)+'"'+render(False,ty,2,parens(d,2,expr)+'.'+lbl)
                     else:
-                        s += ' ++ '+th+' \"'+str(lbl)+'"'+render(False,ty,expr+'.'+lbl)
+                        s += ' ++ '+th+' \"'+str(lbl)+'"'+render(False,ty,2,parens(d,2,expr)+'.'+lbl)
                     top   = True
                     first = False
         case GFTable(arg_type,res_type):
@@ -45,18 +52,44 @@ def render(top,ty,expr):
                 if not first:
                     s += " ++\n"
                 if top:
-                    s += '           tr ('+th+' "'+str(value)+'"'+render(False,res_type,expr+" ! "+str(value))
+                    s += '           tr ('+th+' "'+str(value)+'"'+render(False,res_type,1,parens(d,1,expr)+" ! "+str(value))
                 else:
-                    s += ' ++ '+th+' "'+str(value)+'"'+render(False,res_type,expr+" ! "+str(value))
+                    s += ' ++ '+th+' "'+str(value)+'"'+render(False,res_type,1,parens(d,1,expr)+" ! "+str(value))
                 top   = True
                 first = False
         case GFStr():
             s = " ++ td ("+expr+"))"
     return s
 
-def learn(lang):
-    with open(f"data/{lang}/lexicon.pickle", "rb") as f:
-        source, langcode, lexicon = pickle.load(f)
+def json2context(cnc,json):
+    return tuple(json2typ(cnc,hypo["type"]) for hypo in json)
+
+def json2typ(cnc,json):
+    if rectype := json.get("rectype"):
+        return GFRecord(tuple((key,json2typ(cnc,value)) for key, value in rectype.items()))
+    elif (tblhypo := json.get("tblhypo")) and (tblres := json.get("tblres")):
+        return GFTable(json2typ(cnc,tblhypo),json2typ(cnc,tblres))
+    elif paramtype := json.get("con"):
+        constrs = tuple(GFParamConstr(param["id"],json2context(cnc,param["context"])) for param in cnc[paramtype]["params"])
+        return GFParamType(paramtype,constrs)
+    elif (sort := json.get("sort")) and sort == "Str":
+        return GFStr()
+    else:
+        raise RuntimeError("Unsupported type "+str(json))
+
+def learn(lang, from_source=False):
+    if from_source:
+        source, langcode, lexicon = "json", lang, {}
+        with open("Lang.json") as f:
+            gr  = json.load(f)
+            cnc = gr[f"Lang{lang}"]["jments"]
+            for name,jment in cnc.items():
+                if lintype := jment.get("lintype"):
+                    typ = json2typ(cnc,lintype)
+                    lexicon[name] = (name, {typ: []})
+    else:
+        with open(f"data/{lang}/lexicon.pickle", "rb") as f:
+            source, langcode, lexicon = pickle.load(f)
     with open(f"Documentation{langcode}.gf", "w") as d:
         d.write(f"concrete Documentation{langcode} of Documentation = Cat{langcode} ** open\n")
         d.write(f"  Res{langcode}, Prelude, HTML in {{\n")
@@ -72,7 +105,7 @@ def learn(lang):
             if len(table) > 1:
                 print("Warning: the inflection tables are not unified yet, using the first one")
             typ,lexemes = next(iter(table.items()))
-            d.write(f"lin Inflection{cat_name} = \\x -> {{\n      t=\"{pos_tag.lower()}\" ;\n      s1=\"\" ;\n      s2=frameTable (\n{render(True,typ,'x')}) ;\n      s3=[]\n    }} ;\n")
+            d.write(f"lin Inflection{cat_name} = \\x -> {{\n      t=\"{pos_tag.lower()}\" ;\n      s1=\"\" ;\n      s2=frameTable (\n{render(True,typ,3,'x')}) ;\n      s3=[]\n    }} ;\n")
             
         d.write('lin\n')
         d.write('NoDefinition   t     = {s=t.s};\n')

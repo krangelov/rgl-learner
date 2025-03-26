@@ -189,6 +189,16 @@ class GFRecord(GFType):
             labels[lbl] = ty.linearize()
         return labels
 
+    def renderValues(self,d):
+        for values in itertools.product(*(lbl_type.renderValues(1) for lbl,lbl_type in self.fields)):
+            if len(values) == 0:
+                yield "{}"
+            else:
+                ass = []
+                for (lbl,lbl_type),value in zip(self.fields,values):
+                    ass.append(lbl+"="+value)
+                yield "{"+"; ".join(ass)+"}"
+
 def getTypeOf(source_plugin, lang_plugin, o):
     if type(o) is str:
         return GFStr(),[o]
