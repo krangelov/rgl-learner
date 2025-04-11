@@ -61,16 +61,16 @@ def render(top,ty,d,expr):
             s = " ++ td ("+expr+"))"
     return s
 
-def json2context(cnc,json):
-    return tuple(json2typ(cnc,hypo["type"]) for hypo in json)
+def json2context(gr,cnc,json):
+    return tuple(json2typ(gr,cnc,hypo["type"]) for hypo in json)
 
-def json2typ(cnc,json):
-    if rectype := json.get("rectype"):
-        return GFRecord(tuple((key,json2typ(cnc,value)) for key, value in rectype.items()))
+def json2typ(gr,cnc,json):
+    if (rectype := json.get("rectype")) != None:
+        return GFRecord(tuple((key,json2typ(gr,cnc,value)) for key, value in rectype.items()))
     elif (tblhypo := json.get("tblhypo")) and (tblres := json.get("tblres")):
-        return GFTable(json2typ(cnc,tblhypo),json2typ(cnc,tblres))
-    elif paramtype := json.get("con"):
-        constrs = tuple(GFParamConstr(param["id"],json2context(cnc,param["context"])) for param in cnc[paramtype]["params"])
+        return GFTable(json2typ(gr,cnc,tblhypo),json2typ(gr,cnc,tblres))
+    elif (mod := json.get("mod")) and (paramtype := json.get("qc")):
+        constrs = tuple(GFParamConstr(param["id"],json2context(gr,cnc,param["context"])) for param in gr[mod]["jments"][paramtype]["params"])
         return GFParamType(paramtype,constrs)
     elif (sort := json.get("sort")) and sort == "Str":
         return GFStr()
@@ -85,7 +85,7 @@ def learn(lang, from_source=False):
             cnc = gr[f"Lang{lang}"]["jments"]
             for name,jment in cnc.items():
                 if lintype := jment.get("lintype"):
-                    typ = json2typ(cnc,lintype)
+                    typ = json2typ(gr,cnc,lintype)
                     lexicon[name] = (name, {typ: []})
     else:
         with open(f"data/{lang}/lexicon.pickle", "rb") as f:
