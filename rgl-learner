@@ -3,7 +3,6 @@
 import sys
 import argparse
 import rgl_learner.morpho_cats
-import rgl_learner.morpho_cats_2
 import rgl_learner.morpho_cats_3
 import rgl_learner.learn_paradigms
 import rgl_learner.smart_dictionary
@@ -26,8 +25,6 @@ parser.add_argument("--split", action="store_true")
 
 if len(sys.argv) == 4 and sys.argv[1] == "morpho-cats":
     rgl_learner.morpho_cats.learn(sys.argv[2], sys.argv[3])
-elif len(sys.argv) == 4 and sys.argv[1] == "morpho-cats-2":
-    rgl_learner.morpho_cats_2.learn(sys.argv[2], sys.argv[3])
 elif len(sys.argv) == 4 and sys.argv[1] == "morpho-cats-3":
     rgl_learner.morpho_cats_3.learn(sys.argv[2], sys.argv[3])
 elif len(sys.argv) == 3 and sys.argv[1] == "learn-paradigms":
