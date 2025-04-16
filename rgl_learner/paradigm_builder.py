@@ -9,7 +9,6 @@ from scipy.stats import entropy
 import re
 from random import shuffle, choice, seed
 import random
-from Levenshtein import ratio, distance
 from pprint import pprint
 import rgl_learner.plugins as plugins
 from rgl_learner.learn_paradigms import Paradigm
@@ -203,6 +202,7 @@ class LemmaTree:
         if self.sampling == "oracle":
             return form
         elif self.sampling == "edit-distance":
+            from Levenshtein import ratio, distance
             edit_distance = distance(true_value, pred_value)
             return form, edit_distance
         elif self.sampling == "entropy":
