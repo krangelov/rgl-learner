@@ -21,7 +21,7 @@ def build(lang):
 
     with open('../gf-wordnet/data/predictions.tsv','r') as f:
         predictions = {}
-        parse = "Parse"+"Sqi"
+        parse = "Parse"+langcode
         for line in f:
             fields = line.split("\t")
             if fields[1] == parse:
