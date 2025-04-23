@@ -609,7 +609,7 @@ def learn(lang, dirname="data", level=None):
     tables = defaultdict(list)
     for pos_tag, (cat_name, table) in lexicon.items():
         if len(table) > 1:
-            print("Warning: the inflection tables are not unified yet, using the first one")
+            print(f"Warning: the inflection tables for {pos_tag} are not unified yet, using the first one")
         typ,lexemes = next(iter(table.items()))
         paradigms = learnparadigms(typ,lexemes)
         correct_paradigms(lang, lang_plugin, cat_name, paradigms, level=level)
