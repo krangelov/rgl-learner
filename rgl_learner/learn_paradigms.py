@@ -320,15 +320,17 @@ class Paradigm:
 
     def compatible(self, other):
         if len(self.forms) != len(other.forms):
-            return False
+            return 0
 
+        count = 0
         for i, form in enumerate(self.forms):
             other_form = other.forms[i][0] if isinstance(other.forms[i], tuple) else other.forms[i]
             if form != "nonExist" and other_form != "nonExist":
                 if form != other_form:
-                    return False
+                    return 0
+                count += 1
 
-        return True
+        return count
 
     def equivalent(self, other):
         if self.pattern != other.pattern:
