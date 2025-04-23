@@ -330,6 +330,18 @@ class Paradigm:
 
         return True
 
+    def equivalent(self, other):
+        if self.pattern != other.pattern:
+            return False
+        if len(self.forms) != len(other.forms):
+            return False
+
+        for i, form in enumerate(self.forms):
+            if form[0] != other.forms[i][0]:
+                return False
+
+        return True
+
 def collapse_tables(typ,tables):
     """Input: list of tables
        Output: Collapsed paradigms."""
@@ -371,6 +383,22 @@ def merge_paradigms(paradigmlist):
 
         p1.forms = forms
 
+    i = 0
+    while i < len(paradigmlist):
+        j = i+1
+        while j < len(paradigmlist):
+            if paradigmlist[i].equivalent(paradigmlist[j]):
+                paradigmlist[i].var_insts += paradigmlist[j].var_insts
+                paradigmlist[i].tables    += paradigmlist[j].tables
+
+                for k in range(len(paradigmlist[i].forms)):
+                    paradigmlist[i].forms[k] = (paradigmlist[i].forms[k][0]
+                                               ,paradigmlist[i].forms[k][1] and paradigmlist[j].forms[k][1]
+                                               )
+                del paradigmlist[j]
+            else:
+                j += 1
+        i += 1
     return paradigmlist
 
 def ffilter_lcp(factorlist):
