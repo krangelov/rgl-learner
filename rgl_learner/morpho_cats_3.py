@@ -431,7 +431,7 @@ def learn(source, lang, filename=None,
             if res:
                 table = res
 
-            if pos == "N":
+            if pos in ["N","PN"]:
                 for tag in gtags:
                     res = get_gtag(source_plugin, lang_plugin, tag)
                     if res and res[1] == "Gender":

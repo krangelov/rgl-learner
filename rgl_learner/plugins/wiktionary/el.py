@@ -36,7 +36,7 @@ def preprocess(record):
         return []
 
     pos = record.get("pos")
-    if pos == "noun":
+    if pos in ["noun","name"]:
         record["tags"] = extract_gender(categories)
 
     for sense in record["senses"]:
@@ -47,10 +47,10 @@ def preprocess(record):
             return False
         if 'Greek deponent verbs' in categories:
             deponent = True
-        if pos == "noun":
+        if pos in ["noun","name"]:
             sense["tags"] = extract_gender(categories)
 
-    if pos == "noun" and not found:
+    if pos in ["noun","name"] and not found:
         record["tags"] = ["masculine"]
 
     for k,form in enumerate(record.get("forms",[])):
@@ -158,6 +158,7 @@ def patchPN(lemma,table):
     t["singular"].pop("noCase",None)
     t["plural"].pop("noCase",None)
     table.update(t)
+    return {"s": table}
 
 def patchA(lemma,table):
     if lemma == "κακός":
