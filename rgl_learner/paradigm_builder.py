@@ -632,7 +632,6 @@ def guess_by_lemma(
                 for table in paradigm.tables
             ]
 
-
             tree = LemmaTree(
                 pos,
                 lemmas=lemma2class,
@@ -665,7 +664,7 @@ def guess_by_lemma(
     overload_code+=boilerplate.get("Voc","")
     overload_code+=boilerplate.get("Prep","")
 
-    with open(f"Paradigms{langcode}.gf", "w") as f:
+    with open(f"data/{lang}/Paradigms{langcode}.gf", "w") as f:
         f.write(
             f"resource Paradigms{langcode} = Morpho{langcode}  ** open Predef, Prelude, Cat{langcode}, Res{langcode} in {{\noper\n"
         )
@@ -673,11 +672,11 @@ def guess_by_lemma(
         f.write(overload_code)
         f.write("}")
 
-    with open(f"Lexicon{langcode}.gf", "w") as f:
+    with open(f"data/{lang}/Lexicon{langcode}.gf", "w") as f:
         f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
         f.write("}")
 
-    with open(f"Lang{langcode}.gf", "w") as f:
+    with open(f"data/{lang}/Lang{langcode}.gf", "w") as f:
         f.write("--# -path=.:../abstract\n")
         f.write(f"concrete Lang{langcode} of Lang =\n")
         f.write(f"  Lexicon{langcode}\n")
@@ -687,19 +686,19 @@ def guess_by_lemma(
         f.write("\n")
         f.write("}")
 
-    with open(f"All{langcode}Abs.gf", "w") as f:
+    with open(f"data/{lang}/All{langcode}Abs.gf", "w") as f:
         f.write(f"abstract All{langcode}Abs =\n")
         f.write(f"  Lang\n")
         f.write("  ** {}")
 
-    with open(f"All{langcode}.gf", "w") as f:
+    with open(f"data/{lang}/All{langcode}.gf", "w") as f:
         f.write(f"concrete All{langcode} of All{langcode}Abs =\n")
         f.write(f"  Lang{langcode}\n")
         f.write("  **\n")
         f.write("    {} ;\n")
 
     unimorph_code = format_unimorph(tokens)
-    with open(f"unimorph_{langcode}.tsv", "w") as f:
+    with open(f"data/{lang}/unimorph_{langcode}.tsv", "w") as f:
         f.write(unimorph_code)
 
 
