@@ -414,7 +414,7 @@ def learnparadigms(typ,inflectiontables):
         result = reduce(lambda x, y: x & y, wg)
         lcss = result.longestwords
         if not lcss: # Table has no LCS - no variables
-            variabletable = [('"'+form+'"' if type(form)==str else form) for form in table]
+            variabletable = [string_to_varstring(form,[]) for form in table]
             vartables.append((ident, table, [(table,variabletable,[],0,0)]))
             continue
 
@@ -591,7 +591,7 @@ def learn(lang, dirname="data", level=None):
     with open(f"{dirname}/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((source, langcode, tables), f)
 
-    with open(f"{dirname}/{lang}/Dict{langcode}_{level}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
+    with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
         dct.write(
             f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Morpho{langcode}, Prelude in {{\n\n""")
         para.write(f"""resource Morpho{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")
