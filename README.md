@@ -50,7 +50,7 @@ This phase reads the data produced during the previous phase. It then tries to p
 
 ## Smart paradigms
 ```Bash
-./rgl-learner build-paradigms <lang-code>
+./rgl-learner smart-paradigms <lang-code>
 ```
 
 This stage creates smart paradigms based on tree algorithm. You can also use following arguments in the command line:
