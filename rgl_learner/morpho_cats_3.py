@@ -262,6 +262,31 @@ def get_gtag(source_plugin, lang_plugin, tag):
     else:
         return source_plugin.params.get(tag)
 
+def collect_derivations(pos,word,table,derivations):
+    if pos == "N":
+        masc = table.get("masculine")
+        if masc and type(masc) == str:
+            gender_pairs = derivations.setdefault("gender-pairs",set())
+            gender_pairs.add((masc,word))
+        fem = table.get("feminine")
+        if fem and type(fem) == str:
+            gender_pairs = derivations.setdefault("gender-pairs",set())
+            gender_pairs.add((word,fem))
+    elif pos == "V":
+        imperfective = table.get("imperfective")
+        if imperfective and type(imperfective) == str:
+            aspect_pairs = derivations.setdefault("aspect-pairs",set())
+            aspect_pairs.add((word,imperfective))
+        perfective = table.get("perfective")
+        if perfective and type(perfective) == str:
+            aspect_pairs = derivations.setdefault("aspect-pairs",set())
+            aspect_pairs.add((perfective,word))
+    elif pos == "A":
+        noun = table.get("abstract-noun")
+        if noun and type(noun) == str:
+            adj_noun_pairs = derivations.setdefault("adj-noun-pairs",set())
+            adj_noun_pairs.add((noun,word))
+
 def learn(source, lang, filename=None,
           dirname="data", level=None,
           compress_table=True):
@@ -420,12 +445,16 @@ def learn(source, lang, filename=None,
                     ddict[param] = compress(values)
         return ddict
 
+    derivations = {}
+
     for pos, ts in tables.items():
         for (word, table, gtags) in ts:
 
             add_form(table, default_table[pos])
             if compress_table:
                 table = compress(table)
+
+            collect_derivations(pos,word,table,derivations)
 
             res = lang_plugin.patch_inflection(pos, word, table)
             if res:
@@ -571,7 +600,11 @@ def learn(source, lang, filename=None,
     with open(f"{dirname}/{lang}/lexicon.pickle", "wb") as f:
         pickle.dump((lang_code, source, lin_types), f)
 
+    with open(f"data/{lang}/derivations.pickle", "wb") as f:
+        pickle.dump(derivations,f)
 
+    if derivations:
+        print("found:", ", ".join(derivations.keys()))
 
     filename = f"{lang}_forms_{level}.json" if level else f"{lang}_forms.json"
     prev_cat2idx = {}
