@@ -69,7 +69,7 @@ class GFParamConstr:
 
     def linearize(self):
         if self.arg_types:
-            return [ty.linearize() for ty in self.arg_types]
+            return list((self.name,)+args for args in itertools.product(*[ty.linearize() for ty in self.arg_types]))
         else:
             return self.name
 
@@ -110,7 +110,7 @@ class GFTable(GFType):
         labels = {}
         for lbl in self.arg_type.constructors:
             if type(lbl.linearize()) == list:
-                for l in lbl.linearize()[0]:
+                for l in lbl.linearize():
                     labels[l] = self.res_type.linearize()
             else:
                 labels[lbl] = self.res_type.linearize()
@@ -252,10 +252,15 @@ def getTypeOf(source_plugin, lang_plugin, o):
             pcons = tuple((pcon for pcon, _, _  in pcons))
             return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
-            record.sort(key=lambda p: p[0])
             forms = sum((forms for _, _, forms in record), [])
             fields = tuple(((source_plugin.convert2gf(tag, params), val_type) for tag, val_type, _ in record))
             return GFRecord(fields), forms
+
+def get_gtag(source_plugin, lang_plugin, tag):
+    if lang_plugin.params:
+        return lang_plugin.params.get(tag)
+    else:
+        return source_plugin.params.get(tag)
 
 def learn(source, lang, filename=None,
           dirname="data", level=None,
@@ -268,7 +273,8 @@ def learn(source, lang, filename=None,
     noun_genders = set()
     lin_types = {}
     ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
-    params = lang_plugin.params | source_plugin.params
+    params = source_plugin.params | lang_plugin.params
+    default_params = source_plugin.default_params | lang_plugin.default_params
 
 
     known_tags = []
@@ -281,15 +287,19 @@ def learn(source, lang, filename=None,
     pos_order = defaultdict(dict)
     corrected_lexicon = []
     for word, pos, forms, gtags in lexicon:
-        if lang_plugin.filter_form(word):
+        if lang_plugin.filter_lemma(word, pos):
             continue
 
+        pos = lang_plugin.patchPOS(word,pos)
         pos = source_plugin.tag2cat.get(pos)
         if not pos:
             continue
 
         corrected_forms = []
         for w, tags in forms:
+            if lang_plugin.filter_form(w,tags):
+                continue
+
             tags = list(dict.fromkeys(tags)) # remove duplicates
             tags = [tag for tag in tags if tag not in ignore_tags]
             tags = lang_plugin.fix_tags(tags)
@@ -298,12 +308,12 @@ def learn(source, lang, filename=None,
             for num, tag in enumerate(new_tags):
                 if tag in params:
                     known_tags.append(tag)
-                    if params[tag][1] in pos_order[pos]:
-                        pos_order[pos][params[tag][1]].append(num)
+                    if params[tag][-1] in pos_order[pos]:
+                        pos_order[pos][params[tag][-1]].append(num)
                     else:
-                        pos_order[pos][params[tag][1]] = [num,]
-                    if tag not in param2val[params[tag][1]]:
-                        param2val[params[tag][1]].append(tag)
+                        pos_order[pos][params[tag][-1]] = [num,]
+                    if tag not in param2val[params[tag][-1]]:
+                        param2val[params[tag][-1]].append(tag)
                 elif tag not in ignore_tags:
                     unknown_tags.append(tag)
 
@@ -347,21 +357,19 @@ def learn(source, lang, filename=None,
         table = {}
 
         for w, tags in forms:
-
             form_table = []
             i = 0
-            tags = [t for t in tags if t in params and params[t][1] in pos_order]
-            tags = sorted(tags, key=lambda x: pos_order.index(params[x][1]))
+            tags = [t for t in tags if t in params and params[t][-1] in pos_order]
+            tags = sorted(tags, key=lambda x: pos_order.index(params[x][-1]))
 
             for param in pos_order:
                 if i < len(tags) and tags[i] in param2val[param]:
                     form_table.append(tags[i])
                     i += 1
-                elif param in lang_plugin.default_params:
-                    form_table.append(lang_plugin.default_params[param])
+                elif param in default_params:
+                    form_table.append(default_params[param])
                 else:
                     form_table.append(f"no{param}")
-
 
             if form_table not in default_table[pos]:
                 default_table[pos].append(form_table)
@@ -377,12 +385,7 @@ def learn(source, lang, filename=None,
 
                 t[form_table[-1]] = w
         if table:
-            if lang_plugin.filter_lemma(word,pos,table):
-                continue
-
-            pos = lang_plugin.patchPOS(word, pos, table)
-            tables[pos].append((word,table))
-
+            tables[pos].append((word,table,gtags))
 
     # Step 3: normalize tables and convert to GF types
 
@@ -401,7 +404,7 @@ def learn(source, lang, filename=None,
                 ddict.setdefault(form1, add_form(ddict[form1], ts))
 
     def compress(ddict):
-        default = lang_plugin.default_params.values()
+        default = default_params.values()
         while len(ddict) == 1 and (next(iter(ddict)).startswith("no") or next(iter(ddict)) in default):
             val = next(iter(ddict.values()))
             if isinstance(val, dict):
@@ -418,7 +421,7 @@ def learn(source, lang, filename=None,
         return ddict
 
     for pos, ts in tables.items():
-        for (word, table) in ts:
+        for (word, table, gtags) in ts:
 
             add_form(table, default_table[pos])
             if compress_table:
@@ -427,10 +430,14 @@ def learn(source, lang, filename=None,
             res = lang_plugin.patch_inflection(pos, word, table)
             if res:
                 table = res
-            if isinstance(table, dict):
-                table["lemma"] = word
-            else:
-                table = {"lemma": word}
+
+            if pos == "N":
+                for tag in gtags:
+                    res = get_gtag(source_plugin, lang_plugin, tag)
+                    if res and res[1] == "Gender":
+                        table["g"] = GFParamValue(res[0],GFParamType(res[1],()))
+                        noun_genders.add(res[0])
+                        break
 
             typ, forms = getTypeOf(source_plugin, lang_plugin, table)
 
@@ -500,20 +507,15 @@ def learn(source, lang, filename=None,
             typ, tables = next(iter(types.items()))
             forms = reverse_dict(typ.linearize())
 
-
             lemma_form = [(num, form) for table in tables for num, (form, word) in
                           enumerate(zip(forms, table[1])) if table[0].split("_")[0] == word]
-
             #print(Counter(lemma_form))
 
             #mc_lemma_form = Counter(lemma_form).most_common(1)[0][0][0] if lemma_form else 0
             idx = 0
             if lemma_form:
                 counter = Counter(lemma_form).most_common(1)[0]
-                if counter[-1] > len(tables) / 2:
-                    idx = counter[0][0]
-                else:
-                    idx = counter[-1]
+                idx = counter[0][0]
             cat2idx[cat_name].append(forms[idx])
             #cat2idx[cat_name].append(forms[mc_lemma_form])
 
