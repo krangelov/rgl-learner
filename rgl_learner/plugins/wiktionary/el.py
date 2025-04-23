@@ -161,8 +161,6 @@ def patchPN(lemma,table):
     return {"s": table}
 
 def patchA(lemma,table):
-    if lemma == "κακός":
-        print(table)
     p = table["positive"]
 
     c = {"masculine": {"singular": {"nominative": table.get("comparative","-")}}}
