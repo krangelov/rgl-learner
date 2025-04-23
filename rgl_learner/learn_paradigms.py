@@ -325,7 +325,7 @@ class Paradigm:
         count = 0
         for i, form in enumerate(self.forms):
             other_form = other.forms[i][0] if isinstance(other.forms[i], tuple) else other.forms[i]
-            if form != "nonExist" and other_form != "nonExist":
+            if form not in ["nonExist","Masc","Fem","Neuter"] and other_form not in ["nonExist","Masc","Fem","Neuter"]:
                 if form != other_form:
                     return 0
                 count += 1
