@@ -137,7 +137,7 @@ def filter_lemma(lemma, pos, table):
     return False
 
 
-def filter_form(w):
+def filter_form(w,tags):
     if "as verbal noun" in w or "as substantive" in w:
         return True
     if w == "not comparable":

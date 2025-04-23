@@ -315,7 +315,7 @@ def learn(source,lang):
         table = {}
         for w,tags in forms:
             if 'multiword-construction' not in tags:
-                if lang_plugin.filter_form(w):
+                if lang_plugin.filter_form(w,tags):
                     continue
 
 
