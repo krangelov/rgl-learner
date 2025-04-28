@@ -56,19 +56,23 @@ def preprocess(record):
     for k,form in enumerate(record.get("forms",[])):
         w    = form.get("form","-")
         tags = form.get("tags",[])
-        if pos == "verb":
-            if (index := w.find(" - ")) > 0:
-                w = w[:index]
-            if w.startswith("{"):
-                w = w[1:]
-            if w.endswith("}"):
-                w = w[:-1]
-            if w.endswith("} ➤"):
-                w = w[:-3]
-            if w.endswith("¹"):
-                w = w[:-1]
-            record["forms"][k]["form"] = w
-                
+        if pos == "verb" and (index := w.find(" - ")) > 0:
+            w = w[:index]
+        if w.startswith("{"):
+            w = w[1:]
+        if w.endswith("}"):
+            w = w[:-1]
+        if w.endswith("} ➤"):
+            w = w[:-3]
+        if w.endswith("¹"):
+            w = w[:-1]
+        if w.endswith("."):
+            print(w,w[:-1])
+            w = w[:-1]
+        if w.endswith("/υ"):
+            w = w[:-2]
+        record["forms"][k]["form"] = w
+
         for i in range(len(tags)):
             if tags[i] == "imperfect":
                 tags[i] = "past"
@@ -125,6 +129,8 @@ def filter_form(form,tags):
     if form == "σπάζω →":
         return True
     if form == "Also":
+        return True
+    if form == "forms":
         return True
     if form.startswith("colloquial past tense"):
         return True
