@@ -114,6 +114,7 @@ class LemmaTree:
             self.how = self.define_affixation()
 
     def update_paradigms(self, base, labels, pattern):
+        """
         for num, form in enumerate(self.forms):
             if all([f[0] == l for f, l in zip(form.forms, labels.values())]):
                 return num
@@ -128,6 +129,8 @@ class LemmaTree:
         self.forms.append(new_paradigm)
         self.form_distribution.append(labels)
         return num
+        """
+        pass
 
 
 
