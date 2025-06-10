@@ -315,7 +315,7 @@ class Paradigm:
     forms : list[str]
     typ : object
     var_insts : list[list[tuple[str,str]]]
-    pattern : str
+    pattern : list[tuple]
     tables : list[tuple[str,list[str]]]
 
     def compatible(self, other):
@@ -360,6 +360,7 @@ def collapse_tables(typ,tables):
         p.tables.append((ident,table))
     return paradigms
 
+
 def merge_paradigms(paradigmlist):
     for i,p1 in enumerate(paradigmlist):
         possible_paradigms = []
@@ -385,6 +386,7 @@ def merge_paradigms(paradigmlist):
 
         p1.forms = forms
 
+ 
     i = 0
     while i < len(paradigmlist):
         j = i+1
@@ -465,6 +467,7 @@ def learnparadigms(typ,inflectiontables):
         besttable = min(t, key = lambda s: (s[3],s[4]))
         filteredtables.append((ident, values, besttable))
 
+
     paradigmlist = collapse_tables(typ,filteredtables)
     paradigmlist = merge_paradigms(paradigmlist)
 
@@ -472,7 +475,8 @@ def learnparadigms(typ,inflectiontables):
     return paradigmlist
 
 
-def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None):
+def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None, 
+                      allow_second_forms=True):
     def get_index(reverse_forms, required_forms):
         if reverse_forms[0].startswith("s;") and not required_forms[0].startswith("s;"):
             return reverse_forms.index("s;" + required_forms[0])
@@ -482,8 +486,95 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None):
             return reverse_forms.index(new_form)
         else:
             return reverse_forms.index(required_forms[0])
+        
+    def get_pattern(form, mult_base_words):
+        pattern = []
+        for elem in form.split('+'):
+            l = lens.get(elem)
+            elemRep = [] # representation of elements
+            elemRep.append(elem)
+            if elem[0] == '"' and elem[-1] == '"':   # this is a string
+                pattern.append(elem)
+            elif id(l) == id(maximum[1]):    # this is the variable segment
+                pattern.append(elemRep)
+            elif l and len(l) == 1:  # this is a base of a fixed length
+                l = next(iter(l))
+                elemRep.append(l)
+                pattern.append(elemRep)
+            elif l:                              # low-entropy variable
+                max_count = max(count for count,forms in l.values())
+                #pattern += "@("
+                first = True
+                max_count_l = None
+                fs = []
+                for l,[count,forms] in l.items():
+                    if count == max_count and not max_count_l:
+                        max_count_l = l
+                    else:
+                        fs = ['"'+form+'"' for form in forms]
+     
+                fs.append(max_count_l)
+                
+                elemRep.append(fs)
+                pattern.append(elemRep)
+            elif elem.startswith("pat"):
+                pattern.append([elem])
+            else:
+                pattern = None
+                if len(lens) > 1:
+                    mult_base_words += 1
+                break              # nonExist or a variable length base
+
+       # if not pattern or pattern == ["base_1"]:
+       #     pattern = None
+        return pattern
+
+    def rewrite_forms(forms, p1, p2):
+        new_forms = []
+        for form, _ in forms:
+            new_forms.append(form.replace(p1, "pat_1").replace(p2, "pat_2"))
+        return new_forms
+    
 
     mult_base_words = 0
+    
+    if allow_second_forms: 
+        second_forms = []
+        for par in paradigms:
+            required_forms = lang_plugin.required_forms.get(cat)
+            reverse_forms = reverse_dict(par.typ.linearize())
+            if required_forms:
+                index = get_index(reverse_forms, required_forms)
+            elif os.path.exists(f"{lang}_forms_{level}.json"): # temporary file
+                with open(f"{lang}_forms_{level}.json") as f:
+                    required_forms = json.load(f)
+                index = get_index(reverse_forms, required_forms[cat])
+            else:
+                index = 0
+            forms, _ = zip(*par.forms)
+            if "base_2" in forms[index]:
+                last_base = re.findall(r"base_\d", forms[index])[-1]
+                p = re.compile(f"base_1.*{last_base}")
+                pat1 = re.match(p, forms[index])
+                if pat1:
+                    for num, form in enumerate(forms):
+                        pat2 = re.match(rf"base_1.*{last_base}", form)
+                        #if pat2:
+                        #  print(pat2.group(0))
+                        if pat2 and pat1.group(0) != pat2.group(0):
+                        #  print(pat2.group(0))
+                            second_forms.append(num)
+
+        if second_forms:
+            second_index = Counter(second_forms).most_common(1)[0][0]
+            second_form = reverse_forms[second_index]
+        else:
+            second_index = None
+    else:
+        second_index = None
+    
+
+
     for i, paradigm in enumerate(paradigms):
         # calculate the possible lengths of all bases
         lens = defaultdict(lambda: defaultdict(lambda: [0,set()]))
@@ -504,14 +595,14 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None):
             if entropy > maximum[0]:
                 maximum = (entropy,l)
 
-        pattern = ""
+        pattern = []
 
         forms, guessed = zip(*paradigm.forms)
 
-        required_forms = lang_plugin.required_forms.get(cat)
+        required_forms = lang_plugin.required_forms
         reverse_forms = reverse_dict(paradigm.typ.linearize())
         if required_forms:
-            index = get_index(reverse_forms, required_forms)
+            index = get_index(reverse_forms, required_forms[cat])
         elif os.path.exists(f"{lang}_forms_{level}.json"): # temporary file
             with open(f"{lang}_forms_{level}.json") as f:
                 required_forms = json.load(f)
@@ -519,70 +610,96 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None):
         else:
             index = 0
 
+        patterns = []
+        
+        if second_index != None and "base_2" in forms[index]:
+            last_base = re.findall(r"base_\d", forms[index])[-1]
+            r1 = re.match(fr"base_1.*{last_base}", forms[index])
+            r2 = re.match(fr"base_1.*{last_base}", forms[second_index])
+            if r1 and r2:
+                pat1 = r1.group(0)
+                pat2 = r2.group(0)
+            
+                form_0 = forms[index].replace(pat1, "pat_1")
+                form_1 = forms[second_index].replace(pat2, "pat_2")
 
-        for elem in forms[index].split('+'):
-            l = lens.get(elem)
-            if len(pattern) == 0:
-                pattern = elem
+                patterns = [get_pattern(form_0, mult_base_words=mult_base_words),
+                            get_pattern(form_1, mult_base_words=mult_base_words)]
+                
+                
+                
+                paradigm.forms = list(zip(rewrite_forms(paradigm.forms, pat1, pat2), guessed))
+        if not patterns:
+            patterns = [get_pattern(forms[index], mult_base_words=mult_base_words), ]
+    
+        #if second_index:
+
+        if patterns:
+            if second_index:
+                paradigm.var_insts = [[("base",table[index]), ("form", table[second_index])] for ident,table in paradigm.tables]
             else:
-                pattern += "+"+elem
-            if elem[0] == '"' and elem[-1] == '"':   # this is a string
-                pass
-            elif id(l) == id(maximum[1]):    # this is the variable segment
-                pass
-            elif l and len(l) == 1:  # this is a base of a fixed length
-                l = next(iter(l))
-                if l == 1:
-                    pattern += "@?"
-                else:
-                    pattern += "@("+"+".join(["?"]*l)+")"
-            elif l:                              # low-entropy variable
-                max_count = max(count for count,forms in l.values())
-                pattern += "@("
-                first = True
-                max_count_l = None
-                for l,[count,forms] in l.items():
-                    if count == max_count and not max_count_l:
-                        max_count_l = l
-                    else:
-                        if first:
-                            first = False
-                        else:
-                            pattern += "|"
-                        pattern += "|".join('"'+form+'"' for form in forms)
-                if max_count_l == 1:
-                    pattern += "|?)"
-                else:
-                    pattern += "|("+"+".join(["?"]*max_count_l)+"))"
-            else:
-                pattern = None
-                if len(lens) > 1:
-                    mult_base_words += 1
-                break              # nonExist or a variable length base
+                paradigm.var_insts = [[("base",table[index])] for ident,table in paradigm.tables]
+        paradigm.pattern = patterns
 
-        if pattern == "base_1":
-            pattern = None
-
-        if pattern:
-            paradigm.var_insts = [[("base",table[index])] for ident,table in paradigm.tables]
-        paradigm.pattern = pattern
-
+    if second_index != None:
+        required_forms[cat].append(second_form)
 
     if mult_base_words > 0:
         print(f"Number of {cat} paradigms with more than 1 base: {mult_base_words}")
+    return required_forms[cat]
+
+def convert_pattern(elements):
+    patterns = []
+    if elements[0]:
+        for elems in elements:
+            pattern = []
+            for elem in elems:
+                if isinstance(elem, str):
+                    pattern.append(elem)
+                elif isinstance(elem[-1], list):
+                    vars = []
+                    for el in elem[-1]:
+                        if isinstance(el, str):
+                            vars.append(el)
+                        else:
+                            if el == 1:
+                                vars.append("?")
+                            else:
+                                vars.append("(" + "+".join(["?"]*el) + ")")
+                    pattern.append(elem[0] + "@(" + "|".join(vars) + ")")
+                elif isinstance(elem[-1], int):
+                    if elem[-1] == 1:
+                        pattern.append(elem[0] + "@?")
+                    else:
+                        pattern.append(elem[0] + "@("+"+".join(["?"]*elem[-1])+")")
+
+                else:
+                    pattern.append(elem[-1])
+            patterns.append("+".join(pattern))
+        return patterns
+    else:
+        return None
 
 def write_paradigm(i, max_i, par, cat):
-    if par.pattern == None:
+    if par.pattern[0]:
         names = [name for name, val in par.var_insts[0]]
     else:
         names = ["base"]
     s = "" if max_i == 1 else f"{i:03d}"
     code = f"""mk{cat}{s} : {len(names) * "Str -> "}{cat} ;\nmk{cat}{s} {" ".join(names)} =\n  """
-    if par.pattern:
-        code += "case base of {\n    "+par.pattern+f" => lin {cat}\n      "
-        form_code = par.typ.renderOper(6,par.forms)
-        code += form_code
-        code += ";\n    _ => error \"Can't apply paradigm mk"+cat+s+"\"\n  } ;"
+    if par.pattern[0]:
+        pattern = convert_pattern(par.pattern)
+        if pattern:
+            if len(pattern) == 1:
+                code += "case base of {\n    "+pattern[0]+f" => lin {cat}\n      "
+                form_code = par.typ.renderOper(6,par.forms)
+                code += form_code
+                code += ";\n    _ => error \"Can't apply paradigm mk"+cat+s+"\"\n  } ;"
+            else:
+                code += "case <base, form> of {\n    <"+pattern[0] + ", " + pattern[1] +f"> => lin {cat}\n      "
+                form_code = par.typ.renderOper(6,par.forms)
+                code += form_code
+                code += ";\n    _ => error \"Can't apply paradigm mk"+cat+s+"\"\n  } ;"
     else:
         code += f"lin {cat}\n  "
         form_code = par.typ.renderOper(2,par.forms)
@@ -598,28 +715,37 @@ def write_lexicon(i, max_i, par, cat):
     return code
 
 
-def learn(lang, dirname="data", level=None):
+def learn(lang, dirname="data", level=None, allow_second_forms=True):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         langcode, source, lexicon = pickle.load(f)
 
     lang_plugin = plugins[source,lang]
 
 
+
     print("Learning paradigms..")
     tables = defaultdict(list)
+    required_forms = defaultdict()
     for pos_tag, (cat_name, table) in lexicon.items():
-        if len(table) > 1:
-            print(f"Warning: the inflection tables for {pos_tag} are not unified yet, using the first one")
-        typ,lexemes = next(iter(table.items()))
-        paradigms = learnparadigms(typ,lexemes)
-        correct_paradigms(lang, lang_plugin, cat_name, paradigms, level=level)
-        tables[cat_name].extend(paradigms)
+            if len(table) > 1:
+                print(f"Warning: the inflection tables for {pos_tag} are not unified yet, using the first one")
+            typ,lexemes = next(iter(table.items()))
+            paradigms = learnparadigms(typ,lexemes)
+            req_forms = correct_paradigms(lang, lang_plugin, cat_name, paradigms, 
+                                          level=level, allow_second_forms=allow_second_forms)
+            required_forms[cat_name] = req_forms
+            tables[cat_name].extend(paradigms)
+
 
     print("Writing output files..")
 
+  
 
     with open(f"{dirname}/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((source, langcode, tables), f)
+    if "train" in dirname:
+        with open(f"{lang}_forms_{level}.json", "w") as f: # temporary file
+            json.dump(required_forms, f)
 
     with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
         dct.write(
