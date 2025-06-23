@@ -428,6 +428,15 @@ def learn(source, lang, filename=None,
                 ddict.setdefault(form1, {})
                 ddict.setdefault(form1, add_form(ddict[form1], ts))
 
+    def sort_table(table):
+        new_table = {}
+        for k, v in sorted(table.items(), key = lambda x: x[0]):
+            if isinstance(v, dict):
+                new_table[k] = sort_table(v)
+            else:
+                new_table[k] = v
+        return new_table
+
     def compress(ddict):
         default = default_params.values()
         while len(ddict) == 1 and (next(iter(ddict)).startswith("no") or next(iter(ddict)) in default):
@@ -459,6 +468,11 @@ def learn(source, lang, filename=None,
             res = lang_plugin.patch_inflection(pos, word, table)
             if res:
                 table = res
+            
+            table = sort_table(table)
+            
+            #table["lemma"] = word
+            
 
             if pos in ["N","PN"]:
                 for tag in gtags:
