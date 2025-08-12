@@ -317,6 +317,7 @@ class Paradigm:
     var_insts : list[list[tuple[str,str]]]
     pattern : list[tuple]
     tables : list[tuple[str,list[str]]]
+    typ_dict : dict[str, dict[str]] = None
 
     def compatible(self, other):
         if len(self.forms) != len(other.forms):
@@ -481,13 +482,12 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
         if reverse_forms[0].startswith("s;") and not required_forms[0].startswith("s;"):
             return reverse_forms.index("s;" + required_forms[0])
         elif not any(map(lambda x: x.startswith("s;"), reverse_forms)):
-            #print(reverse_forms)
             new_form = re.sub("^s;", "", required_forms[0])
             return reverse_forms.index(new_form)
         else:
             return reverse_forms.index(required_forms[0])
         
-    def get_pattern(form, mult_base_words):
+    def get_pattern(form, lens, mult_base_words):
         pattern = []
         for elem in form.split('+'):
             l = lens.get(elem)
@@ -511,8 +511,7 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
                     if count == max_count and not max_count_l:
                         max_count_l = l
                     else:
-                        fs = ['"'+form+'"' for form in forms]
-     
+                        fs.extend(['"'+form+'"' for form in forms])
                 fs.append(max_count_l)
                 
                 elemRep.append(fs)
@@ -603,8 +602,8 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
         reverse_forms = reverse_dict(paradigm.typ.linearize())
         if required_forms:
             index = get_index(reverse_forms, required_forms[cat])
-        elif os.path.exists(f"{lang}_forms_{level}.json"): # temporary file
-            with open(f"{lang}_forms_{level}.json") as f:
+        elif os.path.exists(f"{lang}_forms.json"): # temporary file
+            with open(f"{lang}_forms.json") as f:
                 required_forms = json.load(f)
             index = get_index(reverse_forms, required_forms[cat])
         else:
@@ -623,14 +622,14 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
                 form_0 = forms[index].replace(pat1, "pat_1")
                 form_1 = forms[second_index].replace(pat2, "pat_2")
 
-                patterns = [get_pattern(form_0, mult_base_words=mult_base_words),
-                            get_pattern(form_1, mult_base_words=mult_base_words)]
+                patterns = [get_pattern(form_0, lens, mult_base_words=mult_base_words),
+                            get_pattern(form_1, lens, mult_base_words=mult_base_words)]
                 
                 
                 
                 paradigm.forms = list(zip(rewrite_forms(paradigm.forms, pat1, pat2), guessed))
         if not patterns:
-            patterns = [get_pattern(forms[index], mult_base_words=mult_base_words), ]
+            patterns = [get_pattern(forms[index], lens, mult_base_words=mult_base_words), ]
     
         #if second_index:
 
@@ -715,7 +714,7 @@ def write_lexicon(i, max_i, par, cat):
     return code
 
 
-def learn(lang, dirname="data", level=None, allow_second_forms=True):
+def learn(lang, dirname="data", level=None, allow_second_forms=False):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         langcode, source, lexicon = pickle.load(f)
 
@@ -743,9 +742,8 @@ def learn(lang, dirname="data", level=None, allow_second_forms=True):
 
     with open(f"{dirname}/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((source, langcode, tables), f)
-    if "train" in dirname:
-        with open(f"{lang}_forms_{level}.json", "w") as f: # temporary file
-            json.dump(required_forms, f)
+    with open(f"{lang}_forms.json", "w") as f: # temporary file
+        json.dump(required_forms, f)
 
     with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
         dct.write(

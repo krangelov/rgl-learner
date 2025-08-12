@@ -5,192 +5,11 @@ from collections import defaultdict, Counter
 from dataclasses import dataclass
 import rgl_learner.plugins as plugins
 from rgl_learner.utils import nested_key_exists, escape, reverse_dict
-import itertools
 from tqdm.auto import tqdm
 import os
 import json
 
-class GFType:
-    def printParamDefs(self,f,pdefs):
-        pass
-
-
-@dataclass(frozen=True)
-class GFStr(GFType):
-    def __repr__(self):
-        return "Str"
-
-    def linearize(self):
-        return ""
-
-    def renderOper(self,indent,vars):
-        return vars.pop(0)
-
-    def fillTagTable(self,tags,lst):
-        lst.append(tuple(tags))
-
-@dataclass(frozen=True)
-class GFParamType(GFType):
-    name: str
-    constructors: tuple # [GFParamConstr]
-
-    def __repr__(self):
-        return self.name
-
-
-    def printParamDefs(self,f,pdefs):
-        pdefs[self.name].update(self.constructors)
-        for constructor in self.constructors:
-            constructor.printParamDefs(f,pdefs)
-
-    def renderValues(self,d):
-        for con in self.constructors:
-            for value in con.renderValues(d):
-                yield value
-
-    def renderOper(self,indent,vars):
-        if type(vars[0]) == tuple:
-            return str(vars.pop(0)[0])
-        return str(vars.pop(0))
-
-    def linearize(self):
-        return self.constructors
-
-@dataclass(frozen=True)
-class GFParamConstr:
-    name: str
-    arg_types: tuple[GFParamType]
-
-    def __repr__(self):
-        if self.arg_types:
-            return self.name+' '+' '.join(str(ty) for ty in self.arg_types)
-        else:
-            return self.name
-
-    def linearize(self):
-        if self.arg_types:
-            return list((self.name,)+args for args in itertools.product(*[ty.linearize() for ty in self.arg_types]))
-        else:
-            return self.name
-
-    def printParamDefs(self,f,pdefs):
-        for ty in self.arg_types:
-            ty.printParamDefs(f,pdefs)
-
-    def renderValues(self,d):
-        for values in itertools.product(*(arg_type.renderValues(1) for arg_type in self.arg_types)):
-            if len(values) == 0:
-                yield self.name
-            else:
-                value = self.name+' '+' '.join(values)
-                if d > 0:
-                    value = "(" + value + ")"
-                yield value
-
-@dataclass(frozen=True)
-class GFParamValue:
-    value: str
-    typ: GFParamType
-
-    def __str__(self):
-        return self.value
-
-    def linearize(self):
-        return self.typ.linearize()
-
-@dataclass(frozen=True)
-class GFTable(GFType):
-    arg_type: GFType
-    res_type: GFType
-
-    def __repr__(self):
-        return self.arg_type.__repr__() + " => " + self.res_type.__repr__()
-
-    def linearize(self):
-        labels = {}
-        for lbl in self.arg_type.constructors:
-            if type(lbl.linearize()) == list:
-                for l in lbl.linearize():
-                    labels[l] = self.res_type.linearize()
-            else:
-                labels[lbl] = self.res_type.linearize()
-        return labels
-
-    def renderOper(self,indent,vars):
-        s = 'table {\n'
-        first = True
-        for num, value in enumerate(self.arg_type.renderValues(0)):
-            if not first:
-                s += ' ;\n'
-            form = self.res_type.renderOper(indent+len(value)+6,vars)
-            if type(form) == tuple:
-                if form[1]:
-                    form = form[0] + " --guessed"
-                else:
-                    form = form[0]
-            s += ' '*(indent+2)+value+' => '+ form
-            first = False
-        s += '\n' + ' '*indent + '}'
-        return s.replace ("--guessed ;", "; --guessed")
-
-    def fillTagTable(self,tags,lst):
-        for pcon in self.arg_type.constructors:
-            tags.append(pcon)
-            self.res_type.fillTagTable(tags,lst)
-            tags.pop()
-
-    def printParamDefs(self,f,pdefs):
-        self.arg_type.printParamDefs(f,pdefs)
-        self.res_type.printParamDefs(f,pdefs)
-
-
-@dataclass(frozen=True)
-class GFRecord(GFType):
-    fields: tuple[tuple[str,GFType]]
-
-    def __repr__(self):
-        s = ""
-        for lbl,ty in self.fields:
-            lbl = "".join([(c if c != '-' else '_') for c in str(lbl)])
-            if s:
-                s = s + "; "
-            s = s + lbl+": "+ty.__repr__()
-        return "{"+s+"}"
-
-    def renderOper(self,indent,vars):
-        s  = '{ '
-        ind = 0
-        for num, (lbl,ty) in enumerate(self.fields):
-            lbl = "".join([(c if c != '-' else '_') for c in str(lbl)])
-            if ind > 0:
-                s += ' ;\n'
-            form = ty.renderOper(indent+len(lbl)+5,vars)
-            if type(form) == tuple:
-                if form[1]:
-                    form = form[0] + " --guessed"
-                else:
-                    form = form[0]
-            s += ' '*ind + lbl + ' = ' + form
-            ind = (indent+2)
-        s += '\n' + ' '*indent + '}'
-        return s.replace ("--guessed ;", "; --guessed")
-
-    def fillTagTable(self,tags,lst):
-        for lbl,ty in self.fields:
-            tags.append(lbl)
-            ty.fillTagTable(tags,lst)
-            tags.pop()
-
-    def printParamDefs(self,f,pdefs):
-        for lbl,ty in self.fields:
-           ty.printParamDefs(f,pdefs)
-
-    def linearize(self):
-        labels = {}
-        for lbl, ty in self.fields:
-            lbl = "".join([(c if c != '-' else '_') for c in str(lbl)])
-            labels[lbl] = ty.linearize()
-        return labels
+from rgl_learner.gf_types import *
 
 def getTypeOf(source_plugin, lang_plugin, o):
     if type(o) is str:
@@ -229,7 +48,9 @@ def getTypeOf(source_plugin, lang_plugin, o):
             match params.get(tag):
                 case None:
                     table = None
+                   # print(val)
                     val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
+                   # print(forms)
                 case param_con, res_type:
                     val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
                     pcons.append((GFParamConstr(param_con,()),params_keys.index(tag) or 10000,forms))
@@ -253,6 +74,7 @@ def getTypeOf(source_plugin, lang_plugin, o):
             return GFTable(GFParamType(arg_type,pcons),val_type), forms
         else:
             forms = sum((forms for _, _, forms in record), [])
+           
             fields = tuple(((source_plugin.convert2gf(tag, params), val_type) for tag, val_type, _ in record))
             return GFRecord(fields), forms
 
@@ -295,6 +117,7 @@ def learn(source, lang, filename=None,
 
     lexicon = source_plugin.extract(lang, filename)
 
+
     noun_genders = set()
     lin_types = {}
     ignore_tags = source_plugin.ignore_tags + lang_plugin.ignore_tags
@@ -311,14 +134,17 @@ def learn(source, lang, filename=None,
 
     pos_order = defaultdict(dict)
     corrected_lexicon = []
+   
     for word, pos, forms, gtags in lexicon:
-        if lang_plugin.filter_lemma(word, pos):
+        
+        if lang_plugin.filter_lemma(word, pos, forms):
             continue
 
-        pos = lang_plugin.patchPOS(word,pos)
+        pos = lang_plugin.patchPOS(word,pos,forms)
         pos = source_plugin.tag2cat.get(pos)
         if not pos:
             continue
+
 
         corrected_forms = []
         for w, tags in forms:
@@ -331,7 +157,7 @@ def learn(source, lang, filename=None,
             new_forms = lang_plugin.merge_tags(pos, forms, w, tags)
             new_tags = [tag for t in new_forms for tag in t[1]]
             for num, tag in enumerate(new_tags):
-                if tag in params:
+                if tag in params and params[tag]:
                     known_tags.append(tag)
                     if params[tag][-1] in pos_order[pos]:
                         pos_order[pos][params[tag][-1]].append(num)
@@ -375,16 +201,17 @@ def learn(source, lang, filename=None,
     default_table = defaultdict(list)
     tables = defaultdict(list)
 
-
+    print(param2val)
 
     for word, pos, forms, gtags in corrected_lexicon:
+
         pos_order = order.get(pos, [])
         table = {}
 
         for w, tags in forms:
             form_table = []
             i = 0
-            tags = [t for t in tags if t in params and params[t][-1] in pos_order]
+            tags = [t for t in tags if t in params and params[t] and params[t][-1] in pos_order]
             tags = sorted(tags, key=lambda x: pos_order.index(params[x][-1]))
 
             for param in pos_order:
@@ -453,8 +280,22 @@ def learn(source, lang, filename=None,
                 else:
                     ddict[param] = compress(values)
         return ddict
+    
+    def complete_table(table, param2val):
+        for k, v in table.items():
+            if isinstance(v, dict):
+                table[k] = complete_table(v, param2val)
+        vals = [v for v in list(table.keys()) if not v.startswith("no")]
+        pars = [params[val][1] for val in vals]
+        expected = [param2val[x] for x in pars]
+        flat = set([x for y in expected for x in y])
+        if set(vals) != flat:
+            for i in flat.difference(set(vals)):
+                table[i] = "-"
+        return table
 
     derivations = {}
+    
 
     for pos, ts in tables.items():
         for (word, table, gtags) in ts:
@@ -463,17 +304,23 @@ def learn(source, lang, filename=None,
             if compress_table:
                 table = compress(table)
 
-            collect_derivations(pos,word,table,derivations)
+            
+
+            #collect_derivations(pos,word,table,derivations)
+            
 
             res = lang_plugin.patch_inflection(pos, word, table)
             if res:
                 table = res
             
             table = sort_table(table)
-            
-            #table["lemma"] = word
-            
+            table = complete_table(table, param2val)
 
+
+
+            
+            table["lemma"] = word
+            
             if pos in ["N","PN"]:
                 for tag in gtags:
                     res = get_gtag(source_plugin, lang_plugin, tag)
@@ -481,12 +328,16 @@ def learn(source, lang, filename=None,
                         table["g"] = GFParamValue(res[0],GFParamType(res[1],()))
                         noun_genders.add(res[0])
                         break
+            
+            
 
             typ, forms = getTypeOf(source_plugin, lang_plugin, table)
 
             if type(typ) != GFRecord:
                 typ = GFRecord((("s", typ),))
-
+            
+           
+    
             lin_types.setdefault(pos, (pos, {}))[1].setdefault(typ, []).append((word, forms))
 
     cat2idx = {}
@@ -529,14 +380,14 @@ def learn(source, lang, filename=None,
     path = f"{dirname}/{lang}/"
     with open(path +'Res' + lang_code + '.gf', 'w') as fr, \
             open(path + 'Cat' + lang_code + '.gf', 'w') as fc, \
-            open(path + 'Dict' + lang_code + '.gf', 'w') as fd, \
+            open(path + 'Lexicon' + lang_code + '.gf', 'w') as fd, \
             open(path + 'Dict' + lang_code + 'Abs.gf', 'w') as fa:
         fr.write('resource Res' + lang_code + ' = {\n')
         fr.write('\n')
         fc.write('concrete Cat' + lang_code + ' of Cat = open Res' + lang_code + ' in {\n')
         fc.write('\n')
         fd.write(
-            'concrete Dict' + lang_code + ' of Dict' + lang_code + 'Abs = Cat' + lang_code + ' ** open Res' + lang_code + ', Prelude in {\n')
+            'concrete Lexicon' + lang_code + ' of Dict' + lang_code + 'Abs = Cat' + lang_code + ' ** open Res' + lang_code + ', Prelude in {\n')
         fd.write('\n')
         fa.write('abstract Dict' + lang_code + 'Abs = Cat ** {\n')
         fa.write('\n')
@@ -562,8 +413,8 @@ def learn(source, lang, filename=None,
             cat2idx[cat_name].append(forms[idx])
             #cat2idx[cat_name].append(forms[mc_lemma_form])
 
-
             for i, (typ, lexemes) in enumerate(sorted(types.items(), key=lambda x: -len(x[1]))):
+                
                 type_name = tag.title() + (str(i) if i else "")
                 n_forms = len(lexemes[0][1])
                 n_params = 0
@@ -614,8 +465,8 @@ def learn(source, lang, filename=None,
     with open(f"{dirname}/{lang}/lexicon.pickle", "wb") as f:
         pickle.dump((lang_code, source, lin_types), f)
 
-    with open(f"data/{lang}/derivations.pickle", "wb") as f:
-        pickle.dump(derivations,f)
+   # with open(f"data/{lang}/derivations.pickle", "wb") as f:
+     #   pickle.dump(derivations,f)
 
     if derivations:
         print("found:", ", ".join(derivations.keys()))
