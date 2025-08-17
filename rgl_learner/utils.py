@@ -7,6 +7,7 @@ import itertools
 import pandas as pd
 import pickle
 import re
+import json
 
 cat2tag = {
   'N': 'Noun',
@@ -247,99 +248,106 @@ def read_data(lang, dir="data"):
     with open(f"{dir}/{lang}/paradigms.pickle", "rb") as f:
         return pickle.load(f)
 
-def parse_pattern(word, pattern):
+
+def parse_pattern(words, patterns):
     """Returns the dictionary of bases"""
-    after = False
-    start = 0
-    end = 0
-    stem_name = None
-    bases = []
+    pat_dict = {}
+    full_match = []
+    for num, pattern in enumerate(patterns):
+        word = words[num]
+        after = False
+        start = 0
+        end = 0
+        stem_name = None
+        bases = []
 
-    pattern = pattern.replace(".", "\.")
-
-    pattern = pattern.replace('"', "").replace("(", "").replace(")", "").replace("*", "").replace("+?", "?")
-    regexp = pattern.replace('+', "")
-    for base in pattern.split("+"):
-        base = base.strip('"')
-        num_symbols = base.count("?")
-        if "base" in base:
-            option_regexp = []
-            if "|" in base:
-                base_name, options = base.split("@", maxsplit=1)
-                for option in options.split("|"):
-                    if "?" in option:
-                        break
-                    else:
-                        option_regexp.append(option)
-            else:
-                base_name = base
-            if num_symbols > 0:
-                char = num_symbols
-                n_sym = f"(.{{{num_symbols}}})"
-                option_regexp.append(n_sym)
-
-            else:
-                after = True
-                char = 0
-                stem_name = base
-            if option_regexp:
-                options = "("+"|".join(option_regexp)+")" if len(option_regexp) > 1 else option_regexp[0]
-                regexp = regexp.replace(base, options)
-                bases.append(re.sub(r'[\(|\)|\@|\?|\+]+', '', base_name))
-        else:
-            char = len(base)
-        if after:
-            end += char
-        else:
-            start += char
-
-    temp_regexp = "^" + regexp.replace(stem_name, "(.+)") + "$" if stem_name else "^" + regexp.replace("base_1", "(.+)") + "$"
-    groups = re.findall(temp_regexp, word)
-    full_match_dict = dict(zip(["base_1", ] + bases, groups))
-
-    replace_word = None
-    if not stem_name:
-        stem_form = word
-        stem_name = "base_1"
-        regexp = stem_form
-    else:
-        end = len(word) - end
-        pattern_split = pattern.split("+")
-        if stem_name in pattern_split and pattern_split.index(stem_name) + 1 < len(pattern_split):
-          #  print(pattern)
-           # prev_word = pattern.split("+")[pattern.split("+").index(stem_name) - 1]
-            next_word = pattern_split[pattern_split.index(stem_name) + 1]
-            next_word_idx = 0
-           # prev_word_idx = 0
-            if not next_word.startswith("base"):
-                for num, char in enumerate(word):
-                    if num >= end:
-                        if next_word_idx < len(next_word) and char != next_word[next_word_idx]:
-                            end += 1
-                            next_word_idx += 1
-                        else:
+        regexp = ""
+        for base in pattern:
+            if "base" in base[0] or "pat" in base[0]:
+                num_symbols = 0
+                base_name = base[0]
+                option_regexp = []
+                if isinstance(base[-1], list):
+                    for option in base[-1]:
+                        if isinstance(option, int):
+                            num_symbols = option
                             break
+                        else:
+                            option_regexp.append(option)
+                if isinstance(base[-1], int):
+                    num_symbols = base[-1]
+                if num_symbols > 0:
+                    char = num_symbols
+                    n_sym = f"(.{{{num_symbols}}})"
+                    option_regexp.append(n_sym)
+                else:
+                    after = True
+                    char = 0
+                    stem_name = base[0]
+                if option_regexp:
+                    options = "("+"|".join(option_regexp)+")" if len(option_regexp) > 1 else option_regexp[0]
+                    regexp += options
+                    bases.append(re.sub(r'[\(|\)|\@|\?|\+]+', '', base_name))
+                else:
+                    regexp += "(.+)"
+                    bases.append(base[0])
+            else:
+                regexp += base.strip('"')
+                char = len(base)
+            if after:
+                end += char
+            else:
+                start += char
 
-            new_next_word = next_word[next_word_idx:]
-            stem_form = word[start:end]
-            regexp = regexp.replace(stem_name, stem_form).replace(next_word, new_next_word)
-            replace_word = next_word[:next_word_idx]
+        temp_regexp = "^" + regexp + "$" 
+
+    
+        groups = re.findall(temp_regexp, word)
+        full_match_dict = dict(zip(bases, groups))
+
+        replace_word = None
+        if not stem_name:
+            stem_form = word
+            stem_name = "base_1"
+            regexp = stem_form
         else:
-            stem_form = word[start:end]
-           #s print(word, stem_form, start, end)
-            regexp = regexp.replace(stem_name, stem_form)
+            end = len(word) - end
+            stem_name = [stem_name,]
+            if stem_name in pattern and pattern.index(stem_name) + 1 < len(pattern):
+            # prev_word = pattern.split("+")[pattern.split("+").index(stem_name) - 1]
+                next_word = pattern[pattern.index(stem_name) + 1][0].strip('"')
+                next_word_idx = 0
+            # prev_word_idx = 0
+                if "base" not in next_word:
+                    for num, char in enumerate(word):
+                        if num >= end:
+                            if next_word_idx < len(next_word) and char != next_word[next_word_idx]:
+                                end += 1
+                                next_word_idx += 1
+                            else:
+                                break
+
+                new_next_word = next_word[next_word_idx:]
+                stem_form = word[start:end]
+                regexp = regexp.replace(stem_name[0], stem_form).replace(next_word, new_next_word)
+                replace_word = next_word[:next_word_idx]
+            else:
+                stem_form = word[start:end]
+                regexp = regexp.replace(stem_name[0], stem_form)
 
 
 
 
-    base_dict = {stem_name: stem_form}
-    groups = re.findall(regexp, word)
-    groups = groups[0] if groups and isinstance(groups[0], tuple) else groups
-    groups = list(map(lambda x:x.replace("\.", "."), groups))
+        base_dict = {stem_name[0]: stem_form}
+        groups = re.findall(regexp, word)
+        groups = groups[0] if groups and isinstance(groups[0], tuple) else groups
+        groups = list(map(lambda x:x.replace("\.", "."), groups))
 
-    base_dict.update(dict(zip(bases, groups)))
+        base_dict.update(dict(zip(bases, groups)))
+        pat_dict = pat_dict | base_dict
+        full_match.append(full_match_dict)
 
-    return full_match_dict, base_dict, replace_word, stem_name
+    return full_match, pat_dict, replace_word, stem_name
 
 def clean_forms(labels, forms):
     forms = {label: form.replace('"', "") for label, form in zip(labels, forms) if form != "nonExist"}
@@ -386,7 +394,8 @@ def prepare_data(df, feature_list, class_tags, how="suffix"):
     return feats, labels
 
 
-
+def read_json_data(lang):
+    pass
 
 
 def build_tree(X, y):

@@ -5,16 +5,18 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from sklearn.model_selection import train_test_split
 import numpy as np
 from rgl_learner.utils import *
+from rgl_learner.json_utils import *
 from scipy.stats import entropy
 import re
 from random import shuffle, choice, seed
 import random
 from pprint import pprint
 import rgl_learner.plugins as plugins
-from rgl_learner.learn_paradigms import Paradigm
 
-evaluate = True
+evaluate = False
 normalize = lambda x: re.sub(r"^s;", "",x).lower() if evaluate else x
+
+get_typ = lambda x: x.typ_dict if x.typ_dict else reverse_dict(x.typ.linearize())
 
 def format_unimorph(tokens):
     """Format output to unimorph format"""
@@ -47,7 +49,10 @@ class LemmaTree:
         split: bool = False,
         sampling: str = "oracle",
         mc_lemma_form: str = None,
-        shuffle_data: str = True
+        shuffle_data: str = True,
+        rules: dict = None,
+        vars: dict = None,
+        required_forms: list = None,
     ):
 
         self.pos = pos
@@ -58,7 +63,9 @@ class LemmaTree:
 
         self.dev = True if test_lemmas else False
 
-        self.form_distribution = [dict(zip([normalize(x) for x in reverse_dict(p.typ.linearize())], [x[0] for x in p.forms])) for p in forms]
+        
+
+        self.form_distribution = [dict(zip([normalize(x) for x in get_typ(p)], [x[0] for x in p.forms])) for p in forms]
 
         lemmas = list(filter(lambda x: x, lemmas))
 
@@ -107,30 +114,32 @@ class LemmaTree:
 
         self.min_sample_leaf = min_sample_leaf
         self.rules = defaultdict()
+    
+        if rules:
+            for rule, tag in rules.items():
+                new_rule = []
+                for form, subrule in rule:
+                    regexp = ""
+                    for elem in subrule:
+                        if elem.startswith("#"):
+                            if elem in vars:
+                                regexp += "(" + "|".join(vars[elem].strip('"')) + ")"
+                            else:
+                                raise AttributeError (f"{elem} is not in variables list")
+                        else:
+                            regexp += elem
+                    new_rule.append((form, regexp))
+                self.rules[tuple(new_rule)] = (tag-1, 1, {})
+
+       
+            
         self.regex = defaultdict()
         if how:
             self.how = how
         else:
             self.how = self.define_affixation()
 
-    def update_paradigms(self, base, labels, pattern):
-        """
-        for num, form in enumerate(self.forms):
-            if all([f[0] == l for f, l in zip(form.forms, labels.values())]):
-                return num
-        new_paradigm = Paradigm(forms=[(l, True) for l in labels.values()],
-                                    typ=self.forms[0].typ,
-                                    var_insts=[],
-                                    pattern=pattern,
-                                    tables=[]
-                                    )
-        num = len(self.forms)
-        self.rules[((self.other_forms[0], base[:self.max_depth]),)] = (num, 0, [num])
-        self.forms.append(new_paradigm)
-        self.form_distribution.append(labels)
-        return num
-        """
-        pass
+        self.required_forms = required_forms
 
 
 
@@ -138,39 +147,60 @@ class LemmaTree:
         """Form tokens based on predicted forms by
         matching patterns"""
         token_dict = {}
-
+        
         if pattern:
             full_match, base_dict, new_pattern, stem_name = parse_pattern(stem, pattern)
-            if not test or full_match:
-                if full_match and isinstance(full_match["base_1"], tuple):
-                    base_dict = {f"base_{i+1}": base for i, base in enumerate(full_match["base_1"])}
-                else:
-                    base_dict = full_match
+            if not test or full_match[0]:
+                base_dict = {} # overwrite base_dict
+                for match in full_match:
+                    if match and "base_1" in match and isinstance(match["base_1"], tuple):
+                        base_dict = base_dict | {f"base_{i+1}": base for i, base in enumerate(match["base_1"])}
+                    elif match and "pat_1" in match and isinstance(match["pat_1"], tuple):
+                        new_dict = {"pat_1": match["pat_1"][0]}
+                        base_dict = base_dict | {f"base_{i+1}": base for i, base in enumerate(match["pat_1"][1:])}
+                    else:
+                        base_dict = base_dict | match
+
             else:
+                
                 new_labels = {}
                 for label, word in labels.items():
                     if isinstance(word, str):
                         word_split = word.split('+')
-                        if stem_name in word_split and word_split.index(stem_name) + 1 < len(word_split) and new_pattern:
-                            replace_word_idx = word_split.index(stem_name) + 1
-                            new_word = [w.replace(new_pattern, "").replace('+""', "")
+                    else:
+                        word_split = word
+                        word = "+".join(word)
+                    if stem_name in word_split and word_split.index(stem_name) + 1 < len(word_split) and new_pattern:
+                        replace_word_idx = word_split.index(stem_name) + 1
+                        new_word = [w.replace(new_pattern, "").replace('+""', "")
                                         if num == replace_word_idx else w for num, w in enumerate(word_split)]
-                            new_labels[label] = "+".join(new_word).replace('+""', "").replace('""+', '')
-                        else:
-                            new_labels[label] = word
-                labels = new_labels
+                        new_labels[label] = "+".join(new_word).replace('+""', "").replace('""+', '')
+                    else:
+                        new_labels[label] = word
+                    
+                    labels = new_labels
                 if new_pattern:
                     upd_pattern = ("+".join([x.replace(new_pattern, "") if "base" not in x else x
                                             for x in pattern.split("+")]).replace('+""', "")
                                    .replace('""+', ''))
                 else:
                     upd_pattern = pattern
-                class_num = self.update_paradigms(stem, labels, upd_pattern)
         else:
-            base_dict = {"base_1": stem}
-
-        #print(base_dict, stem, pattern)
-
+            base_dict = {"base_1": stem[0]}
+        
+        if not base_dict:
+            if isinstance(pattern[-1], str):
+                base_dict = {"base_1": stem[0][:-len(pattern)]}
+            else:
+                base_dict = {"base_1": stem[0]}
+        for num, p in enumerate(pattern):
+            pat = f"pat_{num+2}"
+            if [pat] in pattern[-1] and pat not in base_dict:
+                if "pat_1" in base_dict:
+                    base_dict[pat] = base_dict["pat_1"]
+                else:
+                    base_dict[pat] = base_dict["base_1"]
+                    base_dict["pat_1"]  = base_dict["base_1"]
 
         for label, form in labels.items():
             label = normalize(label)
@@ -178,7 +208,7 @@ class LemmaTree:
                 for base, morpheme in base_dict.items():
                     morpheme = morpheme[0] if type(morpheme) == tuple else morpheme
                     form = form.replace(base, morpheme)
-                form = re.sub(r"base_\d", r"", form)
+                form = re.sub(r"base_\d", r"", form) 
                 token_dict[label] = form.replace("+", "").replace('"', "")
             else:
                 token_dict[label] = "-"
@@ -223,6 +253,7 @@ class LemmaTree:
         coverage = []
 
         for form, value in token.items():
+          #  print(forms.get(form), value)
             if value != "-" and form != "lemma":
                 if forms.get(form) == value:
                     coverage.append(1)
@@ -231,6 +262,7 @@ class LemmaTree:
                     if forms.get(form) != "-":
                         errors_by_token = self.calculate_error_rate(form, value, forms.get(form), dist)
                         errors.append(errors_by_token)
+        
         return coverage, errors
 
 
@@ -291,10 +323,10 @@ class LemmaTree:
                    add_all=True, entropy=10000):
         "Building a tree for a given form"
         entropy_scores, label2classes = self.build_node(lemmas, position)
-        #print(lemmas, entropy_scores, label2classes)
+
         position += 1
         for label, (entropy_score, class_dist) in entropy_scores.items():
-            if entropy_score == 0:
+            if entropy_score < 0.05:
                 self.update_rules(label, label2classes[label][0][1],
                                   class_dist=list(class_dist.keys()),
                                   prefix=prefix, cur_form=cur_form,
@@ -317,12 +349,151 @@ class LemmaTree:
                                                   class_dist=list(class_dist.keys()),
                                                   cur_form=cur_form, entropy=entropy_score)
                                 break
-                if (
-                    position <= self.max_depth
-                    and len(label2classes[label]) >= self.min_sample_leaf
-                ):
-                    self.build_tree(label2classes[label], position, prefix=prefix,
-                                    cur_form=cur_form, add_all=True, entropy=entropy)
+                
+                    if (
+                        position <= self.max_depth
+                        and len(label2classes[label]) >= self.min_sample_leaf
+                    ):
+                        self.build_tree(label2classes[label], position, prefix=prefix,
+                                        cur_form=cur_form, add_all=True, entropy=entropy_score)
+
+                    
+    def rewrite_rules(self):
+        def get_ending(pattern, ending):
+            if isinstance(pattern, str):
+                if "base" not in pattern or "pat" not in pattern:
+                    if len(pattern) > len(ending):
+                        ending = pattern
+                        
+            elif isinstance(pattern[-1], list):
+                for elem in pattern[-1]:
+                    if isinstance(elem, str) and "pat" not in elem and "base" not in elem and ending in elem and len(elem.strip('"')) > len(ending):
+                        ending = elem.replace('"', "")
+                        
+            
+            return ending 
+        
+
+        rules = {}
+        for rule, (tag, entropy, dist) in self.rules.items():
+            (form, ending) = rule[0]
+
+
+            if self.how == "suffix":
+                pattern = self.forms[tag].pattern[-1]
+                if isinstance(pattern, str):
+                    pattern = pattern.strip('"')
+                    diff = len(ending) - len(pattern)
+                    rest = self.forms[tag].pattern[:-1]
+                else:
+                    diff = len(ending)
+                    rest = self.forms[tag].pattern
+                
+                if_var = any([isinstance(x, str) for x in rest])
+                ending = get_ending(pattern, ending)
+                
+                beginning = []
+                if if_var:
+                    for i in rest[::-1]:
+                        if isinstance(i, str):
+                            if  diff > 0:
+                                beginning.append(i.strip('"')[:-diff])
+                                diff -= len(i)
+                            else:
+                                beginning.append(i.strip('"'))
+                            
+                        elif len(i) > 1:
+                            regexp = []
+                            if isinstance(i[1], int):
+                                if diff > 0:
+                                    if i[1]-diff > 0:
+                                        regexp.append(f".{i[1]-diff}")
+                                        diff -= i[1]
+                                else:
+                                    regexp.append(f".{i[1]}")
+                            else:
+                                for x in i[1]:
+                                    if isinstance(x, int):
+                                        if diff > 0:
+                                            if x-diff > 0:
+                                                regexp.append(f".{x-diff}")
+                                                diff -= x
+                                        else:
+                                            regexp.append(f".{x}")
+                                    elif  diff > 0:
+                                        if len(x) > diff and (x in ending or ending in x):
+                                            regexp.append(x.strip('"')[:-diff])
+                                            diff -= len(x.strip('"'))
+                                    else:
+                                        regexp.append(x.strip('"'))
+                            regexp = [x.strip('"') for x in regexp if x != ""]
+                            if regexp:
+                                beginning.append("(" + "|".join(regexp) +  ")")
+                                
+                        else:
+                            beginning.append(".*")
+
+
+                ending = "".join(beginning[::-1]) + ending
+                
+            else:
+                pattern = self.forms[tag].pattern[0]
+                if isinstance(pattern, str):
+                    pattern = pattern.strip('"')
+                    diff = len(ending) - len(pattern)
+                    rest = self.forms[tag].pattern[1:]
+                else:
+                    diff = len(ending)
+                    rest = self.forms[tag].pattern
+                if_var = any([isinstance(x, str) for x in rest])
+                ending = get_ending(pattern, ending)
+                beginning = []
+                if if_var:
+                    for i in rest:
+                        if isinstance(i, str):
+                            if  diff > 0:
+                                beginning.append(i.strip('"')[diff:])
+                                diff -= len(i)
+                            else:
+                                beginning.append(i.strip('"'))
+                            
+                        elif len(i) > 1:
+                            regexp = []
+                            if isinstance(i[1], int):
+                                if diff > 0:
+                                    if i[1]-diff > 0:
+                                        regexp.append(f".{i[1]+diff}")
+                                        diff -= i[1]
+                                else:
+                                    regexp.append(f".{i[1]}")
+                            else:
+                                for x in i[1]:
+                                    if isinstance(x, int):
+                                        if diff > 0:
+                                            if x-diff > 0:
+                                                regexp.append(f".{x+diff}")
+                                                diff -= x
+                                        else:
+                                            regexp.append(f".{x}")
+                                    elif  diff > 0:
+                                        if len(x) > diff and (x in ending or ending in x):
+                                            regexp.append(x.strip('"')[diff:])
+                                            diff -= len(x.strip('"'))
+                                    else:
+                                        regexp.append(x.strip('"'))
+                            regexp = [x for x in regexp if x != ""]
+                            if regexp:
+                                beginning.append("(" + "|".join(regexp) +  ")")
+                        else:
+                            beginning.append(".*")
+                ending = "".join(beginning[::-1]) + ending
+            
+            rules[((form, ending),)] = (tag, entropy, dist)
+        
+    
+        self.rules = rules
+
+
 
     def fit(self, forms=None, start=0, prefix=[], new_form=None,
             required_forms=[]):
@@ -331,19 +502,20 @@ class LemmaTree:
         cov = []
         code = ""
         possible_forms = list(self.train_tokens[0].keys())
-
+        self.required_forms = required_forms
         for i in range(self.iters):
             if i == 0:
                 prefix = []
                 self.build_tree(lemmas=self.train, prefix=prefix, cur_form=self.other_forms[0])
+                self.rewrite_rules()
+                #print(self.rules)
                 preds, scores, avg, length, errors, forms = self.evaluate(i, test=False)
             else:
                 all_forms = {}
                 for (affix, entropy), form in forms.items():
-
-                    if entropy != 0:
+                    if len(form) > 1:
                         lemma2class = [
-                            ((tokens[new_form], tag), tokens)
+                            ((tokens[normalize(new_form)], tag), tokens)
                             for tokens, tag in form]
                         self.train, self.train_tokens = list(zip(*lemma2class))
                         if self.train:
@@ -361,7 +533,7 @@ class LemmaTree:
             code += write_gf_code(self.pos, self.sort_rules(self.rules, i), self.other_forms, self.how)
             score.append(scores["coverage"])
             if errors: # and i < self.iters-1 and forms:
-                if self.sampling == "given" and i+1 < len(required_forms):
+                if i+1 < len(required_forms):
                     new_form = required_forms[i+1]
                     self.other_forms.append(new_form)
                 elif self.sampling == "random":
@@ -391,10 +563,26 @@ class LemmaTree:
 
     def evaluate(self, i, test=True, data=None, form_pattern=True):
         """Evaluation on train/test data"""
+        def match_token(token, rule):
+            if rule.startswith("^"):
+                res = re.match(rf"{rule}$", token)
+            elif self.how == "suffix":
+                res = re.match(rf".*{rule}$", token)
+            else:
+                res = re.match(rf"^{rule}.*", token)
+            if res:
+                return True
+            return False
+        
         y_true = []
         y_pred = []
         distribution = []
+
+
         cur_rules = self.sort_rules(self.rules, i)
+
+
+        #print(cur_rules)
 
         forms_by_tag = defaultdict(list)
 
@@ -409,23 +597,23 @@ class LemmaTree:
 
 
         # find a suitable paradigm
-        most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else 0
+        #most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else 0
+        most_common = 0
         common_dist = [x for _, x in self.train]
         for (lemma, tag), token in zip(lemmas, tokens):
+            #print(token.keys())
             y_true.append(tag)
             pred = most_common
             pred_dist = common_dist
             for rule, (pred_tag, entropy, dist) in cur_rules:
                 passes = []
+                
                 for form, subrule in rule:
+                    
                     val = False
-
-                    if (
-                        self.how == "suffix" and token[form].endswith(subrule)
-                    ) or (
-                        self.how == "prefix" and token[form].startswith(subrule)
-                    ):
-                        val = True
+                    word = token.get(form.lower(), "-")
+                 
+                    val = match_token(word, subrule)
                     passes.append(val)
                 if all(passes):
                     pred = pred_tag
@@ -445,12 +633,12 @@ class LemmaTree:
         for (lemma, tag), token, pred, pred_dist in zip(lemmas, tokens, y_pred, distribution):
             table = self.forms[pred]
             pred_labels = self.form_distribution[pred]
-
-            base = token[self.other_forms[0]]
+            base = [token[normalize(x)] if normalize(x) in token else "-" for x in self.required_forms]
             pred_forms = self.form_token(base, table.pattern, pred_labels, test=form_pattern, iter=i)
             true_values = [token.get(v, "-") for v in pred_forms]
 
             preds.append((self.pos, lemma, pred_forms, true_values, pred, tag))
+
 
             cscore, token_errors = self.coverage_score(token, pred_forms, pred_dist)
 
@@ -520,8 +708,10 @@ def write_gf_code(pos_tag, rules, other_forms, how):
 
 
 def filter_tokens(tag, table, morphoforms, paradigm, required=None, train=False):
+    
     forms = {normalize(p): form for p, form in zip(morphoforms, table[1]) if isinstance(form, str)}
-    if not train or not paradigm.pattern or ("base" in paradigm.pattern):
+
+    if not train or not paradigm.pattern[0] or any(["base_1" in x or "pat_1" in x for x in paradigm.pattern[0]]):
         if required and isinstance(required, int):
             return (forms[normalize(morphoforms[required])], tag), forms
         elif required:
@@ -583,16 +773,16 @@ boilerplate = {
        "  mkA2 : A -> A2 = \\a -> lin A2 a ** {c2=noPrep} ;\n"+
        "  mkA2 : A -> Prep -> A2 = \\a,p -> lin A2 a ** {c2=p} ;\n"+
        "} ;\n\n",
-  "Adv": (
-       "mkAdv : Str -> Adv = \\s -> lin Adv {s=s} ;\n"+
-       "mkAdV : Str -> AdV = \\s -> lin AdV {s=s} ;\n"+
-       "mkAdA : Str -> AdA = \\s -> lin AdA {s=s} ;\n"+
-       "mkAdN : Str -> AdN = \\s -> lin AdN {s=s} ;\n\n"),
-  "Interj":
-       "mkInterj : Str -> Interj = \\s -> lin Interj {s=s} ;\n\n",
-  "Voc":
-       "mkVoc : Str -> Voc = \\s -> lin Voc {s=s} ;\n\n",
-  "Prep":
+#  "Adv": (
+#       "mkAdv : Str -> Adv = \\s -> lin Adv {s=s} ;\n"+
+#       "mkAdV : Str -> AdV = \\s -> lin AdV {s=s} ;\n"+
+ #      "mkAdA : Str -> AdA = \\s -> lin AdA {s=s} ;\n"+
+ #      "mkAdN : Str -> AdN = \\s -> lin AdN {s=s} ;\n\n"),
+ # "Interj":
+ #      "mkInterj : Str -> Interj = \\s -> lin Interj {s=s} ;\n\n",
+ #"Voc":
+#       "mkVoc : Str -> Voc = \\s -> lin Voc {s=s} ;\n\n",
+ "Prep":
        "mkPrep : Str -> Prep = \\s -> lin Prep {s=s} ;\n"+
        "noPrep : Prep = lin Prep {s=\"\"} ;\n\n"
   }
@@ -607,7 +797,8 @@ def guess_by_lemma(
     min_sample_leaf=3,
     sampling="oracle",
     iters=4,
-    shuffle=True
+    shuffle=True,
+    input_json=False
 ):
     print("Reading data..")
     print(f"Parameters\nNumber of examples: {t}\nSplit: {split}\nIterations: {iters}\nShuffle: {shuffle}")
@@ -615,7 +806,13 @@ def guess_by_lemma(
 
     lang_plugin = plugins[source,lang]
     required_forms = lang_plugin.required_forms
+    if not required_forms: 
+        with open(f"{lang}_forms.json") as f:
+            required_forms = json.load(f)
+    vars = lang_plugin.vars
 
+    if input_json:
+        tables = read_json_data(lang, langcode)
 
 
     tokens = []
@@ -624,16 +821,19 @@ def guess_by_lemma(
 
     all_rules = {}
 
+    get_t = lambda x: reverse_dict(x.typ.linearize()) if x.typ else x.typ_dict
+
     for pos, forms in tables.items():
         if len(forms) > 1:
             print(f"=={pos}==")
             lemma2class = [
-                filter_tokens(tag, table, reverse_dict(paradigm.typ.linearize()), paradigm,
+                filter_tokens(tag, table, get_t(paradigm), paradigm,
                               required=required_forms.get(pos,[None])[0])
                 for tag, paradigm in enumerate(forms)
                 if len(paradigm.tables) >= min_examples
                 for table in paradigm.tables
             ]
+
 
             tree = LemmaTree(
                 pos,
@@ -646,7 +846,8 @@ def guess_by_lemma(
                 min_sample_leaf=min_sample_leaf,
                 sampling=sampling,
                 iters=iters,
-                shuffle_data=shuffle
+                shuffle_data=shuffle,
+                vars = vars
             )
             score, preds, pos_code = tree.fit(required_forms=required_forms.get(pos,[]))
             code += pos_code
@@ -660,12 +861,12 @@ def guess_by_lemma(
                 overload_code += f"  mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
                 overload_code += f'{";" if num < len(tree.other_forms) else ""}   -- {"  ".join(tree.other_forms[:num])}\n'
             overload_code += "} ;\n\n"
-            overload_code += boilerplate.get(pos,"")
+           # overload_code += boilerplate.get(pos,"")
 
-    overload_code+=boilerplate.get("Adv","")
-    overload_code+=boilerplate.get("Interj","")
-    overload_code+=boilerplate.get("Voc","")
-    overload_code+=boilerplate.get("Prep","")
+   # overload_code+=boilerplate.get("Adv","")
+   # overload_code+=boilerplate.get("Interj","")
+   # overload_code+=boilerplate.get("Voc","")
+   # overload_code+=boilerplate.get("Prep","")
 
     with open(f"data/{lang}/Paradigms{langcode}.gf", "w") as f:
         f.write(
@@ -675,9 +876,9 @@ def guess_by_lemma(
         f.write(overload_code)
         f.write("}")
 
-    with open(f"data/{lang}/Lexicon{langcode}.gf", "w") as f:
-        f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
-        f.write("}")
+    #with open(f"data/{lang}/Lexicon{langcode}.gf", "w") as f:
+    #    f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
+    #    f.write("}")
 
     with open(f"data/{lang}/Lang{langcode}.gf", "w") as f:
         f.write("--# -path=.:../abstract\n")

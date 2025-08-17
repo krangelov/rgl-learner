@@ -714,7 +714,7 @@ def write_lexicon(i, max_i, par, cat):
     return code
 
 
-def learn(lang, dirname="data", level=None, allow_second_forms=False):
+def learn(lang, dirname="data", level=None, allow_second_forms=True):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         langcode, source, lexicon = pickle.load(f)
 
