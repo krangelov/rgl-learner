@@ -27,6 +27,7 @@ def getTypeOf(source_plugin, lang_plugin, o):
 
             pcons = []
             old_val_type = None
+            print(o)
             for tag,val in o.items():
                 match params.get(tag):
                     case param_con, res_type:
@@ -55,6 +56,7 @@ def getTypeOf(source_plugin, lang_plugin, o):
                     val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
                     pcons.append((GFParamConstr(param_con,()),params_keys.index(tag) or 10000,forms))
                 case param_con, arg_types, res_type:
+                    print(val, arg_types)
                     args, val_type, forms = decodePolishSequence(val,arg_types)
                     pcons.append((GFParamConstr(param_con,tuple(args)),params_keys.index(tag) or 10000,forms))
 
@@ -286,7 +288,7 @@ def learn(source, lang, filename=None,
             if isinstance(v, dict):
                 table[k] = complete_table(v, param2val)
         vals = [v for v in list(table.keys()) if not v.startswith("no")]
-        pars = [params[val][1] for val in vals]
+        pars = [params[val][-1] for val in vals if val in params]
         expected = [param2val[x] for x in pars]
         flat = set([x for y in expected for x in y])
         if set(vals) != flat:
@@ -319,7 +321,7 @@ def learn(source, lang, filename=None,
 
 
             
-            table["lemma"] = word
+            #table["lemma"] = word
             
             if pos in ["N","PN"]:
                 for tag in gtags:
