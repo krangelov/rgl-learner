@@ -1,8 +1,8 @@
 resource ResGla = {
 
-param Case = Nom | Gen | Dat ;
-param Species = Def | Indef ;
-param Number = Sg | Pl ;
+param Case = Gen | Dat | Nom ;
+param Species = Indef | Def ;
+param Number = Pl | Sg ;
 param Gender = Masc ;
 oper N = {s: Case => Species => Number => Str; voc: Number => Str; g: Gender} ; -- 5692
 oper mkN : (_,_,_,_,_,_,_,_,_,_,_,_,_,_ : Str) -> Gender -> N =

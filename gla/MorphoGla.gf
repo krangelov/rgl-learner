@@ -203,7 +203,7 @@ mkN005 base form =
                                   Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ;
+                                Sg => base_1+"h"+base_2+base_3 ;
                                 Pl => pat_2
                               }
                      } ;
@@ -213,7 +213,7 @@ mkN005 base form =
                                   Pl => base_1+"h"+base_2+base_3
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1
                               }
                      }
@@ -743,7 +743,7 @@ mkN017 base form =
                                   Pl => pat_1+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"ean"
                               }
                      } ;
@@ -788,7 +788,7 @@ mkN018 base form =
                                   Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"ha"+base_2 ;
+                                Sg => base_1+"ha"+base_2 ;
                                 Pl => pat_2
                               }
                      } ;
@@ -798,7 +798,7 @@ mkN018 base form =
                                   Pl => base_1+"ha"+base_2
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"hi"+base_2 ;
+                                Sg => base_1+"hi"+base_2 ;
                                 Pl => pat_1
                               }
                      }
@@ -923,7 +923,7 @@ mkN021 base form =
                                   Pl => "m"+base_1+"athan"
                                 } ;
                        Def => table {
-                                Sg => "(a') bhea"+base_1 ;
+                                Sg => "bhea"+base_1 ;
                                 Pl => "m"+base_1+"athan"
                               }
                      } ;
@@ -1283,7 +1283,7 @@ mkN029 base form =
                                   Pl => pat_1+"chan"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"chan"
                               }
                      } ;
@@ -1293,7 +1293,7 @@ mkN029 base form =
                                   Pl => base_1+"h"+base_2+"chan"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"chan"
                               }
                      }
@@ -1418,7 +1418,7 @@ mkN032 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"oi"+base_3 ;
+                                Sg => base_1+"h"+base_2+"oi"+base_3 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -1490,36 +1490,36 @@ mkN033 base form =
 mkN034 : Str -> Str -> N ;
 mkN034 base form =
   case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
+    <pat_1+"s", pat_2+"n"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"an"
+                                  Sg => pat_1+"s" ;
+                                  Pl => pat_2+"n"
                                 } ;
                        Def => table {
-                                Sg => base_1+"i"+base_2 ; --guessed
-                                Pl => pat_1+"an" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1 ; --guessed
-                                  Pl => pat_1+"an" --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => pat_1 ; --guessed
-                                Pl => "h-"+pat_1+"an" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => base_1+"i"+base_2 ; --guessed
-                                  Pl => pat_1+"an" --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1+"i"+base_2 ; --guessed
-                                Pl => pat_1+"an" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -1589,27 +1589,27 @@ mkN036 base form =
                                 } ;
                        Def => table {
                                 Sg => base_1+"hui"+base_2 ;
-                                Pl => nonExist
+                                Pl => base_1+"ha"+base_2+"a"
                               }
                      } ;
               Dat => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => nonExist
+                                  Pl => pat_2+"annan"
                                 } ;
                        Def => table {
                                 Sg => base_1+"hui"+base_2 ;
-                                Pl => nonExist
+                                Pl => pat_2+"annan"
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => base_1+"a"+base_2+"a" ;
-                                  Pl => nonExist
+                                  Sg => pat_2+"a" ;
+                                  Pl => base_1+"ha"+base_2+"annan"
                                 } ;
                        Def => table {
-                                Sg => base_1+"a"+base_2+"a" ;
-                                Pl => nonExist
+                                Sg => pat_2+"a" ;
+                                Pl => pat_2+"annan"
                               }
                      }
             } ;
@@ -1688,7 +1688,7 @@ mkN038 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -1733,7 +1733,7 @@ mkN039 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -1743,7 +1743,7 @@ mkN039 base form =
                                   Pl => base_1+"h"+base_2+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"an"
                               }
                      }
@@ -1868,7 +1868,7 @@ mkN042 base form =
                                   Pl => pat_2+"tan"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_2+"tan"
                               }
                      } ;
@@ -1958,7 +1958,7 @@ mkN044 base form =
                                   Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"o"+base_3 ;
+                                Sg => base_1+"h"+base_2+"o"+base_3 ;
                                 Pl => pat_2
                               }
                      } ;
@@ -1968,7 +1968,7 @@ mkN044 base form =
                                   Pl => base_1+"h"+base_2+"o"+base_3
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"ui"+base_3 ;
+                                Sg => base_1+"h"+base_2+"ui"+base_3 ;
                                 Pl => pat_1
                               }
                      }
@@ -2003,7 +2003,7 @@ mkN045 base form =
                                   Pl => pat_1+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ; --guessed
+                                Sg => base_1+"h"+base_2 ; --guessed
                                 Pl => pat_1+"an" --guessed
                               }
                      } ;
@@ -2013,7 +2013,7 @@ mkN045 base form =
                                   Pl => base_1+"h"+base_2+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ; --guessed
+                                Sg => base_1+"h"+base_2 ; --guessed
                                 Pl => pat_1+"an" --guessed
                               }
                      }
@@ -2093,7 +2093,7 @@ mkN047 base form =
                                   Pl => pat_1+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ; --guessed
+                                Sg => base_1+"h"+base_2 ; --guessed
                                 Pl => pat_1+"an" --guessed
                               }
                      } ;
@@ -2103,7 +2103,7 @@ mkN047 base form =
                                   Pl => base_1+"h"+base_2+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ; --guessed
+                                Sg => base_1+"h"+base_2 ; --guessed
                                 Pl => pat_1+"an" --guessed
                               }
                      }
@@ -2273,7 +2273,7 @@ mkN051 base form =
                                   Pl => base_1+base_2+"ui"+base_3
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"a"+base_3 ;
+                                Sg => base_1+"h"+base_2+"a"+base_3 ;
                                 Pl => base_1+base_2+"ui"+base_3
                               }
                      } ;
@@ -2283,7 +2283,7 @@ mkN051 base form =
                                   Pl => base_1+"h"+base_2+"a"+base_3
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"ui"+base_3 ;
+                                Sg => base_1+"h"+base_2+"ui"+base_3 ;
                                 Pl => pat_1
                               }
                      }
@@ -2318,7 +2318,7 @@ mkN052 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -2328,7 +2328,7 @@ mkN052 base form =
                                   Pl => base_1+"h"+base_2+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+pat_1 ;
+                                Sg => pat_1 ;
                                 Pl => pat_1+"an"
                               }
                      }
@@ -2363,7 +2363,7 @@ mkN053 base form =
                                   Pl => pat_2+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ;
+                                Sg => base_1+"h"+base_2+base_3 ;
                                 Pl => pat_2+"an"
                               }
                      } ;
@@ -2408,7 +2408,7 @@ mkN054 base form =
                                   Pl => base_1+"oin"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"hù" ;
+                                Sg => base_1+"hù" ;
                                 Pl => base_1+"oin"
                               }
                      } ;
@@ -2418,7 +2418,7 @@ mkN054 base form =
                                   Pl => base_1+"hon"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"hoin" ;
+                                Sg => base_1+"hoin" ;
                                 Pl => base_1+"on"
                               }
                      }
@@ -2480,6 +2480,51 @@ mkN055 base form =
 mkN056 : Str -> Str -> N ;
 mkN056 base form =
   case <base, form> of {
+    <pat_1, pat_2+"an"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"an"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1+"an" --guessed
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ; --guessed
+                                  Pl => pat_1+"an" --guessed
+                                } ;
+                       Def => table {
+                                Sg => pat_1 ; --guessed
+                                Pl => "h-"+pat_1+"an" --guessed
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => base_1+"i"+base_2 ; --guessed
+                                  Pl => pat_1+"an" --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1+"an" --guessed
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN056"
+  } ;
+
+mkN057 : Str -> Str -> N ;
+mkN057 base form =
+  case <base, form> of {
     <pat_1, pat_2+"e"> => lin N
       { s = table {
               Nom => table {
@@ -2510,51 +2555,6 @@ mkN056 base form =
                        Def => table {
                                 Sg => nonExist ;
                                 Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN056"
-  } ;
-
-mkN057 : Str -> Str -> N ;
-mkN057 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"annan"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"annan"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"hui"+base_2 ;
-                                Pl => base_1+"ha"+base_2+"a"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"annan"
-                                } ;
-                       Def => table {
-                                Sg => "(a') "+base_1+"hui"+base_2 ;
-                                Pl => pat_2+"annan"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_2+"a" ;
-                                  Pl => base_1+"ha"+base_2+"annan"
-                                } ;
-                       Def => table {
-                                Sg => pat_2+"a" ;
-                                Pl => pat_2+"annan"
                               }
                      }
             } ;
@@ -2813,7 +2813,7 @@ mkN063 base form =
                                   Pl => base_1+"à"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"hoin" ;
+                                Sg => base_1+"hoin" ;
                                 Pl => base_1+"à"
                               }
                      } ;
@@ -2993,7 +2993,7 @@ mkN067 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"a" ;
+                                Sg => base_1+"h"+base_2+"a" ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -3128,7 +3128,7 @@ mkN070 base form =
                                   Pl => pat_2+"aichean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"hiu"+base_2+"a"+base_3 ;
+                                Sg => base_1+"hiu"+base_2+"a"+base_3 ;
                                 Pl => pat_2+"aichean"
                               }
                      } ;
@@ -3263,7 +3263,7 @@ mkN073 base form =
                                   Pl => pat_2+"aichean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"ai"+base_3 ;
+                                Sg => base_1+"h"+base_2+"ai"+base_3 ;
                                 Pl => pat_2+"aichean"
                               }
                      } ;
@@ -3353,7 +3353,7 @@ mkN075 base form =
                                   Pl => pat_1+"ibh"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"ibh"
                               }
                      } ;
@@ -3398,7 +3398,7 @@ mkN076 base form =
                                   Pl => pat_1+"aichean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ;
+                                Sg => base_1+"h"+base_2+base_3 ;
                                 Pl => pat_1+"aichean"
                               }
                      } ;
@@ -3408,7 +3408,7 @@ mkN076 base form =
                                   Pl => base_1+"h"+base_2+base_3+"aichean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1+"aichean"
                               }
                      }
@@ -3488,7 +3488,7 @@ mkN078 base form =
                                   Pl => pat_2+"ichean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+"ir" ;
+                                Sg => base_1+"h"+base_2+base_3+"ir" ;
                                 Pl => pat_2+"ichean"
                               }
                      } ;
@@ -4073,7 +4073,7 @@ mkN091 base form =
                                   Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+base_4+base_5+"n" ;
+                                Sg => base_1+"h"+base_2+base_3+base_4+base_5+"n" ;
                                 Pl => pat_2
                               }
                      } ;
@@ -4568,7 +4568,7 @@ mkN102 base form =
                                   Pl => base_1+base_2+"i"+base_3+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ;
+                                Sg => base_1+"h"+base_2+base_3 ;
                                 Pl => base_1+base_2+"i"+base_3+"ean"
                               }
                      } ;
@@ -4578,7 +4578,7 @@ mkN102 base form =
                                   Pl => base_1+"h"+base_2+"i"+base_3+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => base_1+base_2+"i"+base_3+"ean"
                               }
                      }
@@ -4613,7 +4613,7 @@ mkN103 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"a" ;
+                                Sg => base_1+"h"+base_2+"a" ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -4623,7 +4623,7 @@ mkN103 base form =
                                   Pl => base_1+"h"+base_2+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"a" ;
+                                Sg => base_1+"h"+base_2+"a" ;
                                 Pl => pat_1+"an"
                               }
                      }
@@ -4865,11 +4865,11 @@ mkN108 base form =
 mkN109 : Str -> Str -> N ;
 mkN109 base form =
   case <base, form> of {
-    <pat_1+"n", pat_2> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+"n" ;
+                                  Sg => pat_1 ;
                                   Pl => pat_2
                                 } ;
                        Def => table {
@@ -4910,12 +4910,12 @@ mkN109 base form =
 mkN110 : Str -> Str -> N ;
 mkN110 base form =
   case <base, form> of {
-    <pat_1+"ir", pat_2+"n"> => lin N
+    <pat_1+"n", pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+"ir" ;
-                                  Pl => pat_2+"n"
+                                  Sg => pat_1+"n" ;
+                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -4955,12 +4955,12 @@ mkN110 base form =
 mkN111 : Str -> Str -> N ;
 mkN111 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1+"ir", pat_2+"n"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Sg => pat_1+"ir" ;
+                                  Pl => pat_2+"n"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -5000,6 +5000,51 @@ mkN111 base form =
 mkN112 : Str -> Str -> N ;
 mkN112 base form =
   case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN112"
+  } ;
+
+mkN113 : Str -> Str -> N ;
+mkN113 base form =
+  case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
               Nom => table {
@@ -5018,7 +5063,7 @@ mkN112 base form =
                                   Pl => pat_2+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+"ai"+base_4 ;
+                                Sg => base_1+"h"+base_2+base_3+"ai"+base_4 ;
                                 Pl => pat_2+"ean"
                               }
                      } ;
@@ -5028,7 +5073,7 @@ mkN112 base form =
                                   Pl => base_1+"h"+base_2+"i"+base_3+base_4+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+"a"+base_4 ;
+                                Sg => base_1+"h"+base_2+base_3+"a"+base_4 ;
                                 Pl => pat_2+"ean"
                               }
                      }
@@ -5039,11 +5084,11 @@ mkN112 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN112"
+    _ => error "Can't apply paradigm mkN113"
   } ;
 
-mkN113 : Str -> Str -> N ;
-mkN113 base form =
+mkN114 : Str -> Str -> N ;
+mkN114 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -5084,11 +5129,11 @@ mkN113 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN113"
+    _ => error "Can't apply paradigm mkN114"
   } ;
 
-mkN114 : Str -> Str -> N ;
-mkN114 base form =
+mkN115 : Str -> Str -> N ;
+mkN115 base form =
   case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
@@ -5129,11 +5174,11 @@ mkN114 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN114"
+    _ => error "Can't apply paradigm mkN115"
   } ;
 
-mkN115 : Str -> Str -> N ;
-mkN115 base form =
+mkN116 : Str -> Str -> N ;
+mkN116 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -5174,11 +5219,11 @@ mkN115 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN115"
+    _ => error "Can't apply paradigm mkN116"
   } ;
 
-mkN116 : Str -> Str -> N ;
-mkN116 base form =
+mkN117 : Str -> Str -> N ;
+mkN117 base form =
   case <base, form> of {
     <pat_1, pat_2+"a"> => lin N
       { s = table {
@@ -5186,51 +5231,6 @@ mkN116 base form =
                        Indef => table {
                                   Sg => pat_1 ;
                                   Pl => pat_2+"a"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN116"
-  } ;
-
-mkN117 : Str -> Str -> N ;
-mkN117 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -5558,7 +5558,7 @@ mkN124 base form =
                                   Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"ea"+base_3 ;
+                                Sg => base_1+"h"+base_2+"ea"+base_3 ;
                                 Pl => pat_2
                               }
                      } ;
@@ -5568,7 +5568,7 @@ mkN124 base form =
                                   Pl => base_1+"h"+base_2+"ea"+base_3
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1
                               }
                      }
@@ -5693,7 +5693,7 @@ mkN127 base form =
                                   Pl => base_1+base_2+"i"+base_3+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ; --guessed
+                                Sg => base_1+"h"+base_2+base_3 ; --guessed
                                 Pl => base_1+base_2+"i"+base_3+"ean" --guessed
                               }
                      } ;
@@ -5703,7 +5703,7 @@ mkN127 base form =
                                   Pl => base_1+"h"+base_2+"i"+base_3+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ; --guessed
+                                Sg => base_1+"h"+base_2+"i"+base_3 ; --guessed
                                 Pl => base_1+base_2+"i"+base_3+"ean" --guessed
                               }
                      }
@@ -5918,7 +5918,7 @@ mkN132 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ;
+                                Sg => base_1+"h"+base_2+base_3 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -5928,7 +5928,7 @@ mkN132 base form =
                                   Pl => base_1+"h"+base_2+base_3+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1+"an"
                               }
                      }
@@ -5963,7 +5963,7 @@ mkN133 base form =
                                   Pl => pat_1+"onnaibh"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"oinn" ;
+                                Sg => base_1+"h"+base_2+"oinn" ;
                                 Pl => pat_1+"onnaibh"
                               }
                      } ;
@@ -6215,12 +6215,12 @@ mkN138 base form =
 mkN139 : Str -> Str -> N ;
 mkN139 base form =
   case <base, form> of {
-    <pat_1, pat_2+"a"> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"a"
+                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -6268,6 +6268,51 @@ mkN140 base form =
                                   Pl => pat_2+"a"
                                 } ;
                        Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN140"
+  } ;
+
+mkN141 : Str -> Str -> N ;
+mkN141 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"a"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"a"
+                                } ;
+                       Def => table {
                                 Sg => base_1+"h"+base_2 ;
                                 Pl => base_1+"h"+base_2+"n"
                               }
@@ -6278,7 +6323,7 @@ mkN140 base form =
                                   Pl => pat_1+"n"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"n"
                               }
                      } ;
@@ -6299,11 +6344,11 @@ mkN140 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN140"
+    _ => error "Can't apply paradigm mkN141"
   } ;
 
-mkN141 : Str -> Str -> N ;
-mkN141 base form =
+mkN142 : Str -> Str -> N ;
+mkN142 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -6344,11 +6389,11 @@ mkN141 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN141"
+    _ => error "Can't apply paradigm mkN142"
   } ;
 
-mkN142 : Str -> Str -> N ;
-mkN142 base form =
+mkN143 : Str -> Str -> N ;
+mkN143 base form =
   case <base, form> of {
     <pat_1+"ill", pat_2+"n"> => lin N
       { s = table {
@@ -6389,11 +6434,11 @@ mkN142 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN142"
+    _ => error "Can't apply paradigm mkN143"
   } ;
 
-mkN143 : Str -> Str -> N ;
-mkN143 base form =
+mkN144 : Str -> Str -> N ;
+mkN144 base form =
   case <base, form> of {
     <pat_1, pat_2+"n"> => lin N
       { s = table {
@@ -6413,7 +6458,7 @@ mkN143 base form =
                                   Pl => pat_2+"n"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+base_4 ;
+                                Sg => base_1+"h"+base_2+base_3+base_4 ;
                                 Pl => pat_2+"n"
                               }
                      } ;
@@ -6423,7 +6468,7 @@ mkN143 base form =
                                   Pl => base_1+"h"+base_2+"i"+base_3+"ne"+base_4+"n"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+base_4+"inn" ;
+                                Sg => base_1+"h"+base_2+base_3+base_4+"inn" ;
                                 Pl => pat_2+"n"
                               }
                      }
@@ -6434,11 +6479,11 @@ mkN143 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN143"
+    _ => error "Can't apply paradigm mkN144"
   } ;
 
-mkN144 : Str -> Str -> N ;
-mkN144 base form =
+mkN145 : Str -> Str -> N ;
+mkN145 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -6479,11 +6524,11 @@ mkN144 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN144"
+    _ => error "Can't apply paradigm mkN145"
   } ;
 
-mkN145 : Str -> Str -> N ;
-mkN145 base form =
+mkN146 : Str -> Str -> N ;
+mkN146 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -6515,51 +6560,6 @@ mkN145 base form =
                        Def => table {
                                 Sg => base_1+base_2+"i"+base_3 ;
                                 Pl => pat_1+"an"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN145"
-  } ;
-
-mkN146 : Str -> Str -> N ;
-mkN146 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
                               }
                      }
             } ;
@@ -6619,13 +6619,13 @@ mkN147 base form =
 
 mkN148 : Str -> Str -> N ;
 mkN148 base form =
-  case base of {
-    "u"+base_1+base_2@?+"l" => lin N
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => "u"+base_1+base_2+"l" ;
-                                  Pl => "ù"+base_1+"l"+base_2+"n"
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -6664,37 +6664,37 @@ mkN148 base form =
 
 mkN149 : Str -> Str -> N ;
 mkN149 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
+  case base of {
+    "u"+base_1+"a"+base_2@? => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Sg => "u"+base_1+"a"+base_2 ;
+                                  Pl => "ù"+base_1+base_2+"an"
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => base_1+"h"+base_2+"an"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"an"
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => pat_1+"an"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => base_1+"h"+base_2+"an"
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => pat_1+"an"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -6709,96 +6709,6 @@ mkN149 base form =
 
 mkN150 : Str -> Str -> N ;
 mkN150 base form =
-  case base of {
-    base_1 => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => base_1 ;
-                                  Pl => base_1
-                                } ;
-                       Def => table {
-                                Sg => base_1 ; --guessed
-                                Pl => base_1+"ean" --guessed
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => base_1 ; --guessed
-                                  Pl => base_1+"ean" --guessed
-                                } ;
-                       Def => table {
-                                Sg => base_1 ; --guessed
-                                Pl => base_1+"ean" --guessed
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => base_1+"e" ; --guessed
-                                  Pl => base_1+"ean" --guessed
-                                } ;
-                       Def => table {
-                                Sg => base_1+"e" ; --guessed
-                                Pl => base_1+"ean" --guessed
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN150"
-  } ;
-
-mkN151 : Str -> Str -> N ;
-mkN151 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"an"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => base_1+"h"+base_2+"an"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"an"
-                                } ;
-                       Def => table {
-                                Sg => "t-"+pat_1 ;
-                                Pl => pat_1+"an"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => base_1+"h"+base_2+"an"
-                                } ;
-                       Def => table {
-                                Sg => pat_1 ;
-                                Pl => pat_1+"an"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN151"
-  } ;
-
-mkN152 : Str -> Str -> N ;
-mkN152 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -6839,11 +6749,146 @@ mkN152 base form =
               } ;
         g = Masc
       };
+    _ => error "Can't apply paradigm mkN150"
+  } ;
+
+mkN151 : Str -> Str -> N ;
+mkN151 base form =
+  case base of {
+    base_1 => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => base_1 ;
+                                  Pl => base_1
+                                } ;
+                       Def => table {
+                                Sg => base_1 ; --guessed
+                                Pl => base_1+"ean" --guessed
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => base_1 ; --guessed
+                                  Pl => base_1+"ean" --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1 ; --guessed
+                                Pl => base_1+"ean" --guessed
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => base_1+"e" ; --guessed
+                                  Pl => base_1+"ean" --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1+"e" ; --guessed
+                                Pl => base_1+"ean" --guessed
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN151"
+  } ;
+
+mkN152 : Str -> Str -> N ;
+mkN152 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"an"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_1+"an"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2 ;
+                                Pl => base_1+"h"+base_2+"an"
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_1+"an"
+                                } ;
+                       Def => table {
+                                Sg => "t-"+pat_1 ;
+                                Pl => pat_1+"an"
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => base_1+"h"+base_2+"an"
+                                } ;
+                       Def => table {
+                                Sg => pat_1 ;
+                                Pl => pat_1+"an"
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
     _ => error "Can't apply paradigm mkN152"
   } ;
 
 mkN153 : Str -> Str -> N ;
 mkN153 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1+"a" --guessed
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"i"+base_2 --guessed
+                                } ;
+                       Def => table {
+                                Sg => pat_1 ; --guessed
+                                Pl => base_1+"i"+base_2 --guessed
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => base_1+"i"+base_2 ; --guessed
+                                  Pl => pat_1 --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1 --guessed
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN153"
+  } ;
+
+mkN154 : Str -> Str -> N ;
+mkN154 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -6884,87 +6929,42 @@ mkN153 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN153"
-  } ;
-
-mkN154 : Str -> Str -> N ;
-mkN154 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"an"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
     _ => error "Can't apply paradigm mkN154"
   } ;
 
 mkN155 : Str -> Str -> N ;
 mkN155 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1, pat_2+"annan"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2 --guessed
+                                  Pl => pat_2+"annan"
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => base_1+"h"+base_2+"a"+base_3+"a"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => base_1+base_2+"i"+base_3
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2+"a"+base_3 ;
-                                Pl => base_1+base_2+"i"+base_3
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => base_1+base_2+"i"+base_3 ;
-                                  Pl => base_1+"h"+base_2+"a"+base_3
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => pat_1
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -6980,12 +6980,12 @@ mkN155 base form =
 mkN156 : Str -> Str -> N ;
 mkN156 base form =
   case <base, form> of {
-    <pat_1+"l", pat_2+"aichean"> => lin N
+    <pat_1, pat_2+"an"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+"l" ;
-                                  Pl => pat_2+"aichean"
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"an"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -7030,30 +7030,30 @@ mkN157 base form =
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => pat_2 --guessed
                                 } ;
                        Def => table {
-                                Sg => base_1+"heòi"+base_2 ;
-                                Pl => base_1+"hèa"+base_2+"a"
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
+                                Pl => base_1+"h"+base_2+"a"+base_3+"a"
                               }
                      } ;
               Dat => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => base_1+base_2+"i"+base_3
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"hèa"+base_2 ;
-                                Pl => pat_2
+                                Sg => base_1+"h"+base_2+"a"+base_3 ;
+                                Pl => base_1+base_2+"i"+base_3
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => pat_2 ;
-                                  Pl => base_1+"hèa"+base_2
+                                  Sg => base_1+base_2+"i"+base_3 ;
+                                  Pl => base_1+"h"+base_2+"a"+base_3
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"heòi"+base_2 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1
                               }
                      }
@@ -7069,6 +7069,96 @@ mkN157 base form =
 
 mkN158 : Str -> Str -> N ;
 mkN158 base form =
+  case <base, form> of {
+    <pat_1+"l", pat_2+"aichean"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1+"l" ;
+                                  Pl => pat_2+"aichean"
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN158"
+  } ;
+
+mkN159 : Str -> Str -> N ;
+mkN159 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => base_1+"heòi"+base_2 ;
+                                Pl => base_1+"hèa"+base_2+"a"
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => base_1+"hèa"+base_2 ;
+                                Pl => pat_2
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_2 ;
+                                  Pl => base_1+"hèa"+base_2
+                                } ;
+                       Def => table {
+                                Sg => base_1+"heòi"+base_2 ;
+                                Pl => pat_1
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN159"
+  } ;
+
+mkN160 : Str -> Str -> N ;
+mkN160 base form =
   case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
@@ -7109,11 +7199,11 @@ mkN158 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN158"
+    _ => error "Can't apply paradigm mkN160"
   } ;
 
-mkN159 : Str -> Str -> N ;
-mkN159 base form =
+mkN161 : Str -> Str -> N ;
+mkN161 base form =
   case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
@@ -7133,7 +7223,7 @@ mkN159 base form =
                                   Pl => pat_1+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"ean"
                               }
                      } ;
@@ -7143,7 +7233,7 @@ mkN159 base form =
                                   Pl => base_1+"h"+base_2+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+pat_1 ;
+                                Sg => pat_1 ;
                                 Pl => pat_1+"ean"
                               }
                      }
@@ -7154,11 +7244,11 @@ mkN159 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN159"
+    _ => error "Can't apply paradigm mkN161"
   } ;
 
-mkN160 : Str -> Str -> N ;
-mkN160 base form =
+mkN162 : Str -> Str -> N ;
+mkN162 base form =
   case <base, form> of {
     <pat_1+"r", pat_2+"n"> => lin N
       { s = table {
@@ -7199,11 +7289,11 @@ mkN160 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN160"
+    _ => error "Can't apply paradigm mkN162"
   } ;
 
-mkN161 : Str -> Str -> N ;
-mkN161 base form =
+mkN163 : Str -> Str -> N ;
+mkN163 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -7244,11 +7334,11 @@ mkN161 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN161"
+    _ => error "Can't apply paradigm mkN163"
   } ;
 
-mkN162 : Str -> Str -> N ;
-mkN162 base form =
+mkN164 : Str -> Str -> N ;
+mkN164 base form =
   case base of {
     base_1+"s" => lin N
       { s = table {
@@ -7289,11 +7379,11 @@ mkN162 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN162"
+    _ => error "Can't apply paradigm mkN164"
   } ;
 
-mkN163 : Str -> Str -> N ;
-mkN163 base form =
+mkN165 : Str -> Str -> N ;
+mkN165 base form =
   case <base, form> of {
     <pat_1+"l", pat_2+"n"> => lin N
       { s = table {
@@ -7334,11 +7424,11 @@ mkN163 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN163"
+    _ => error "Can't apply paradigm mkN165"
   } ;
 
-mkN164 : Str -> Str -> N ;
-mkN164 base form =
+mkN166 : Str -> Str -> N ;
+mkN166 base form =
   case <base, form> of {
     <pat_1, pat_2+"aichean"> => lin N
       { s = table {
@@ -7358,7 +7448,7 @@ mkN164 base form =
                                   Pl => pat_2+"aichean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"hui"+base_2 ;
+                                Sg => base_1+"hui"+base_2 ;
                                 Pl => pat_2+"aichean"
                               }
                      } ;
@@ -7379,11 +7469,11 @@ mkN164 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN164"
+    _ => error "Can't apply paradigm mkN166"
   } ;
 
-mkN165 : Str -> Str -> N ;
-mkN165 base form =
+mkN167 : Str -> Str -> N ;
+mkN167 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -7424,11 +7514,11 @@ mkN165 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN165"
+    _ => error "Can't apply paradigm mkN167"
   } ;
 
-mkN166 : Str -> Str -> N ;
-mkN166 base form =
+mkN168 : Str -> Str -> N ;
+mkN168 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -7469,11 +7559,11 @@ mkN166 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN166"
+    _ => error "Can't apply paradigm mkN168"
   } ;
 
-mkN167 : Str -> Str -> N ;
-mkN167 base form =
+mkN169 : Str -> Str -> N ;
+mkN169 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -7514,11 +7604,11 @@ mkN167 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN167"
+    _ => error "Can't apply paradigm mkN169"
   } ;
 
-mkN168 : Str -> Str -> N ;
-mkN168 base form =
+mkN170 : Str -> Str -> N ;
+mkN170 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -7559,11 +7649,11 @@ mkN168 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN168"
+    _ => error "Can't apply paradigm mkN170"
   } ;
 
-mkN169 : Str -> Str -> N ;
-mkN169 base form =
+mkN171 : Str -> Str -> N ;
+mkN171 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -7583,7 +7673,7 @@ mkN169 base form =
                                   Pl => base_1+base_2+"i"+base_3+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ; --guessed
+                                Sg => base_1+"h"+base_2+base_3 ; --guessed
                                 Pl => base_1+base_2+"i"+base_3+"ean" --guessed
                               }
                      } ;
@@ -7593,7 +7683,7 @@ mkN169 base form =
                                   Pl => base_1+"h"+base_2+"i"+base_3+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ; --guessed
+                                Sg => base_1+"h"+base_2+"i"+base_3 ; --guessed
                                 Pl => base_1+base_2+"i"+base_3+"ean" --guessed
                               }
                      }
@@ -7604,11 +7694,11 @@ mkN169 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN169"
+    _ => error "Can't apply paradigm mkN171"
   } ;
 
-mkN170 : Str -> Str -> N ;
-mkN170 base form =
+mkN172 : Str -> Str -> N ;
+mkN172 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -7649,101 +7739,101 @@ mkN170 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN170"
-  } ;
-
-mkN171 : Str -> Str -> N ;
-mkN171 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN171"
-  } ;
-
-mkN172 : Str -> Str -> N ;
-mkN172 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
     _ => error "Can't apply paradigm mkN172"
   } ;
 
 mkN173 : Str -> Str -> N ;
 mkN173 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN173"
+  } ;
+
+mkN174 : Str -> Str -> N ;
+mkN174 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN174"
+  } ;
+
+mkN175 : Str -> Str -> N ;
+mkN175 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -7784,11 +7874,11 @@ mkN173 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN173"
+    _ => error "Can't apply paradigm mkN175"
   } ;
 
-mkN174 : Str -> Str -> N ;
-mkN174 base form =
+mkN176 : Str -> Str -> N ;
+mkN176 base form =
   case base of {
     "à"+base_1 => lin N
       { s = table {
@@ -7829,11 +7919,11 @@ mkN174 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN174"
+    _ => error "Can't apply paradigm mkN176"
   } ;
 
-mkN175 : Str -> Str -> N ;
-mkN175 base form =
+mkN177 : Str -> Str -> N ;
+mkN177 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -7874,11 +7964,11 @@ mkN175 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN175"
+    _ => error "Can't apply paradigm mkN177"
   } ;
 
-mkN176 : Str -> Str -> N ;
-mkN176 base form =
+mkN178 : Str -> Str -> N ;
+mkN178 base form =
   case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
@@ -7898,7 +7988,7 @@ mkN176 base form =
                                   Pl => pat_2+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_2+"ean"
                               }
                      } ;
@@ -7919,11 +8009,11 @@ mkN176 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN176"
+    _ => error "Can't apply paradigm mkN178"
   } ;
 
-mkN177 : Str -> Str -> N ;
-mkN177 base form =
+mkN179 : Str -> Str -> N ;
+mkN179 base form =
   case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
@@ -7964,132 +8054,42 @@ mkN177 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN177"
-  } ;
-
-mkN178 : Str -> Str -> N ;
-mkN178 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"ean"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"ean"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN178"
-  } ;
-
-mkN179 : Str -> Str -> N ;
-mkN179 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"ean"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"ean"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
     _ => error "Can't apply paradigm mkN179"
   } ;
 
 mkN180 : Str -> Str -> N ;
 mkN180 base form =
   case <base, form> of {
-    <pat_1, pat_2+"eachan"> => lin N
+    <pat_1, pat_2+"ean"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_1+"eachan"
+                                  Pl => pat_2+"ean"
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => base_1+"h"+base_2+"i"+base_3+"eachan"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"eachan"
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => pat_1+"eachan"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => base_1+base_2+base_3+"ad" ;
-                                  Pl => base_1+"h"+base_2+"i"+base_3+"eachan"
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+"ad" ;
-                                Pl => pat_1+"eachan"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -8105,12 +8105,12 @@ mkN180 base form =
 mkN181 : Str -> Str -> N ;
 mkN181 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1, pat_2+"ean"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => pat_2+"ean"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -8150,36 +8150,36 @@ mkN181 base form =
 mkN182 : Str -> Str -> N ;
 mkN182 base form =
   case <base, form> of {
-    <pat_1, pat_2+"e"> => lin N
+    <pat_1, pat_2+"eachan"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"e"
+                                  Pl => pat_1+"eachan"
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
+                                Pl => base_1+"h"+base_2+"i"+base_3+"eachan"
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => pat_1 ;
+                                  Pl => pat_1+"eachan"
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
+                                Pl => pat_1+"eachan"
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => base_1+base_2+base_3+"ad" ;
+                                  Pl => base_1+"h"+base_2+"i"+base_3+"eachan"
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2+base_3+"ad" ;
+                                Pl => pat_1+"eachan"
                               }
                      }
             } ;
@@ -8240,36 +8240,36 @@ mkN183 base form =
 mkN184 : Str -> Str -> N ;
 mkN184 base form =
   case <base, form> of {
-    <pat_1, pat_2+"hean"> => lin N
+    <pat_1, pat_2+"e"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"hean"
+                                  Pl => pat_2+"e"
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => base_1+"h"+base_2+"an" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1+"a" ; --guessed
-                                  Pl => pat_1+"an" --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"a" ; --guessed
-                                Pl => pat_1+"an" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => pat_1+"a" ; --guessed
-                                  Pl => base_1+"h"+base_2+"an" --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => pat_1+"a" ; --guessed
-                                Pl => pat_1+"an" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -8284,96 +8284,6 @@ mkN184 base form =
 
 mkN185 : Str -> Str -> N ;
 mkN185 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"an"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2+"à"+base_3 ;
-                                Pl => base_1+"h"+base_2+"à"+base_3+"an"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1+"a" ;
-                                  Pl => pat_1+"an"
-                                } ;
-                       Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"à"+base_3+"a" ;
-                                Pl => pat_1+"an"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_1+"a" ;
-                                  Pl => base_1+"h"+base_2+"à"+base_3+"an"
-                                } ;
-                       Def => table {
-                                Sg => pat_1+"a" ;
-                                Pl => pat_1+"an"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN185"
-  } ;
-
-mkN186 : Str -> Str -> N ;
-mkN186 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"ean"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"ean"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN186"
-  } ;
-
-mkN187 : Str -> Str -> N ;
-mkN187 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -8414,11 +8324,191 @@ mkN187 base form =
               } ;
         g = Masc
       };
+    _ => error "Can't apply paradigm mkN185"
+  } ;
+
+mkN186 : Str -> Str -> N ;
+mkN186 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"hean"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"hean"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2 ; --guessed
+                                Pl => base_1+"h"+base_2+"an" --guessed
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1+"a" ; --guessed
+                                  Pl => pat_1+"an" --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2+"a" ; --guessed
+                                Pl => pat_1+"an" --guessed
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_1+"a" ; --guessed
+                                  Pl => base_1+"h"+base_2+"an" --guessed
+                                } ;
+                       Def => table {
+                                Sg => pat_1+"a" ; --guessed
+                                Pl => pat_1+"an" --guessed
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN186"
+  } ;
+
+mkN187 : Str -> Str -> N ;
+mkN187 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"an"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"an"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2+"à"+base_3 ;
+                                Pl => base_1+"h"+base_2+"à"+base_3+"an"
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1+"a" ;
+                                  Pl => pat_1+"an"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2+"à"+base_3+"a" ;
+                                Pl => pat_1+"an"
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_1+"a" ;
+                                  Pl => base_1+"h"+base_2+"à"+base_3+"an"
+                                } ;
+                       Def => table {
+                                Sg => pat_1+"a" ;
+                                Pl => pat_1+"an"
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
     _ => error "Can't apply paradigm mkN187"
   } ;
 
 mkN188 : Str -> Str -> N ;
 mkN188 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"ean"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"ean"
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN188"
+  } ;
+
+mkN189 : Str -> Str -> N ;
+mkN189 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN189"
+  } ;
+
+mkN190 : Str -> Str -> N ;
+mkN190 base form =
   case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
@@ -8438,7 +8528,7 @@ mkN188 base form =
                                   Pl => pat_2+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3 ;
+                                Sg => base_1+"h"+base_2+base_3 ;
                                 Pl => pat_2+"ean"
                               }
                      } ;
@@ -8448,7 +8538,7 @@ mkN188 base form =
                                   Pl => base_1+"h"+base_2+"i"+base_3+"ean"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_2+"ean"
                               }
                      }
@@ -8459,11 +8549,11 @@ mkN188 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN188"
+    _ => error "Can't apply paradigm mkN190"
   } ;
 
-mkN189 : Str -> Str -> N ;
-mkN189 base form =
+mkN191 : Str -> Str -> N ;
+mkN191 base form =
   case <base, form> of {
     <pat_1, pat_2+"n"> => lin N
       { s = table {
@@ -8504,11 +8594,11 @@ mkN189 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN189"
+    _ => error "Can't apply paradigm mkN191"
   } ;
 
-mkN190 : Str -> Str -> N ;
-mkN190 base form =
+mkN192 : Str -> Str -> N ;
+mkN192 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -8528,7 +8618,7 @@ mkN190 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"a"+base_3 ;
+                                Sg => base_1+"h"+base_2+"a"+base_3 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -8538,7 +8628,7 @@ mkN190 base form =
                                   Pl => base_1+"h"+base_2+"a"+base_3+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1+"an"
                               }
                      }
@@ -8549,11 +8639,11 @@ mkN190 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN190"
+    _ => error "Can't apply paradigm mkN192"
   } ;
 
-mkN191 : Str -> Str -> N ;
-mkN191 base form =
+mkN193 : Str -> Str -> N ;
+mkN193 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -8594,11 +8684,11 @@ mkN191 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN191"
+    _ => error "Can't apply paradigm mkN193"
   } ;
 
-mkN192 : Str -> Str -> N ;
-mkN192 base form =
+mkN194 : Str -> Str -> N ;
+mkN194 base form =
   case <base, form> of {
     <pat_1, pat_2+"ean"> => lin N
       { s = table {
@@ -8639,11 +8729,11 @@ mkN192 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN192"
+    _ => error "Can't apply paradigm mkN194"
   } ;
 
-mkN193 : Str -> Str -> N ;
-mkN193 base form =
+mkN195 : Str -> Str -> N ;
+mkN195 base form =
   case base of {
     "io"+base_1+base_2@? => lin N
       { s = table {
@@ -8684,11 +8774,11 @@ mkN193 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN193"
+    _ => error "Can't apply paradigm mkN195"
   } ;
 
-mkN194 : Str -> Str -> N ;
-mkN194 base form =
+mkN196 : Str -> Str -> N ;
+mkN196 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -8708,7 +8798,7 @@ mkN194 base form =
                                   Pl => pat_1+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ; --guessed
+                                Sg => base_1+"h"+base_2 ; --guessed
                                 Pl => pat_1+"ean" --guessed
                               }
                      } ;
@@ -8718,7 +8808,7 @@ mkN194 base form =
                                   Pl => base_1+"h"+base_2+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+pat_1 ; --guessed
+                                Sg => pat_1 ; --guessed
                                 Pl => pat_1+"ean" --guessed
                               }
                      }
@@ -8729,11 +8819,11 @@ mkN194 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN194"
+    _ => error "Can't apply paradigm mkN196"
   } ;
 
-mkN195 : Str -> Str -> N ;
-mkN195 base form =
+mkN197 : Str -> Str -> N ;
+mkN197 base form =
   case <base, form> of {
     <pat_1, pat_2+"aichean"> => lin N
       { s = table {
@@ -8774,11 +8864,11 @@ mkN195 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN195"
+    _ => error "Can't apply paradigm mkN197"
   } ;
 
-mkN196 : Str -> Str -> N ;
-mkN196 base form =
+mkN198 : Str -> Str -> N ;
+mkN198 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -8798,7 +8888,7 @@ mkN196 base form =
                                   Pl => pat_1+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ; --guessed
+                                Sg => base_1+"h"+base_2 ; --guessed
                                 Pl => pat_1+"ean" --guessed
                               }
                      } ;
@@ -8808,98 +8898,8 @@ mkN196 base form =
                                   Pl => base_1+"h"+base_2+"ean" --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+pat_1 ; --guessed
+                                Sg => pat_1 ; --guessed
                                 Pl => pat_1+"ean" --guessed
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN196"
-  } ;
-
-mkN197 : Str -> Str -> N ;
-mkN197 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN197"
-  } ;
-
-mkN198 : Str -> Str -> N ;
-mkN198 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => base_1+"hùi"+base_2 ;
-                                Pl => base_1+"hà"+base_2+"a"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => "(a') "+base_1+"hà"+base_2 ;
-                                Pl => pat_2
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_2 ;
-                                  Pl => base_1+"hà"+base_2
-                                } ;
-                       Def => table {
-                                Sg => "(a') "+base_1+"hùi"+base_2 ;
-                                Pl => pat_1
                               }
                      }
             } ;
@@ -8959,6 +8959,96 @@ mkN199 base form =
 
 mkN200 : Str -> Str -> N ;
 mkN200 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => base_1+"hùi"+base_2 ;
+                                Pl => base_1+"hà"+base_2+"a"
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => base_1+"hà"+base_2 ;
+                                Pl => pat_2
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_2 ;
+                                  Pl => base_1+"hà"+base_2
+                                } ;
+                       Def => table {
+                                Sg => base_1+"hùi"+base_2 ;
+                                Pl => pat_1
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN200"
+  } ;
+
+mkN201 : Str -> Str -> N ;
+mkN201 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN201"
+  } ;
+
+mkN202 : Str -> Str -> N ;
+mkN202 base form =
   case base of {
     "ò"+base_1 => lin N
       { s = table {
@@ -8999,11 +9089,11 @@ mkN200 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN200"
+    _ => error "Can't apply paradigm mkN202"
   } ;
 
-mkN201 : Str -> Str -> N ;
-mkN201 base form =
+mkN203 : Str -> Str -> N ;
+mkN203 base form =
   case base of {
     base_1+"u" => lin N
       { s = table {
@@ -9044,11 +9134,11 @@ mkN201 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN201"
+    _ => error "Can't apply paradigm mkN203"
   } ;
 
-mkN202 : Str -> Str -> N ;
-mkN202 base form =
+mkN204 : Str -> Str -> N ;
+mkN204 base form =
   case <base, form> of {
     <pat_1+"thad", pat_2+"n"> => lin N
       { s = table {
@@ -9089,11 +9179,11 @@ mkN202 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN202"
+    _ => error "Can't apply paradigm mkN204"
   } ;
 
-mkN203 : Str -> Str -> N ;
-mkN203 base form =
+mkN205 : Str -> Str -> N ;
+mkN205 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -9134,101 +9224,101 @@ mkN203 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN203"
-  } ;
-
-mkN204 : Str -> Str -> N ;
-mkN204 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"an"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN204"
-  } ;
-
-mkN205 : Str -> Str -> N ;
-mkN205 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"an"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => base_1+"h"+base_2+"ean"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"ean"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => pat_1+"ean"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_1+"e" ;
-                                  Pl => base_1+"h"+base_2+"ean"
-                                } ;
-                       Def => table {
-                                Sg => pat_1+"e" ;
-                                Pl => pat_1+"ean"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
     _ => error "Can't apply paradigm mkN205"
   } ;
 
 mkN206 : Str -> Str -> N ;
 mkN206 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"an"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"an"
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN206"
+  } ;
+
+mkN207 : Str -> Str -> N ;
+mkN207 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"an"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"an"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2 ; --guessed
+                                Pl => base_1+"h"+base_2+"an" --guessed
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ; --guessed
+                                  Pl => pat_1+"an" --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2 ; --guessed
+                                Pl => pat_1+"an" --guessed
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"h"+base_2+"an" --guessed
+                                } ;
+                       Def => table {
+                                Sg => pat_1 ; --guessed
+                                Pl => pat_1+"an" --guessed
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN207"
+  } ;
+
+mkN208 : Str -> Str -> N ;
+mkN208 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -9269,11 +9359,11 @@ mkN206 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN206"
+    _ => error "Can't apply paradigm mkN208"
   } ;
 
-mkN207 : Str -> Str -> N ;
-mkN207 base form =
+mkN209 : Str -> Str -> N ;
+mkN209 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -9293,7 +9383,7 @@ mkN207 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -9314,11 +9404,11 @@ mkN207 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN207"
+    _ => error "Can't apply paradigm mkN209"
   } ;
 
-mkN208 : Str -> Str -> N ;
-mkN208 base form =
+mkN210 : Str -> Str -> N ;
+mkN210 base form =
   case <base, form> of {
     <pat_1+"inn", pat_2> => lin N
       { s = table {
@@ -9359,11 +9449,11 @@ mkN208 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN208"
+    _ => error "Can't apply paradigm mkN210"
   } ;
 
-mkN209 : Str -> Str -> N ;
-mkN209 base form =
+mkN211 : Str -> Str -> N ;
+mkN211 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -9404,11 +9494,11 @@ mkN209 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN209"
+    _ => error "Can't apply paradigm mkN211"
   } ;
 
-mkN210 : Str -> Str -> N ;
-mkN210 base form =
+mkN212 : Str -> Str -> N ;
+mkN212 base form =
   case <base, form> of {
     <pat_1, pat_2+"thntan"> => lin N
       { s = table {
@@ -9428,7 +9518,7 @@ mkN210 base form =
                                   Pl => pat_1+"thntan"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"thntan"
                               }
                      } ;
@@ -9449,11 +9539,11 @@ mkN210 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN210"
+    _ => error "Can't apply paradigm mkN212"
   } ;
 
-mkN211 : Str -> Str -> N ;
-mkN211 base form =
+mkN213 : Str -> Str -> N ;
+mkN213 base form =
   case <base, form> of {
     <pat_1, pat_2+"a"> => lin N
       { s = table {
@@ -9464,27 +9554,27 @@ mkN211 base form =
                                 } ;
                        Def => table {
                                 Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => base_1+"h"+base_2+"ean" --guessed
+                                Pl => base_1+"h"+base_2+"an" --guessed
                               }
                      } ;
               Dat => table {
                        Indef => table {
                                   Sg => pat_1 ; --guessed
-                                  Pl => pat_1+"ean" --guessed
+                                  Pl => pat_1+"an" --guessed
                                 } ;
                        Def => table {
                                 Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => pat_1+"ean" --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => pat_1+"e" ; --guessed
-                                  Pl => base_1+"h"+base_2+"ean" --guessed
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"h"+base_2+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => pat_1+"e" ; --guessed
-                                Pl => pat_1+"ean" --guessed
+                                Sg => pat_1 ; --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      }
             } ;
@@ -9494,11 +9584,11 @@ mkN211 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN211"
+    _ => error "Can't apply paradigm mkN213"
   } ;
 
-mkN212 : Str -> Str -> N ;
-mkN212 base form =
+mkN214 : Str -> Str -> N ;
+mkN214 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -9518,7 +9608,7 @@ mkN212 base form =
                                   Pl => pat_1+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"an"
                               }
                      } ;
@@ -9528,98 +9618,8 @@ mkN212 base form =
                                   Pl => base_1+"h"+base_2+"an"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
+                                Sg => base_1+"h"+base_2 ;
                                 Pl => pat_1+"an"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN212"
-  } ;
-
-mkN213 : Str -> Str -> N ;
-mkN213 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN213"
-  } ;
-
-mkN214 : Str -> Str -> N ;
-mkN214 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
                               }
                      }
             } ;
@@ -9725,12 +9725,12 @@ mkN216 base form =
 mkN217 : Str -> Str -> N ;
 mkN217 base form =
   case <base, form> of {
-    <pat_1, pat_2+"ean"> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"ean"
+                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -9769,51 +9769,6 @@ mkN217 base form =
 
 mkN218 : Str -> Str -> N ;
 mkN218 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"aichean"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"aichean"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => base_1+"h"+base_2+base_3+"aichean"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"aichean"
-                                } ;
-                       Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => pat_2+"aichean"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_2+"ach" ;
-                                  Pl => base_1+"h"+base_2+base_3+"aichean"
-                                } ;
-                       Def => table {
-                                Sg => pat_2+"ach" ;
-                                Pl => pat_2+"aichean"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN218"
-  } ;
-
-mkN219 : Str -> Str -> N ;
-mkN219 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -9854,18 +9809,18 @@ mkN219 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN219"
+    _ => error "Can't apply paradigm mkN218"
   } ;
 
-mkN220 : Str -> Str -> N ;
-mkN220 base form =
+mkN219 : Str -> Str -> N ;
+mkN219 base form =
   case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
+    <pat_1, pat_2+"ean"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"an"
+                                  Pl => pat_2+"ean"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -9899,17 +9854,62 @@ mkN220 base form =
               } ;
         g = Masc
       };
+    _ => error "Can't apply paradigm mkN219"
+  } ;
+
+mkN220 : Str -> Str -> N ;
+mkN220 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"aichean"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"aichean"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
+                                Pl => base_1+"h"+base_2+base_3+"aichean"
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"aichean"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
+                                Pl => pat_2+"aichean"
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_2+"ach" ;
+                                  Pl => base_1+"h"+base_2+base_3+"aichean"
+                                } ;
+                       Def => table {
+                                Sg => pat_2+"ach" ;
+                                Pl => pat_2+"aichean"
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
     _ => error "Can't apply paradigm mkN220"
   } ;
 
 mkN221 : Str -> Str -> N ;
 mkN221 base form =
   case <base, form> of {
-    <pat_1+"ac", pat_2> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+"ac" ;
+                                  Sg => pat_1 ;
                                   Pl => pat_2
                                 } ;
                        Def => table {
@@ -9950,6 +9950,96 @@ mkN221 base form =
 mkN222 : Str -> Str -> N ;
 mkN222 base form =
   case <base, form> of {
+    <pat_1, pat_2+"an"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"an"
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN222"
+  } ;
+
+mkN223 : Str -> Str -> N ;
+mkN223 base form =
+  case <base, form> of {
+    <pat_1+"ac", pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1+"ac" ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN223"
+  } ;
+
+mkN224 : Str -> Str -> N ;
+mkN224 base form =
+  case <base, form> of {
     <pat_1+"l", pat_2+"chean"> => lin N
       { s = table {
               Nom => table {
@@ -9989,11 +10079,11 @@ mkN222 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN222"
+    _ => error "Can't apply paradigm mkN224"
   } ;
 
-mkN223 : Str -> Str -> N ;
-mkN223 base form =
+mkN225 : Str -> Str -> N ;
+mkN225 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -10034,42 +10124,42 @@ mkN223 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN223"
+    _ => error "Can't apply paradigm mkN225"
   } ;
 
-mkN224 : Str -> Str -> N ;
-mkN224 base form =
-  case base of {
-    base_1+base_2@(?+?+?+?) => lin N
+mkN226 : Str -> Str -> N ;
+mkN226 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"a"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => base_1+base_2 ;
-                                  Pl => "na "+base_1+"i"+base_2+"a"
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"a"
                                 } ;
                        Def => table {
                                 Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => base_1+"h"+base_2+"ean" --guessed
+                                Pl => base_1+"h"+base_2+"an" --guessed
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => base_1+base_2 ; --guessed
-                                  Pl => base_1+base_2+"ean" --guessed
+                                  Sg => pat_1 ; --guessed
+                                  Pl => pat_1+"an" --guessed
                                 } ;
                        Def => table {
                                 Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => base_1+base_2+"ean" --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => base_1+base_2+"e" ; --guessed
-                                  Pl => base_1+"h"+base_2+"ean" --guessed
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"h"+base_2+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => base_1+base_2+"e" ; --guessed
-                                Pl => base_1+base_2+"ean" --guessed
+                                Sg => pat_1 ; --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      }
             } ;
@@ -10079,11 +10169,11 @@ mkN224 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN224"
+    _ => error "Can't apply paradigm mkN226"
   } ;
 
-mkN225 : Str -> Str -> N ;
-mkN225 base form =
+mkN227 : Str -> Str -> N ;
+mkN227 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -10124,11 +10214,11 @@ mkN225 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN225"
+    _ => error "Can't apply paradigm mkN227"
   } ;
 
-mkN226 : Str -> Str -> N ;
-mkN226 base form =
+mkN228 : Str -> Str -> N ;
+mkN228 base form =
   case <base, form> of {
     <pat_1, pat_2+"n"> => lin N
       { s = table {
@@ -10139,117 +10229,27 @@ mkN226 base form =
                                 } ;
                        Def => table {
                                 Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => base_1+"h"+base_2+"ean" --guessed
+                                Pl => base_1+"h"+base_2+"an" --guessed
                               }
                      } ;
               Dat => table {
                        Indef => table {
                                   Sg => pat_1 ; --guessed
-                                  Pl => pat_1+"ean" --guessed
+                                  Pl => pat_1+"an" --guessed
                                 } ;
                        Def => table {
                                 Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => pat_1+"ean" --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => pat_1+"e" ; --guessed
-                                  Pl => base_1+"h"+base_2+"ean" --guessed
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"h"+base_2+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => pat_1+"e" ; --guessed
-                                Pl => pat_1+"ean" --guessed
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN226"
-  } ;
-
-mkN227 : Str -> Str -> N ;
-mkN227 base form =
-  case <base, form> of {
-    <pat_1+"a", pat_2+"o"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1+"a" ;
-                                  Pl => pat_2+"o"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN227"
-  } ;
-
-mkN228 : Str -> Str -> N ;
-mkN228 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => pat_1 ; --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      }
             } ;
@@ -10265,12 +10265,12 @@ mkN228 base form =
 mkN229 : Str -> Str -> N ;
 mkN229 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1+"a", pat_2+"o"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Sg => pat_1+"a" ;
+                                  Pl => pat_2+"o"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -10490,6 +10490,96 @@ mkN233 base form =
 mkN234 : Str -> Str -> N ;
 mkN234 base form =
   case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN234"
+  } ;
+
+mkN235 : Str -> Str -> N ;
+mkN235 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN235"
+  } ;
+
+mkN236 : Str -> Str -> N ;
+mkN236 base form =
+  case <base, form> of {
     <pat_1, pat_2+"tan"> => lin N
       { s = table {
               Nom => table {
@@ -10529,11 +10619,11 @@ mkN234 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN234"
+    _ => error "Can't apply paradigm mkN236"
   } ;
 
-mkN235 : Str -> Str -> N ;
-mkN235 base form =
+mkN237 : Str -> Str -> N ;
+mkN237 base form =
   case base of {
     base_1 => lin N
       { s = table {
@@ -10574,11 +10664,56 @@ mkN235 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN235"
+    _ => error "Can't apply paradigm mkN237"
   } ;
 
-mkN236 : Str -> Str -> N ;
-mkN236 base form =
+mkN238 : Str -> Str -> N ;
+mkN238 base form =
+  case <base, form> of {
+    <pat_1+"n", pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1+"n" ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN238"
+  } ;
+
+mkN239 : Str -> Str -> N ;
+mkN239 base form =
   case <base, form> of {
     <pat_1, pat_2+"ichean"> => lin N
       { s = table {
@@ -10619,11 +10754,11 @@ mkN236 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN236"
+    _ => error "Can't apply paradigm mkN239"
   } ;
 
-mkN237 : Str -> Str -> N ;
-mkN237 base form =
+mkN240 : Str -> Str -> N ;
+mkN240 base form =
   case <base, form> of {
     <pat_1, pat_2+"a"> => lin N
       { s = table {
@@ -10655,141 +10790,6 @@ mkN237 base form =
                        Def => table {
                                 Sg => nonExist ;
                                 Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN237"
-  } ;
-
-mkN238 : Str -> Str -> N ;
-mkN238 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"an"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => base_1+"h"+base_2+"ean" --guessed
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ; --guessed
-                                  Pl => pat_1+"ean" --guessed
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => pat_1+"ean" --guessed
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_1+"e" ; --guessed
-                                  Pl => base_1+"h"+base_2+"ean" --guessed
-                                } ;
-                       Def => table {
-                                Sg => pat_1+"e" ; --guessed
-                                Pl => pat_1+"ean" --guessed
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN238"
-  } ;
-
-mkN239 : Str -> Str -> N ;
-mkN239 base form =
-  case base of {
-    base_1+"dha" => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => base_1+"dha" ;
-                                  Pl => "àine"+base_1+"n"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN239"
-  } ;
-
-mkN240 : Str -> Str -> N ;
-mkN240 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"e"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"e"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => base_1+"h"+base_2+"ean"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"ean"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => pat_1+"ean"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => base_1+"h"+base_2+"ean"
-                                } ;
-                       Def => table {
-                                Sg => pat_1 ;
-                                Pl => pat_1+"ean"
                               }
                      }
             } ;
@@ -10805,36 +10805,36 @@ mkN240 base form =
 mkN241 : Str -> Str -> N ;
 mkN241 base form =
   case <base, form> of {
-    <pat_1, pat_2+"a"> => lin N
+    <pat_1, pat_2+"an"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"a"
+                                  Pl => pat_2+"an"
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2 ; --guessed
+                                Pl => base_1+"h"+base_2+"an" --guessed
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => pat_1 ; --guessed
+                                  Pl => pat_1+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2 ; --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"h"+base_2+"an" --guessed
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => pat_1 ; --guessed
+                                Pl => pat_1+"an" --guessed
                               }
                      }
             } ;
@@ -10849,13 +10849,13 @@ mkN241 base form =
 
 mkN242 : Str -> Str -> N ;
 mkN242 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
+  case base of {
+    base_1+"dha" => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Sg => base_1+"dha" ;
+                                  Pl => "àine"+base_1+"n"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -10940,36 +10940,36 @@ mkN243 base form =
 mkN244 : Str -> Str -> N ;
 mkN244 base form =
   case <base, form> of {
-    <pat_1, pat_2+"e"> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"e" --guessed
+                                  Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => base_1+"h"+base_2+"an"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"an"
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
-                                Pl => pat_1+"an"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => base_1+"h"+base_2+"an"
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => pat_1 ;
-                                Pl => pat_1+"an"
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -10985,12 +10985,12 @@ mkN244 base form =
 mkN245 : Str -> Str -> N ;
 mkN245 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1, pat_2+"a"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => pat_2+"a"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11030,12 +11030,12 @@ mkN245 base form =
 mkN246 : Str -> Str -> N ;
 mkN246 base form =
   case <base, form> of {
-    <pat_1+"ll", pat_2+"chan"> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+"ll" ;
-                                  Pl => pat_2+"chan"
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11075,12 +11075,12 @@ mkN246 base form =
 mkN247 : Str -> Str -> N ;
 mkN247 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1+"ll", pat_2+"chan"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Sg => pat_1+"ll" ;
+                                  Pl => pat_2+"chan"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11165,6 +11165,51 @@ mkN248 base form =
 mkN249 : Str -> Str -> N ;
 mkN249 base form =
   case <base, form> of {
+    <pat_1, pat_2+"e"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"e"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1+"a" --guessed
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"i"+base_2 --guessed
+                                } ;
+                       Def => table {
+                                Sg => pat_1 ; --guessed
+                                Pl => "h-"+base_1+"i"+base_2 --guessed
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => base_1+"i"+base_2 ; --guessed
+                                  Pl => pat_1 --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1 --guessed
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN249"
+  } ;
+
+mkN250 : Str -> Str -> N ;
+mkN250 base form =
+  case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
@@ -11204,63 +11249,18 @@ mkN249 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN249"
-  } ;
-
-mkN250 : Str -> Str -> N ;
-mkN250 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"a"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"a"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"i"+base_2 ; --guessed
-                                Pl => pat_1+"a" --guessed
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ; --guessed
-                                  Pl => base_1+"i"+base_2 --guessed
-                                } ;
-                       Def => table {
-                                Sg => pat_1 ; --guessed
-                                Pl => "h-"+base_1+"i"+base_2 --guessed
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => base_1+"i"+base_2 ; --guessed
-                                  Pl => pat_1 --guessed
-                                } ;
-                       Def => table {
-                                Sg => base_1+"i"+base_2 ; --guessed
-                                Pl => pat_1 --guessed
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
     _ => error "Can't apply paradigm mkN250"
   } ;
 
 mkN251 : Str -> Str -> N ;
 mkN251 base form =
   case <base, form> of {
-    <pat_1, pat_2+"annan"> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"annan"
+                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11308,28 +11308,28 @@ mkN252 base form =
                                   Pl => pat_2+"a"
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1+"a" --guessed
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"i"+base_2 --guessed
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => pat_1 ; --guessed
+                                Pl => "h-"+base_1+"i"+base_2 --guessed
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => base_1+"i"+base_2 ; --guessed
+                                  Pl => pat_1 --guessed
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1 --guessed
                               }
                      }
             } ;
@@ -11345,12 +11345,12 @@ mkN252 base form =
 mkN253 : Str -> Str -> N ;
 mkN253 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1, pat_2+"annan"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => pat_2+"annan"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11390,12 +11390,12 @@ mkN253 base form =
 mkN254 : Str -> Str -> N ;
 mkN254 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1, pat_2+"a"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => pat_2+"a"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11480,36 +11480,36 @@ mkN255 base form =
 mkN256 : Str -> Str -> N ;
 mkN256 base form =
   case <base, form> of {
-    <pat_1, pat_2+"a"> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"a"
+                                  Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => base_1+"i"+base_2 ; --guessed
-                                Pl => pat_1+"a" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1 ; --guessed
-                                  Pl => base_1+"i"+base_2 --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => pat_1 ; --guessed
-                                Pl => "h-"+base_1+"i"+base_2 --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => base_1+"i"+base_2 ; --guessed
-                                  Pl => pat_1 --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1+"i"+base_2 ; --guessed
-                                Pl => pat_1 --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -11525,12 +11525,12 @@ mkN256 base form =
 mkN257 : Str -> Str -> N ;
 mkN257 base form =
   case <base, form> of {
-    <pat_1, pat_2+"eannan"> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"eannan"
+                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11570,36 +11570,36 @@ mkN257 base form =
 mkN258 : Str -> Str -> N ;
 mkN258 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1, pat_2+"a"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => pat_2+"a"
                                 } ;
                        Def => table {
-                                Sg => base_1+"h"+base_2 ;
-                                Pl => base_1+"h"+base_2+"than"
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1+"a" --guessed
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"than"
+                                  Sg => pat_1 ; --guessed
+                                  Pl => base_1+"i"+base_2 --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
-                                Pl => pat_1+"than"
+                                Sg => pat_1 ; --guessed
+                                Pl => "h-"+base_1+"i"+base_2 --guessed
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => base_1+"h"+base_2+"than"
+                                  Sg => base_1+"i"+base_2 ; --guessed
+                                  Pl => pat_1 --guessed
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2 ;
-                                Pl => pat_1+"than"
+                                Sg => base_1+"i"+base_2 ; --guessed
+                                Pl => pat_1 --guessed
                               }
                      }
             } ;
@@ -11615,12 +11615,12 @@ mkN258 base form =
 mkN259 : Str -> Str -> N ;
 mkN259 base form =
   case <base, form> of {
-    <pat_1, pat_2+"a"> => lin N
+    <pat_1, pat_2+"eannan"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2+"a"
+                                  Pl => pat_2+"eannan"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11668,28 +11668,28 @@ mkN260 base form =
                                   Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2 ;
+                                Pl => base_1+"h"+base_2+"than"
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => pat_1 ;
+                                  Pl => pat_1+"than"
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2 ;
+                                Pl => pat_1+"than"
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
+                                  Sg => pat_1 ;
+                                  Pl => base_1+"h"+base_2+"than"
                                 } ;
                        Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
+                                Sg => base_1+"h"+base_2 ;
+                                Pl => pat_1+"than"
                               }
                      }
             } ;
@@ -11705,12 +11705,12 @@ mkN260 base form =
 mkN261 : Str -> Str -> N ;
 mkN261 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1, pat_2+"a"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
                                   Sg => pat_1 ;
-                                  Pl => pat_2
+                                  Pl => pat_2+"a"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -11750,51 +11750,6 @@ mkN261 base form =
 mkN262 : Str -> Str -> N ;
 mkN262 base form =
   case <base, form> of {
-    <pat_1, pat_2+"aichean"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"aichean"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => base_1+"h"+base_2+base_3+"aiche"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"aichean"
-                                } ;
-                       Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => pat_2+"aichean"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_2+"ach" ;
-                                  Pl => pat_2+"aichean"
-                                } ;
-                       Def => table {
-                                Sg => pat_2+"ach" ;
-                                Pl => pat_2+"aichean"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN262"
-  } ;
-
-mkN263 : Str -> Str -> N ;
-mkN263 base form =
-  case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
@@ -11834,42 +11789,87 @@ mkN263 base form =
               } ;
         g = Masc
       };
+    _ => error "Can't apply paradigm mkN262"
+  } ;
+
+mkN263 : Str -> Str -> N ;
+mkN263 base form =
+  case <base, form> of {
+    <pat_1, pat_2+"aichean"> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"aichean"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
+                                Pl => base_1+"h"+base_2+base_3+"aiche"
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2+"aichean"
+                                } ;
+                       Def => table {
+                                Sg => base_1+"h"+base_2+"i"+base_3 ;
+                                Pl => pat_2+"aichean"
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => pat_2+"ach" ;
+                                  Pl => pat_2+"aichean"
+                                } ;
+                       Def => table {
+                                Sg => pat_2+"ach" ;
+                                Pl => pat_2+"aichean"
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
     _ => error "Can't apply paradigm mkN263"
   } ;
 
 mkN264 : Str -> Str -> N ;
 mkN264 base form =
-  case base of {
-    base_1 => lin N
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => base_1 ;
-                                  Pl => base_1+"thean"
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
                                 } ;
                        Def => table {
-                                Sg => base_1 ; --guessed
-                                Pl => base_1+"ean" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Dat => table {
                        Indef => table {
-                                  Sg => base_1 ; --guessed
-                                  Pl => base_1+"ean" --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1 ; --guessed
-                                Pl => base_1+"ean" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      } ;
               Gen => table {
                        Indef => table {
-                                  Sg => base_1 ; --guessed
-                                  Pl => base_1+"ean" --guessed
+                                  Sg => nonExist ;
+                                  Pl => nonExist
                                 } ;
                        Def => table {
-                                Sg => base_1 ; --guessed
-                                Pl => base_1+"ean" --guessed
+                                Sg => nonExist ;
+                                Pl => nonExist
                               }
                      }
             } ;
@@ -11929,6 +11929,96 @@ mkN265 base form =
 
 mkN266 : Str -> Str -> N ;
 mkN266 base form =
+  case base of {
+    base_1 => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => base_1 ;
+                                  Pl => base_1+"thean"
+                                } ;
+                       Def => table {
+                                Sg => base_1 ; --guessed
+                                Pl => base_1+"ean" --guessed
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => base_1 ; --guessed
+                                  Pl => base_1+"ean" --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1 ; --guessed
+                                Pl => base_1+"ean" --guessed
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => base_1 ; --guessed
+                                  Pl => base_1+"ean" --guessed
+                                } ;
+                       Def => table {
+                                Sg => base_1 ; --guessed
+                                Pl => base_1+"ean" --guessed
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN266"
+  } ;
+
+mkN267 : Str -> Str -> N ;
+mkN267 base form =
+  case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN267"
+  } ;
+
+mkN268 : Str -> Str -> N ;
+mkN268 base form =
   case <base, form> of {
     <pat_1, pat_2+"a"> => lin N
       { s = table {
@@ -11969,11 +12059,11 @@ mkN266 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN266"
+    _ => error "Can't apply paradigm mkN268"
   } ;
 
-mkN267 : Str -> Str -> N ;
-mkN267 base form =
+mkN269 : Str -> Str -> N ;
+mkN269 base form =
   case <base, form> of {
     <pat_1, pat_2+"an"> => lin N
       { s = table {
@@ -11981,96 +12071,6 @@ mkN267 base form =
                        Indef => table {
                                   Sg => pat_1 ;
                                   Pl => pat_2+"an"
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => nonExist ;
-                                  Pl => nonExist
-                                } ;
-                       Def => table {
-                                Sg => nonExist ;
-                                Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN267"
-  } ;
-
-mkN268 : Str -> Str -> N ;
-mkN268 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"an"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"an"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => base_1+"h"+base_2+base_3+"an"
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_1+"an"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2+base_3 ;
-                                Pl => pat_1+"an"
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => base_1+base_2+"i"+base_3 ;
-                                  Pl => base_1+"h"+base_2+base_3+"an"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2+"i"+base_3 ;
-                                Pl => pat_1+"an"
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN268"
-  } ;
-
-mkN269 : Str -> Str -> N ;
-mkN269 base form =
-  case <base, form> of {
-    <pat_1, pat_2> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
@@ -12740,11 +12740,11 @@ mkN283 base form =
 mkN284 : Str -> Str -> N ;
 mkN284 base form =
   case <base, form> of {
-    <pat_1+"id", pat_2> => lin N
+    <pat_1, pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+"id" ;
+                                  Sg => pat_1 ;
                                   Pl => pat_2
                                 } ;
                        Def => table {
@@ -12785,11 +12785,11 @@ mkN284 base form =
 mkN285 : Str -> Str -> N ;
 mkN285 base form =
   case <base, form> of {
-    <pat_1+" còinnich", pat_2> => lin N
+    <pat_1+"id", pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+" còinnich" ;
+                                  Sg => pat_1+"id" ;
                                   Pl => pat_2
                                 } ;
                        Def => table {
@@ -12830,11 +12830,11 @@ mkN285 base form =
 mkN286 : Str -> Str -> N ;
 mkN286 base form =
   case <base, form> of {
-    <pat_1, pat_2> => lin N
+    <pat_1+" còinnich", pat_2> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1 ;
+                                  Sg => pat_1+" còinnich" ;
                                   Pl => pat_2
                                 } ;
                        Def => table {
@@ -12965,6 +12965,51 @@ mkN288 base form =
 mkN289 : Str -> Str -> N ;
 mkN289 base form =
   case <base, form> of {
+    <pat_1, pat_2> => lin N
+      { s = table {
+              Nom => table {
+                       Indef => table {
+                                  Sg => pat_1 ;
+                                  Pl => pat_2
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Dat => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     } ;
+              Gen => table {
+                       Indef => table {
+                                  Sg => nonExist ;
+                                  Pl => nonExist
+                                } ;
+                       Def => table {
+                                Sg => nonExist ;
+                                Pl => nonExist
+                              }
+                     }
+            } ;
+        voc = table {
+                Sg => nonExist ;
+                Pl => nonExist
+              } ;
+        g = Masc
+      };
+    _ => error "Can't apply paradigm mkN289"
+  } ;
+
+mkN290 : Str -> Str -> N ;
+mkN290 base form =
+  case <base, form> of {
     <pat_1, pat_2+"n"> => lin N
       { s = table {
               Nom => table {
@@ -12983,7 +13028,7 @@ mkN289 base form =
                                   Pl => pat_2+"n"
                                 } ;
                        Def => table {
-                                Sg => "(a') "+base_1+"h"+base_2+base_3+base_4 ;
+                                Sg => base_1+"h"+base_2+base_3+base_4 ;
                                 Pl => pat_2+"n"
                               }
                      } ;
@@ -13004,11 +13049,11 @@ mkN289 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN289"
+    _ => error "Can't apply paradigm mkN290"
   } ;
 
-mkN290 : Str -> Str -> N ;
-mkN290 base form =
+mkN291 : Str -> Str -> N ;
+mkN291 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -13049,11 +13094,11 @@ mkN290 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN290"
+    _ => error "Can't apply paradigm mkN291"
   } ;
 
-mkN291 : Str -> Str -> N ;
-mkN291 base form =
+mkN292 : Str -> Str -> N ;
+mkN292 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -13094,11 +13139,11 @@ mkN291 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN291"
+    _ => error "Can't apply paradigm mkN292"
   } ;
 
-mkN292 : Str -> Str -> N ;
-mkN292 base form =
+mkN293 : Str -> Str -> N ;
+mkN293 base form =
   case <base, form> of {
     <pat_1+"id", pat_2+"n"> => lin N
       { s = table {
@@ -13139,11 +13184,11 @@ mkN292 base form =
               } ;
         g = Masc
       };
-    _ => error "Can't apply paradigm mkN292"
+    _ => error "Can't apply paradigm mkN293"
   } ;
 
-mkN293 : Str -> Str -> N ;
-mkN293 base form =
+mkN294 : Str -> Str -> N ;
+mkN294 base form =
   case <base, form> of {
     <pat_1, pat_2> => lin N
       { s = table {
@@ -13175,51 +13220,6 @@ mkN293 base form =
                        Def => table {
                                 Sg => nonExist ;
                                 Pl => nonExist
-                              }
-                     }
-            } ;
-        voc = table {
-                Sg => nonExist ;
-                Pl => nonExist
-              } ;
-        g = Masc
-      };
-    _ => error "Can't apply paradigm mkN293"
-  } ;
-
-mkN294 : Str -> Str -> N ;
-mkN294 base form =
-  case <base, form> of {
-    <pat_1, pat_2+"a"> => lin N
-      { s = table {
-              Nom => table {
-                       Indef => table {
-                                  Sg => pat_1 ;
-                                  Pl => pat_2+"a"
-                                } ;
-                       Def => table {
-                                Sg => base_1+"h"+base_2 ; --guessed
-                                Pl => base_1+"h"+base_2+"ean" --guessed
-                              }
-                     } ;
-              Dat => table {
-                       Indef => table {
-                                  Sg => pat_1 ; --guessed
-                                  Pl => pat_1+"ean" --guessed
-                                } ;
-                       Def => table {
-                                Sg => pat_1 ; --guessed
-                                Pl => pat_1+"ean" --guessed
-                              }
-                     } ;
-              Gen => table {
-                       Indef => table {
-                                  Sg => pat_1+"e" ; --guessed
-                                  Pl => base_1+"h"+base_2+"ean" --guessed
-                                } ;
-                       Def => table {
-                                Sg => pat_1+"e" ; --guessed
-                                Pl => pat_1+"ean" --guessed
                               }
                      }
             } ;
@@ -13595,12 +13595,12 @@ mkN302 base form =
 mkN303 : Str -> Str -> N ;
 mkN303 base form =
   case <base, form> of {
-    <pat_1+"t", pat_2+"an"> => lin N
+    <pat_1+"st", pat_2+"n"> => lin N
       { s = table {
               Nom => table {
                        Indef => table {
-                                  Sg => pat_1+"t" ;
-                                  Pl => pat_2+"an"
+                                  Sg => pat_1+"st" ;
+                                  Pl => pat_2+"n"
                                 } ;
                        Def => table {
                                 Sg => nonExist ;
