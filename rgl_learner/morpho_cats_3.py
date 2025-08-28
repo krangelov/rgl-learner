@@ -27,7 +27,7 @@ def getTypeOf(source_plugin, lang_plugin, o):
 
             pcons = []
             old_val_type = None
-            print(o)
+            #print(o)
             for tag,val in o.items():
                 match params.get(tag):
                     case param_con, res_type:
@@ -136,6 +136,7 @@ def learn(source, lang, filename=None,
 
     pos_order = defaultdict(dict)
     corrected_lexicon = []
+
    
     for word, pos, forms, gtags in lexicon:
         
@@ -198,12 +199,12 @@ def learn(source, lang, filename=None,
     print("Unknown tags:", set(unknown_tags))
 
 
+
     # Step 2: create tables for lexemes and a template for an inflectional class
 
     default_table = defaultdict(list)
     tables = defaultdict(list)
 
-    print(param2val)
 
     for word, pos, forms, gtags in corrected_lexicon:
 
@@ -234,10 +235,11 @@ def learn(source, lang, filename=None,
                     t1 = t.setdefault(value, {})
                     if type(t1) is str:
                         t1 = {None: t1}
-                        t[value] = t1
+                        if value not in t:
+                            t[value] = t1
                     t = t1
-
-                t[form_table[-1]] = w
+                if form_table[-1] not in t:
+                    t[form_table[-1]] = w
         if table:
             tables[pos].append((word,table,gtags))
 
@@ -284,17 +286,19 @@ def learn(source, lang, filename=None,
         return ddict
     
     def complete_table(table, param2val):
+        new_table = table.copy()
         for k, v in table.items():
             if isinstance(v, dict):
-                table[k] = complete_table(v, param2val)
+                new_table[k] = complete_table(v, param2val)
         vals = [v for v in list(table.keys()) if not v.startswith("no")]
         pars = [params[val][-1] for val in vals if val in params]
         expected = [param2val[x] for x in pars]
         flat = set([x for y in expected for x in y])
         if set(vals) != flat:
             for i in flat.difference(set(vals)):
-                table[i] = "-"
-        return table
+                if i not in new_table:
+                    new_table[i] = "-"
+        return new_table
 
     derivations = {}
     
@@ -316,9 +320,12 @@ def learn(source, lang, filename=None,
                 table = res
             
             table = sort_table(table)
+
+    
             table = complete_table(table, param2val)
+           
 
-
+            
 
             
             #table["lemma"] = word
@@ -332,13 +339,12 @@ def learn(source, lang, filename=None,
                         break
             
             
-
+            #print(table)
             typ, forms = getTypeOf(source_plugin, lang_plugin, table)
 
             if type(typ) != GFRecord:
                 typ = GFRecord((("s", typ),))
             
-           
     
             lin_types.setdefault(pos, (pos, {}))[1].setdefault(typ, []).append((word, forms))
 
