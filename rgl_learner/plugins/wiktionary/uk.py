@@ -126,7 +126,9 @@ def patchV(lemma,table):
     table["infinitive"] = lemma
     table.update(table.pop("noGender"))
     table.update(table.pop("active"))
-    #table.update(table.pop("indicative"))
+    table["active"] = table.pop("indicative")
+    table["active"]["imperfective"].pop("future")
+    table["active"]["perfective"].pop("future")
     table["participle"] = {
         "masculine": table.pop("masculine")["past"],
         "feminine": table.pop("feminine")["past"],

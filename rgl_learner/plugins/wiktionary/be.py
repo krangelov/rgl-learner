@@ -116,5 +116,7 @@ def patchV(lemma,table):
     }
     ind = ind.pop("noGender")
     table["active"] = ind.pop("active")
+    table["active"]["imperfective"].pop("future")
+    table["active"]["perfective"].pop("future")
     table["passive"] = ind.pop("passive")
     table["imperative"] = table["imperative"]["second-person"]
