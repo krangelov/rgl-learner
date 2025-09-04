@@ -28,6 +28,13 @@ def preprocess(record):
         if not found:
             record["tags"] = ["masculine"]
 
+        for form in record.get("forms",[]):
+            word = form["form"]
+            if word.startswith("a' ") or word.startswith("an ") or word.startswith("na "):
+                form["form"] = word[3:]
+            if word.startswith("(a') ") or word.startswith("(an) ") or word.startswith("(na) "):
+                form["form"] = word[5:]
+
     return True
 
 def filter_lemma(lemma, pos, table):
