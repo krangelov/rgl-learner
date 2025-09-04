@@ -107,6 +107,7 @@ def patchA(lemma,table):
     table["s"]["nominative"]["gender-singular"]["masculine"] = lemma
 
 def patchV(lemma,table):
+    table["infinitive"] = lemma
     ind = table.pop("indicative")
     table["participle"] = {
         "masculine": ind.pop("masculine")["past"],
