@@ -12,6 +12,7 @@ params = {
   'genitive': ('Gen','Case'),
   'instrumental': ('Instr','Case'),
   'locative': ('Loc','Case'),
+  'vocative': ('Voc','Case'),
   'masculine': ('Masc', 'Gender'),
   'feminine': ('Fem', 'Gender'),
   'neuter': ('Neuter', 'Gender'),
@@ -25,6 +26,8 @@ params = {
   'perfective': ('Perf', 'Aspect'),
   'imperfective': ('Imperf', 'Aspect')
 }
+
+params_order = dict(zip(params.keys(), range(len(params))))
 
 def preprocess(record):
     categories = record.get("categories",[])
@@ -137,6 +140,8 @@ def patchA(lemma,table):
     table.pop("comparative",None)
     table.pop("superlative",None)
     table["s"] = table.pop("positive")
+    table["s"].pop("vocative")
+    table["s"].pop("possessive")
     for case in ["nominative","accusative","dative","genitive","instrumental","locative"]:
         tbl = table["s"][case]
         masc = tbl.pop("masculine","-")
