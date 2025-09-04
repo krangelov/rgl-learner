@@ -56,7 +56,6 @@ def getTypeOf(source_plugin, lang_plugin, o):
                     val_type, forms = getTypeOf(source_plugin, lang_plugin, val)
                     pcons.append((GFParamConstr(param_con,()),params_keys.index(tag) or 10000,forms))
                 case param_con, arg_types, res_type:
-                    print(val, arg_types)
                     args, val_type, forms = decodePolishSequence(val,arg_types)
                     pcons.append((GFParamConstr(param_con,tuple(args)),params_keys.index(tag) or 10000,forms))
 
@@ -86,30 +85,32 @@ def get_gtag(source_plugin, lang_plugin, tag):
     else:
         return source_plugin.params.get(tag)
 
-def collect_derivations(pos,word,table,derivations):
-    if pos == "N":
-        masc = table.get("masculine")
-        if masc and type(masc) == str:
+def collect_derivations(pos,lemma,form,tags,derivations):
+    if pos == "N" and len(tags) == 1:
+        if tags[0] == "masculine":
             gender_pairs = derivations.setdefault("gender-pairs",set())
-            gender_pairs.add((masc,word))
-        fem = table.get("feminine")
-        if fem and type(fem) == str:
+            gender_pairs.add((form,lemma))
+            return True
+        if tags[0] == "feminine":
             gender_pairs = derivations.setdefault("gender-pairs",set())
-            gender_pairs.add((word,fem))
-    elif pos == "V":
-        imperfective = table.get("imperfective")
-        if imperfective and type(imperfective) == str:
+            gender_pairs.add((lemma,form))
+            return True
+    elif pos == "V" and len(tags) == 1:
+        if tags[0] == "imperfective":
             aspect_pairs = derivations.setdefault("aspect-pairs",set())
-            aspect_pairs.add((word,imperfective))
-        perfective = table.get("perfective")
-        if perfective and type(perfective) == str:
+            aspect_pairs.add((lemma,form))
+            return True
+        if tags[0] == "perfective":
             aspect_pairs = derivations.setdefault("aspect-pairs",set())
-            aspect_pairs.add((perfective,word))
-    elif pos == "A":
-        noun = table.get("abstract-noun")
-        if noun and type(noun) == str:
+            aspect_pairs.add((form,lemma))
+            return True
+    elif pos == "A" and len(tags) == 1:
+        if tags[0] == "abstract-noun":
             adj_noun_pairs = derivations.setdefault("adj-noun-pairs",set())
-            adj_noun_pairs.add((noun,word))
+            adj_noun_pairs.add((form,lemma))
+            return True
+
+    return False
 
 def learn(source, lang, filename=None,
           dirname="data", level=None,
@@ -136,8 +137,8 @@ def learn(source, lang, filename=None,
 
     pos_order = defaultdict(dict)
     corrected_lexicon = []
+    derivations = {}
 
-   
     for word, pos, forms, gtags in lexicon:
         
         if lang_plugin.filter_lemma(word, pos, forms):
@@ -157,6 +158,10 @@ def learn(source, lang, filename=None,
             tags = list(dict.fromkeys(tags)) # remove duplicates
             tags = [tag for tag in tags if tag not in ignore_tags]
             tags = lang_plugin.fix_tags(tags)
+
+            if collect_derivations(pos,word,w,tags,derivations):
+                continue
+
             new_forms = lang_plugin.merge_tags(pos, forms, w, tags)
             new_tags = [tag for t in new_forms for tag in t[1]]
             for num, tag in enumerate(new_tags):
@@ -300,20 +305,12 @@ def learn(source, lang, filename=None,
                     new_table[i] = "-"
         return new_table
 
-    derivations = {}
-    
-
     for pos, ts in tables.items():
         for (word, table, gtags) in ts:
 
             add_form(table, default_table[pos])
             if compress_table:
                 table = compress(table)
-
-            
-
-            #collect_derivations(pos,word,table,derivations)
-            
 
             res = lang_plugin.patch_inflection(pos, word, table)
             if res:
@@ -382,7 +379,6 @@ def learn(source, lang, filename=None,
         for noun_type, lexemes in items:
             noun_type = GFRecord(tuple(((name, typ if name != "g" else new_gender_typ) for name, typ in noun_type.fields)))
             noun_types[noun_type] = lexemes
-
 
     lang_code = lang_plugin.iso3
     path = f"{dirname}/{lang}/"
