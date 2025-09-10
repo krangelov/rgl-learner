@@ -4,6 +4,7 @@ import rgl_learner.plugins as plugins
 
 iso3 = "Fao"
 source_plugin = plugins["unimorph"]
+vars = {}
 
 params = source_plugin.params | {
     'person-singular': ('PSg',['Person'],'PersNum'),
