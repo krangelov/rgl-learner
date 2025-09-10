@@ -319,7 +319,7 @@ def learn(source, lang, filename=None,
             table = sort_table(table)
 
     
-            table = complete_table(table, param2val)
+            #table = complete_table(table, param2val)
            
 
             
