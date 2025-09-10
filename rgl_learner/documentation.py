@@ -1,6 +1,6 @@
 import json
 import pickle
-from rgl_learner.morpho_cats import GFRecord, GFTable, GFParamType, GFParamConstr, GFStr
+from rgl_learner.gf_types import GFRecord, GFTable, GFParamType, GFParamConstr, GFStr
 
 def sizeOf(ty):
     size = 0
