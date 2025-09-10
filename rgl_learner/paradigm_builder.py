@@ -871,11 +871,55 @@ def guess_by_lemma(
 
             all_rules[pos] = tree.rules
 
-            overload_code += f"mk{pos} = overload {{\n"
+            overload_code += f"  mk{pos} = overload {{\n"
             for num in range(1, len(tree.other_forms)+1):
-                overload_code += f"  mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
+                overload_code += f"    mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
                 overload_code += f'{";" if num < len(tree.other_forms) else ""}   -- {"  ".join(tree.other_forms[:num])}\n'
-            overload_code += "} ;\n\n"
+            overload_code += "  } ;\n\n"
+
+            if pos == "N":
+                overload_code +=\
+                    "  mkN2 = overload {\n"+\
+                    "     mkN2 : N -> N2 = \\n -> n ** {c2 = noPrep} ;\n"+\
+                    "     mkN2 : N -> Prep -> N2 = \\n,p -> n ** {c2 = p} ;\n"+\
+                    "  } ;\n\n"
+                overload_code +=\
+                    "  mkN3 = overload {\n"+\
+                    "     mkN3 : N -> N2 = \\n -> n ** {c2 = noPrep; c3 = noPrep} ;\n"+\
+                    "     mkN2 : N -> Prep -> Prep -> N2 = \\n,p1,p2 -> n ** {c2 = p1; c2 = p2} ;\n"+\
+                    "  } ;\n\n"
+            elif pos == "A":
+                overload_code +=\
+                    "  mkA2 = overload {\n"+\
+                    "     mkA2 : A -> A2 = \\a -> a ** {c2 = noPrep} ;\n"+\
+                    "     mkA2 : A -> Prep -> A2 = \\a,p -> a ** {c2 = p} ;\n"+\
+                    "  } ;\n\n"
+            elif pos == "V":
+                overload_code +=\
+                    "  mkVV,mkVS,mkVQ,mkVA = \\v -> v ;\n\n"
+                overload_code +=\
+                    "  mkV2 = overload {\n"+\
+                    "     mkV2 : V -> V2 = \\v -> v ** {c2 = noPrep} ;\n"+\
+                    "     mkV2 : V -> Prep -> V2 = \\v,p -> v ** {c2 = p} ;\n"+\
+                    "  } ;\n\n"
+                overload_code +=\
+                    "  mkV3 = overload {\n"+\
+                    "     mkV3 : V -> V3 = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
+                    "     mkV3 : V -> Prep -> Prep -> V2 = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
+                    "  } ;\n\n"+\
+                    "  mkV2S = overload {\n"+\
+                    "     mkV2S : V -> V2S = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
+                    "     mkV2S : V -> Prep -> Prep -> V2S = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
+                    "  } ;\n\n"+\
+                    "  mkV2Q = overload {\n"+\
+                    "     mkV2Q : V -> V2Q = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
+                    "     mkV2Q : V -> Prep -> Prep -> V2Q = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
+                    "  } ;\n\n"+\
+                    "  mkV2V = overload {\n"+\
+                    "     mkV2V : V -> V2V = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
+                    "     mkV2V : V -> Prep -> Prep -> V2V = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
+                    "  } ;\n\n"
+
            # overload_code += boilerplate.get(pos,"")
 
    # overload_code+=boilerplate.get("Adv","")

@@ -388,18 +388,41 @@ def learn(source, lang, filename=None,
             open(path + 'Dict' + lang_code + 'Abs.gf', 'w') as fa:
         fr.write('resource Res' + lang_code + ' = {\n')
         fr.write('\n')
-        fc.write('concrete Cat' + lang_code + ' of Cat = open Res' + lang_code + ' in {\n')
+        fc.write('concrete Cat' + lang_code + ' of Cat = CommonX ** open Res' + lang_code + ' in {\n')
         fc.write('\n')
         fd.write('concrete Dict' + lang_code + ' of Dict' + lang_code + 'Abs = Cat' + lang_code + ' ** open Res' + lang_code + ', Prelude in {\n')
         fd.write('\n')
         fa.write('abstract Dict' + lang_code + 'Abs = Cat ** {\n')
         fa.write('\n')
 
+        has_case = False
         cat2idx = defaultdict(list)
         for tag, (cat_name, types) in lin_types.items():
             pdefs = defaultdict(set)
-            fc.write('lincat ' + cat_name + ' = ' + tag.title() + ' ;\n')
 
+            if source == "wiktionary":
+                cat_oper_name = tag.title()
+            else:
+                match tag:
+                    case "V":
+                        cat_oper_name = "Verb"
+                    case "N":
+                        cat_oper_name = "Noun"
+                    case "A":
+                        cat_oper_name = "Adj"
+                    case _:
+                        cat_oper_name = tag
+
+            fc.write('lincat ' + cat_name + ' = ' + cat_oper_name + ' ;\n')
+            if cat_name == "V":
+                fc.write('lincat VV,VS,VQ,VA = ' + cat_oper_name + ' ;\n')
+                fc.write('lincat V2 = ' + cat_oper_name + ' ** {c2 : Compl} ;\n')
+                fc.write('lincat V3,V2S,V2Q,V2V = ' + cat_oper_name + ' ** {c2,c3 : Compl} ;\n')
+            elif cat_name == "N":
+                fc.write('lincat N2 = ' + cat_oper_name + ' ** {c2 : Compl} ;\n')
+                fc.write('lincat N3 = ' + cat_oper_name + ' ** {c2,c3 : Compl} ;\n')
+            elif cat_name == "A":
+                fc.write('lincat A2 = ' + cat_oper_name + ' ** {c2 : Compl} ;\n')
 
             typ, tables = next(iter(types.items()))
             forms = reverse_dict(typ.linearize())
@@ -418,14 +441,12 @@ def learn(source, lang, filename=None,
 
             for i, (typ, lexemes) in enumerate(sorted(types.items(), key=lambda x: -len(x[1]))):
                 
-                type_name = tag.title() + (str(i) if i else "")
+                type_name = cat_oper_name + (str(i) if i else "")
                 n_forms = len(lexemes[0][1])
                 n_params = 0
                 while type(lexemes[0][1][n_forms - 1]) == GFParamValue:
                     n_forms -= 1
                     n_params += 1
-
-
 
                 typ.printParamDefs(fr, pdefs)
 
@@ -455,7 +476,20 @@ def learn(source, lang, filename=None,
                     fd.write('lin ' + escape(ident) + ' = mk' + type_name + ' ' + ' '.join(
                         to_value(form) for form in forms) + ' ;\n')
 
+            if "Case" in pdefs:
+                has_case = True
+
             fr.write('\n')
+
+
+        fc.write('lincat Prep = Compl ;\n')
+        if has_case:
+            fr.write('oper Compl = {s : Str; c : Case} ;\n')
+            fr.write('oper noPrep : Compl = {s=""; c=Acc} ;\n')
+        else:
+            fr.write('oper Compl = {s : Str} ;\n')
+            fr.write('oper noPrep : Compl = {s=""} ;\n')
+
         fa.write('\n')
         fa.write('}\n')
         fd.write('\n')
