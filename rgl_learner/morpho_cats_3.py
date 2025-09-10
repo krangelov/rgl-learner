@@ -396,6 +396,9 @@ def learn(source, lang, filename=None,
         fa.write('\n')
 
         has_case = False
+        has_noun = False
+        has_adj  = False
+
         cat2idx = defaultdict(list)
         for tag, (cat_name, types) in lin_types.items():
             pdefs = defaultdict(set)
@@ -412,6 +415,11 @@ def learn(source, lang, filename=None,
                         cat_oper_name = "Adj"
                     case _:
                         cat_oper_name = tag
+
+            if cat_oper_name == "Noun":
+                has_noun = True
+            if cat_oper_name == "Adj":
+                has_adj = True
 
             fc.write('lincat ' + cat_name + ' = ' + cat_oper_name + ' ;\n')
             if cat_name == "V":
@@ -489,6 +497,20 @@ def learn(source, lang, filename=None,
         else:
             fr.write('oper Compl = {s : Str} ;\n')
             fr.write('oper noPrep : Compl = {s=""} ;\n')
+
+        fr.write('\n')
+        fc.write('lincat CN = CommonNoun ;\n')
+        fc.write('lincat AP = AdjPhrase ;\n')
+        fc.write('lincat S = {s : Str} ;\n')
+
+        if has_noun:
+            fr.write('oper CommonNoun = Noun ;\n')
+        else:
+            fr.write('oper CommonNoun = {s : Str} ;\n')
+        if has_adj:
+            fr.write('oper AdjPhrase = Adj ;\n')
+        else:
+            fr.write('oper AdjPhrase = {s : Str} ;\n')
 
         fa.write('\n')
         fa.write('}\n')
