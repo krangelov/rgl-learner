@@ -885,8 +885,8 @@ def guess_by_lemma(
                     "  } ;\n\n"
                 overload_code +=\
                     "  mkN3 = overload {\n"+\
-                    "     mkN3 : N -> N2 = \\n -> n ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkN2 : N -> Prep -> Prep -> N2 = \\n,p1,p2 -> n ** {c2 = p1; c2 = p2} ;\n"+\
+                    "     mkN3 : N -> N3 = \\n -> n ** {c2 = noPrep; c3 = noPrep} ;\n"+\
+                    "     mkN3 : N -> Prep -> Prep -> N3 = \\n,p1,p2 -> n ** {c2 = p1; c3 = p2} ;\n"+\
                     "  } ;\n\n"
             elif pos == "A":
                 overload_code +=\
@@ -905,7 +905,7 @@ def guess_by_lemma(
                 overload_code +=\
                     "  mkV3 = overload {\n"+\
                     "     mkV3 : V -> V3 = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkV3 : V -> Prep -> Prep -> V2 = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
+                    "     mkV3 : V -> Prep -> Prep -> V3 = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
                     "  } ;\n\n"+\
                     "  mkV2A = overload {\n"+\
                     "     mkV2A : V -> V2A = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
@@ -943,9 +943,14 @@ def guess_by_lemma(
         f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
         f.write("}")
 
+    with open(f"data/{lang}/Grammar{langcode}.gf", "w") as f:
+        f.write(f"concrete Grammar{langcode} of Grammar = TenseX ** {{\n")
+        f.write("}")
+
     with open(f"data/{lang}/Lang{langcode}.gf", "w") as f:
         f.write("--# -path=.:../abstract\n")
         f.write(f"concrete Lang{langcode} of Lang =\n")
+        f.write(f"  Grammar{langcode},\n")
         f.write(f"  Lexicon{langcode}\n")
         f.write("  ** {\n")
         f.write("\n")
