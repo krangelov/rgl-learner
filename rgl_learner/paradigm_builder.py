@@ -907,6 +907,10 @@ def guess_by_lemma(
                     "     mkV3 : V -> V3 = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
                     "     mkV3 : V -> Prep -> Prep -> V2 = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
                     "  } ;\n\n"+\
+                    "  mkV2A = overload {\n"+\
+                    "     mkV2A : V -> V2A = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
+                    "     mkV2A : V -> Prep -> Prep -> V2A = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
+                    "  } ;\n\n"+\
                     "  mkV2S = overload {\n"+\
                     "     mkV2S : V -> V2S = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
                     "     mkV2S : V -> Prep -> Prep -> V2S = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\

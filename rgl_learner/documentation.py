@@ -106,16 +106,27 @@ def learn(lang, from_source=False):
             if len(table) > 1:
                 print("Warning: the inflection tables are not unified yet, using the first one")
             typ,lexemes = next(iter(table.items()))
-            d.write(f"lin Inflection{cat_name} = \\x -> {{\n      t=\"{pos_tag.lower()}\" ;\n      s1=\"\" ;\n      s2=frameTable (\n{render(True,typ,3,'x')}) ;\n      s3=[]\n    }} ;\n")
-            
+            if cat_name == "N":
+                rules = "InflectionN,InflectionN2,InflectionN3"
+            elif cat_name == "A":
+                rules = "InflectionA,InflectionA2"
+            elif cat_name == "V":
+                rules = "InflectionV,InflectionV2,InflectionV2A,InflectionV2Q,InflectionV2S,InflectionV2V,InflectionV3,InflectionVA,InflectionVQ,InflectionVS,InflectionVV"
+            d.write("lin\n")
+            d.write(f"  {rules} = \\x -> {{\n      t=\"{pos_tag.lower()}\" ;\n      s1=\"\" ;\n      s2=frameTable (\n{render(True,typ,3,'x')}) ;\n      s3=[]\n    }} ;\n")
+
+        d.write("lin\n")
+        d.write("  InflectionAdA,InflectionAdN,InflectionAdV,InflectionAdv = \\x -> {t=\"adv\"; s1=\"\"; s2=x.s; s3=\"\"} ;\n\n")
+        d.write("  InflectionPrep = \\x -> {t=\"prep\"; s1=\"\"; s2=x.s; s3=\"\"} ;\n\n")
+
         d.write('lin\n')
-        d.write('NoDefinition   t     = {s=t.s};\n')
-        d.write('MkDefinition   t d   = {s="<p><b>Definition:</b>"++t.s++d.s++"</p>"};\n')
-        d.write('MkDefinitionEx t d e = {s="<p><b>Definition:</b>"++t.s++d.s++"</p><p><b>Example:</b>"++e.s++"</p>"};')
-        d.write('')
-        d.write('lin')
-        d.write('  MkDocument d i e = {s = i.s1 ++ d.s ++ i.s2 ++ i.s3 ++ e.s} ;')
-        d.write('  MkTag i = {s = i.t} ;')
+        d.write('  NoDefinition   t     = {s=t.s};\n')
+        d.write('  MkDefinition   t d   = {s="<p><b>Definition:</b>"++t.s++d.s++"</p>"};\n')
+        d.write('  MkDefinitionEx t d e = {s="<p><b>Definition:</b>"++t.s++d.s++"</p><p><b>Example:</b>"++e.s++"</p>"};\n')
+        d.write('\n')
+        d.write('lin\n')
+        d.write('  MkDocument d i e = {s = i.s1 ++ d.s ++ i.s2 ++ i.s3 ++ e.s} ;\n')
+        d.write('  MkTag i = {s = i.t} ;\n')
 
         d.write("}\n")
 

@@ -417,7 +417,7 @@ def learn(source, lang, filename=None,
             if cat_name == "V":
                 fc.write('lincat VV,VS,VQ,VA = ' + cat_oper_name + ' ;\n')
                 fc.write('lincat V2 = ' + cat_oper_name + ' ** {c2 : Compl} ;\n')
-                fc.write('lincat V3,V2S,V2Q,V2V = ' + cat_oper_name + ' ** {c2,c3 : Compl} ;\n')
+                fc.write('lincat V3,V2A,V2S,V2Q,V2V = ' + cat_oper_name + ' ** {c2,c3 : Compl} ;\n')
             elif cat_name == "N":
                 fc.write('lincat N2 = ' + cat_oper_name + ' ** {c2 : Compl} ;\n')
                 fc.write('lincat N3 = ' + cat_oper_name + ' ** {c2,c3 : Compl} ;\n')
