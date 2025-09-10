@@ -891,9 +891,9 @@ def guess_by_lemma(
         f.write(overload_code)
         f.write("}")
 
-    #with open(f"data/{lang}/Lexicon{langcode}.gf", "w") as f:
-    #    f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
-    #    f.write("}")
+    with open(f"data/{lang}/Lexicon{langcode}.gf", "w") as f:
+        f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
+        f.write("}")
 
     with open(f"data/{lang}/Lang{langcode}.gf", "w") as f:
         f.write("--# -path=.:../abstract\n")

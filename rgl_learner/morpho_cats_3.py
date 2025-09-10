@@ -384,14 +384,13 @@ def learn(source, lang, filename=None,
     path = f"{dirname}/{lang}/"
     with open(path +'Res' + lang_code + '.gf', 'w') as fr, \
             open(path + 'Cat' + lang_code + '.gf', 'w') as fc, \
-            open(path + 'Lexicon' + lang_code + '.gf', 'w') as fd, \
+            open(path + 'Dict' + lang_code + '.gf', 'w') as fd, \
             open(path + 'Dict' + lang_code + 'Abs.gf', 'w') as fa:
         fr.write('resource Res' + lang_code + ' = {\n')
         fr.write('\n')
         fc.write('concrete Cat' + lang_code + ' of Cat = open Res' + lang_code + ' in {\n')
         fc.write('\n')
-        fd.write(
-            'concrete Lexicon' + lang_code + ' of Dict' + lang_code + 'Abs = Cat' + lang_code + ' ** open Res' + lang_code + ', Prelude in {\n')
+        fd.write('concrete Dict' + lang_code + ' of Dict' + lang_code + 'Abs = Cat' + lang_code + ' ** open Res' + lang_code + ', Prelude in {\n')
         fd.write('\n')
         fa.write('abstract Dict' + lang_code + 'Abs = Cat ** {\n')
         fa.write('\n')
