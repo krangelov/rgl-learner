@@ -468,8 +468,8 @@ def learn(source, lang, filename=None,
     with open(f"{dirname}/{lang}/lexicon.pickle", "wb") as f:
         pickle.dump((lang_code, source, lin_types), f)
 
-   # with open(f"data/{lang}/derivations.pickle", "wb") as f:
-     #   pickle.dump(derivations,f)
+    with open(f"{dirname}/{lang}/derivations.pickle", "wb") as f:
+        pickle.dump(derivations,f)
 
     if derivations:
         print("found:", ", ".join(derivations.keys()))
