@@ -11,7 +11,7 @@ def reverse_dict(d, keys=[]):
     return result
 
 with open(f"../data/{lang}/lexicon.pickle", "rb") as f:
-    source, langcode, lexicon = pickle.load(f)
+    langcode, source, lexicon = pickle.load(f)
 
 analysis = ""
 for pos_tag, (cat_name, table) in lexicon.items():

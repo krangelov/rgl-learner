@@ -481,7 +481,7 @@ def learn(source,lang):
         fr.write('}\n')
 
     with open(f"data/{lang}/lexicon.pickle", "wb") as f:
-        pickle.dump((source,lang_code,lin_types),f)
+        pickle.dump((lang_code,source,lin_types),f)
 
     with open(f"data/{lang}/derivations.pickle", "wb") as f:
         pickle.dump(derivations,f)

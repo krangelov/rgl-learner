@@ -89,8 +89,9 @@ def learn(lang, from_source=False):
                     lexicon[name] = (name, {typ: []})
     else:
         with open(f"data/{lang}/lexicon.pickle", "rb") as f:
-            source, langcode, lexicon = pickle.load(f)
-    with open(f"Documentation{langcode}.gf", "w") as d:
+            langcode, source, lexicon = pickle.load(f)
+    print(source, langcode)
+    with open(f"data/{langcode}/Documentation{langcode}.gf", "w") as d:
         d.write(f"concrete Documentation{langcode} of Documentation = Cat{langcode} ** open\n")
         d.write(f"  Res{langcode}, Prelude, HTML in {{\n")
         d.write("\n")
