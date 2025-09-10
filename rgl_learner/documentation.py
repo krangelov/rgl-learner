@@ -133,6 +133,7 @@ def learn(lang, from_source=False):
     with open(f"data/{lang}/Lang{langcode}.gf", "w") as f:
         f.write("--# -path=.:../abstract\n")
         f.write(f"concrete Lang{langcode} of Lang =\n")
+        f.write(f"  Grammar{langcode},\n")
         f.write(f"  Lexicon{langcode}\n")
         f.write(f"  ,Documentation{langcode} --# notpresent\n")
         f.write("  ** {\n")
