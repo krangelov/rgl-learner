@@ -29,7 +29,7 @@ def read_json_data(lang, langcode, dir="data"):
         morpho = json.load(f)
     with open(f"data/{lang}/Dict{langcode}Abs.json") as f:
         d = json.load(f)
-    with open(f"data/{lang}/Lexicon{langcode}.json") as f:
+    with open(f"data/{lang}/Dict{langcode}.json") as f:
         lexicon = json.load(f)
 
     params = defaultdict(list)
@@ -82,7 +82,7 @@ def read_json_data(lang, langcode, dir="data"):
             t2 = dict(words)
             tables2 = []
             for word in t2:
-                words = reverse_fun(lexicon[f"Lexicon{langcode}"]["jments"][word]["lin"])[0][::-1]
+                words = reverse_fun(lexicon[f"Dict{langcode}"]["jments"][word]["lin"])[0][::-1]
                 tables2.append((word, words))
     
 
