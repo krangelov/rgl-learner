@@ -7,6 +7,7 @@ order = {
   "V": ["NonFinite","Participle", "Mood", "Tense", "Number", "Person", "Voice", "Aspect"]
 }
 
+default_params = {"Degree": "positive", "Voice": "active"}
 ignore_tags = ["common","literally","formal","colloquial","alternative","usually","informal","regional","abbreviation","transcription","active","rare","Medieval","mainly","uncountable",
                "Cretan","literary","dated","also","class","dual","dative"]
 
@@ -81,14 +82,14 @@ def preprocess(record):
 
     return True
 
-def patchPOS(lemma,tag):
+def patchPOS(lemma,tag,forms):
     if tag == "noun" and lemma in ["αμμωνιακός","οδοντοφατνιακός"]:
         return "adj"
     if tag == "noun" and lemma in ["ηρωοποιώ"]:
         return "verb"
     return tag
 
-def filter_lemma(lemma, pos):
+def filter_lemma(lemma, pos, tags):
     if pos == 'noun' and lemma in ["απαυτός","αυνανιστικός","μελοδραματικός","μεγαλειώδης","βομβαρδίζομαι"]:
         return True
     if pos == "det":
@@ -172,7 +173,8 @@ def patchA(lemma,table):
     c = {"masculine": {"singular": {"nominative": table.get("comparative","-")}}}
     table["comparative"] = c
     table.pop("comparative")
-    table.pop("superlative")
+    if "superlative" in table:
+        table.pop("superlative")
 
     for gender in ["masculine","feminine","neuter"]:
         for number in ["singular","plural"]:

@@ -42,6 +42,9 @@ params = {
     "second-person": ("P2", "Person"),
     "formal": ("Formal", "Formality"),
     "informal": ("Informal", "Formality"),
+    "equal": ("Eq", "AdjType"),
+    "inferior": ("Inf", "AdjType"),
+
 }
 
 ignore_tags = [
@@ -74,26 +77,33 @@ ignore_tags = [
     "error-unrecognized-form"
 ]
 
-params_order = dict(zip(params.keys(), range(len(params))))
+order = {"A": ["Gender", "Root", "Degree", "AdjType", "Number", "Formality"], 
+         "V": ["Root", "Mood","Voice",  "Case", "Formality", "Aspect"], 
+         "Adv": ["Formality"]}
 
-nested_key_exists = nested_key_exists
 
-param_order = []
-parameters = defaultdict(set)
-for tag, (_, param) in params.items():
-    parameters[param].add(tag)
-    if param not in param_order:
-        param_order.append(param)
-
-required_forms = {"V": ["root", ]}
 separate_values = {"V": "Voice"}
+
+required_forms = {"A": ["lemma"], "Adv": ["s;Informal"], "V": ["Imperative;Informal"]}
+
+default_params = {"Formality": "informal", "Degree": "positive", "Number": "singular"}
+
+def preprocess(record):
+    categories = record.get("categories",[])
+    if 'Tagalog terms in Baybayin script' in categories or "Tagalog lemmas" in categories:
+        return False
+    return True
 
 
 def filter_lemma(lemma, pos, table):
-    if pos == "pron" or pos == "prep" or pos == "name":
+    if pos == "pron" or pos == "prep" or pos == "name" or pos == "noun":
         return True
     return False
 
+def patchPOS(lemma, tag, table):
+    if lemma == "magparinig":
+        return "verb"
+    return tag
 
 def filter_paradigm(tag, forms):
     if tag == "verb" and forms[0] == "-":
@@ -102,35 +112,8 @@ def filter_paradigm(tag, forms):
 
 
 def merge_tags(pos, forms, w, tags):
-    if pos == "noun":
-        if "feminine" in tags:
-            tags.remove("feminine")
-        elif "masculine" in tags:
-            tags.remove("masculine")
-
-    if "comparative" in tags:
-        if "inferior" or "equal" in tags:
-            tags.remove("comparative")
-        if "inferior" in tags:
-            tags.remove("inferior")
-            tags.append("comparative_inferior")
-        if "equal" in tags:
-            tags.remove("equal")
-            tags.append("comparative_equal")
-
-    if "superlative" in tags:
-        if "inferior" or "equal" in tags:
-            tags.remove("superlative")
-        if "inferior" in tags:
-            tags.remove("inferior")
-            tags.append("superlative_inferior")
-        if "equal" in tags:
-            tags.remove("equal")
-            tags.append("superlative_equal")
-
-    if "positive" in tags and "root" in tags:
-        tags.remove("positive")
-
+    if "root" in tags and len(tags) > 1:
+        tags.remove("root")
     if "singular" in tags and "plural" in tags:
         new_tags = tags.copy()
         new_tags.remove("singular")
@@ -156,34 +139,38 @@ def merge_tags(pos, forms, w, tags):
         tags.remove("directional")
 
     if w == "⁠—" or w == "-" or w == "invalid affix":
-        tags = []
+        tags = [] 
 
-    return forms, tags
+    return [(w, tags)]
 
 
 def patchA(lemma, table):
+
+   # table.update(table.pop("noGender"))
+    table["t"] = table.pop("noGender")
+
+    table["t"] = {
+        "comparative_inferior" : table["t"]["comparative"]["inferior"],
+        "comparative_equal": table["t"]["comparative"]["equal"],
+        "superlative_inferior": table["t"]["superlative"]["inferior"],
+        "superlative_equal": table["t"]["superlative"]["equal"],
+    }
+   
+
+            
+
 
     if table.keys() == {"plural"}:
         table.setdefault("positive", {})
         table["positive"]["singular"] = lemma
         table["positive"]["plural"] = table["plural"]
 
-    if table.keys() == {"feminine"}:
-        table["masculine"] = lemma
-    elif table.keys() == {"masculine"}:
-        table["feminine"] = lemma
-
-    for comparison in parameters["Comparison"]:
-        for number in parameters["Number"]:
-            table.setdefault(comparison, {}).setdefault(number, "-")
-
     if "plural" in table:  # already in the table
         table.pop("plural")
 
     table["sp"] = {}
-    table["t"] = {}
-    table["t"]["feminine"] = table.get("feminine", "-")
-    table["t"]["masculine"] = table.get("masculine", "-")
+    table["sp"]["feminine"] = table.get("feminine", "-")
+    table["sp"]["masculine"] = table.get("masculine", "-")
     if "feminine" in table:
         table.pop("feminine")
     if "masculine" in table:
@@ -191,53 +178,18 @@ def patchA(lemma, table):
     if "root" in table:
         table.pop("root")
 
-    for compar in parameters["Comparison"]:
-        table["sp"][compar] = table.get(compar, "-")
-        if compar in table:
-            table.pop(compar)
+    if table["sp"]["masculine"] != "-":
+        table["lemma"] = table["sp"]["masculine"]
+    elif table["t"]["comparative_inferior"] != "-": 
+        table["lemma"] = lemma
+    return table
 
+
+#def patchV(lemma, table):
 
 
 def patchV(lemma, table):
-    table.setdefault("root", {})
-
-    table.setdefault("indicative", {})
+    table.update(table.pop("noRoot"))
+    table.update(table.pop("noMood"))
     table.setdefault("imperative", {})
 
-    for voice in parameters["Voice"]:
-        for aspect in parameters["Aspect"]:
-            table.setdefault(voice, {}).setdefault(aspect, {})
-
-    for aspect in parameters["Aspect"]:
-        if aspect == "past-recent":
-            table.setdefault(aspect, {}).setdefault("formal", "-")
-            table.setdefault(aspect, {}).setdefault("informal", "-")
-        else:
-            table.setdefault(aspect, {})
-
-    fixed_names = {"Mood": "indicative"}
-    new_table = fill_empty(
-        fix_table(
-            table, param_order, parameters, fixed_names, exclude_list=["Aspect", "Root", "Comparison", "Case", "Gender",
-                                                                       "Number", "Person", "Tense"]
-        )
-    )
-
-    if "imperative" not in new_table:
-        new_table["imperative"] = {
-            "noVoice": {"formal": "-", "informal": "-"},
-            "base": "-",
-        }
-    elif isinstance(new_table["imperative"], str):
-        new_table["imperative"] = {
-            "noVoice": {"formal": "-", "informal": "-"},
-            "base": new_table["imperative"],
-        }
-    else:
-        new_table["imperative"]["base"] = "-"
-
-    #  new_table["indicative"]["noVoice"] = dict(
-    #      sorted(new_table["indicative"]["noVoice"].items())
-    #  )
-
-    return new_table
