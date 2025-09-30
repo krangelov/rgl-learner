@@ -15,8 +15,8 @@ params = {
     "PST": ("Past", "Tense"),
     "PSS1P": ("Poss1Pl", "Possession"),
     "PSS1S": ("Poss1Sg", "Possession"),
-    "PSS2S": ("Poss2Sg", ["Formality"], "Possession"),
-    "PSS2P": ("Poss2Pl", ["Formality"], "Possession"),
+    "PSS2S": ("Poss2Sg", "Possession"),
+    "PSS2P": ("Poss2Pl", "Possession"),
     "PSS3S": ("Poss3Sg", "Possession"),
     "PSS3P": ("Poss3Pl", "Possession"),
     "PRF": ("Perfect", "Aspect"),
@@ -48,6 +48,15 @@ default_params = {"Polarity": "Pos", "Mood": "Indicative"}
 required_forms = {
   "N": ['s;Nom;Sg'],
    "V": ["infinitive"],
+}
+
+rules = {"N": {(("s;Nom;Sg", ("с|x|ш|п|т|қ",)),): 1,
+                (("s;Nom;Sg", ("м|н|ң",)),) : 2,
+                (("s;Nom;Sg", ("й|y|р",)),) : 5,
+                (("s;Nom;Sg", ("з|л",)),) : 12,},
+        "V": {(("infinitive", ("бу",)),) : 20,
+              (("infinitive", ("ғу",)),) : 53,
+              }
 }
 
 for tag, param in params.items():

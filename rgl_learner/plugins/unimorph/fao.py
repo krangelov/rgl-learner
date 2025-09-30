@@ -4,13 +4,27 @@ import rgl_learner.plugins as plugins
 
 iso3 = "Fao"
 source_plugin = plugins["unimorph"]
-vars = {}
 
-params = source_plugin.params | {
-    'person-singular': ('PSg',['Person'],'PersNum'),
-    'person-plural': ('PPl','PersNum'),
-}
+#required_forms = {"N": ["s;Indef;Sg;Nom"],  "A": ["s;Masc;Sg;Nom"],  "V": ["Nonfinite"]}
 
+required_forms = {"N": ["s;Indef;Sg;Nom", "s;Indef;Pl;Nom"], "A": ["s;Masc;Sg;Nom"],  "V": ["Indicative;Pres;Sg;P2"]}
+
+
+rules = {"N": {(("s;Indef;Sg;Nom", ("ur",)), ("s;Indef;Pl;Nom", ("ar",)),): 3,
+         (("s;Indef;Sg;Nom", ("ur",)), ("s;Indef;Pl;Nom", ("ir",)),): 9,
+         (("s;Indef;Sg;Nom", ("i",)), ("s;Indef;Pl;Nom", ("ar",)),): 1,
+         (("s;Indef;Sg;Nom", ("a",)), ("s;Indef;Pl;Nom", ("ur",)),): 5,
+         (("s;Indef;Sg;Nom", ("i",)), ("s;Indef;Pl;Nom", ("ir",)),): 14,
+         (("s;Indef;Sg;Nom", ("",)), ("s;Indef;Pl;Nom", ("ar",))): 6,
+         (("s;Indef;Sg;Nom", ("",)), ("s;Indef;Pl;Nom", ("ir",))): 15,},
+         #(("s;Indef;Pl;Nom", ("ur"))): 3,
+         "A": {(("s;Masc;Sg;Nom", ("in",)),): 9,
+               (("s;Masc;Sg;Nom", ("gvin",)),): 12},
+         "V": {(("Indicative;Pres;Sg;P2", ("ar",)),): 1,
+               (("Indicative;Pres;Sg;P2", ("ir",)),): 23,
+               (("Indicative;Pres;Sg;P2", ("ur",)),): 3,
+               }
+         }
 default_params = {"Number": "PL"}
 order = {"N": ["Species", "Number", "Case"], "A": ["Gender", "Number", "Case"], "V": ["Mood", "Verbform", "Finiteness", "Tense", "Number", "Person", ]}
 
@@ -31,8 +45,7 @@ def patchV(lemma,table):
     for v in table["IMP"]:
         table["IMP"][v] = table["IMP"][v].pop("2") # only exists for 2nd person so eliminate person info
     for tense in table["IND"]:
-        table["IND"][tense]["person-singular"] = table["IND"][tense].pop("SG")
-        table["IND"][tense]["person-plural"] = table["IND"][tense].pop("PL").pop("3")
+        table["IND"][tense]["PL"] = table["IND"][tense]["PL"].pop("3")
     table.update(table.pop("noVerbform"))
     return table
 

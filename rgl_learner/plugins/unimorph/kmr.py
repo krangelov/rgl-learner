@@ -1,24 +1,29 @@
 iso3 = "Kmr"
 
-ignore_tags = ["LGSPEC1", "LGSPEC2"]
+ignore_tags = ["LGSPEC2"]
+
+params = {"VOC": ("voc", "Voc"),
+          "CONST": ("Const", "Case")}
 
 order = {"N": ["Species", "Case", "Number"],
          "A": ["Species", "Person", "Case", "Number", "Mood", "Aspect", "Polarity", "Tense", "Verbform"],
-         "V": ["Mood",  "Tense", "Polarity", "Person", "Number", "Species", "Copula", "Case",  "Aspect",  "Verbform"],
+         "V":  ["Polarity", "Verbform", "Mood",  "Tense", "Aspect", "Person", "Number", "Species", "Copula", "Case",  ],
          "Prep": ["Species", "Case", "Number"],
          "Adv": ["Species", "Case", "Number"],
          "Det": ["Species", "Case", "Number"],
          "Pron": ["Species", "Case", "Number"]}
 
-default_params = {"Polarity": "POS"}
+default_params = {"Polarity": "POS", "Case": "CONST"}
 
-required_forms = {"N": ["s;Def;Nom;Sg"],
-                  "V": []}
+required_forms = {"N": ["s;Def;Nom;Pl"], "V": ["Affirm;Indicative;Pres;Imperfective;P1;Sg;noCopula",
+                                               "Affirm;Indicative;Past;Imperfective;P1;Sg;noCopula"]}
 
 def filter_lemma(lemma, pos, table):
-    if pos in ["V.MSDR", "V.PTCP", "PRO", "DET", "PART", "NUM", "ADP", "Num", "Adp", "Digit", "Det", "Pron"]:
+    if pos in ["V.MSDR", "V.PTCP", "PRO", "DET", "PART", "NUM", "ADP", "Num", "Adp", "Digit", "Det", "Pron", "ADJ", "ADV"]:
         return True
     if lemma.startswith("pereng"):
+        return True
+    if "(" in lemma or ")" in lemma:
         return True
     return False
 
@@ -59,9 +64,14 @@ def merge_tags(pos, forms, w, tags):
         tags_2 = list(map(lambda x: x.replace("2", ""), tags))
         new_forms.extend(merge_tags(pos, forms, w, tags_1))
         new_forms.extend(merge_tags(pos, forms, w, tags_2))
-    elif "IMP" in tags and "SUBJ" in tags:
+    elif "IMP" in tags and "SBJV" in tags:
         tags_1 = list(map(lambda x: x.replace("IMP", ""), tags))
-        tags_2 = list(map(lambda x: x.replace("SUBJ", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("SBJV", ""), tags))
+        new_forms.extend(merge_tags(pos, forms, w, tags_1))
+        new_forms.extend(merge_tags(pos, forms, w, tags_2))
+    elif "IND" in tags and "SBJV" in tags:
+        tags_1 = list(map(lambda x: x.replace("IND", ""), tags))
+        tags_2 = list(map(lambda x: x.replace("SBJV", ""), tags))
         new_forms.extend(merge_tags(pos, forms, w, tags_1))
         new_forms.extend(merge_tags(pos, forms, w, tags_2))
     elif "IPFV" in tags and "PROG" in tags:
@@ -74,7 +84,6 @@ def merge_tags(pos, forms, w, tags):
     return [(w, tags)]
 
 def patchN(lemma, table):
-    pass
     df = table.pop("DEF",{})
     nom_def = df.get("noPerson", {}).get("NOM",{})
     nom_def.update(nom_def.pop("ACC",{}))
@@ -120,6 +129,23 @@ def patchAdv(lemma, table):
     table.clear()
     table["s"] = lemma
 
+
+def patchV(lemma, table):
+    for i in table:
+        table[i].update(table[i].pop("noVerbform"))
+        table[i].pop("MSDR")
+        table[i]["COND"] = {"PRS":table[i]["COND"]["PST"].pop("noAspect"),
+                     "PRF": table[i]["COND"]["PST"].pop("PRF")}
+                     
+
+        table[i]["IMP"] = table[i]["IMP"].pop("PRS")
+        table[i].pop("PTCP")
+    table["lemma"] = lemma
+    return table
+
+
+
+
 def patchVerb(lemma, table):
     table.pop("ACC",None)
 
@@ -132,9 +158,9 @@ def patchVerb(lemma, table):
         ind.setdefault("PST",{}).setdefault("PROG",{}).setdefault("POS",{}).setdefault("2",{}).setdefault("SG",x)
         ind.setdefault("PST",{}).setdefault("PROG",{}).setdefault("POS",{}).setdefault("3",{}).setdefault("SG",x)
 
+    
     sbjv = table.pop('SBJV',{}).get('PRS',{})
     table["SBJV"] = sbjv
-
     x = ind.get("SBJV",{}).get("PRS",{}).get("PST",{}).get("PFV",{}).get("NEG",{}).get("2",{}).get("3",{}).get("SG")
     if x:
         ind.pop("SBJV")
@@ -203,22 +229,22 @@ def patchVerb(lemma, table):
                             asp.setdefault(pol,{}).setdefault(person,{}).setdefault(number,"-")
 
     t = ind.get("PRS",{}).get("IPFV",{}).get("POS",{})
-    for person in ["1","2","3"]:
-        for number in ["SG","PL"]:
-            x = t.get(person,{}).get(number,{})
-            if type(x) == dict:
-                t[person][number] = x.get(None,"-")
+    #for person in ["1","2","3"]:
+    #    for number in ["SG","PL"]:
+    #        x = t.get(person,{}).get(number,{})
+    #        if type(x) == dict:
+    #            t[person][number] = x.get(None,"-")
 
-    t = {
-        "pres":      table["IND"]["PRS"]["IPFV"],
-        "pres_perf": table["IND"]["PRS"]["PRF"],
-        "past":      table["IND"]["PST"]["PFV"],
-        "past_perf": table["IND"]["PST"]["PRF"],
-        "past_prog": table["IND"]["PST"]["PROG"],
-        "cond_past": table["COND"]["PST"],
-        "cond_perf": table["COND"]["PRF"],
-        "imp":       table["IMP"],
-        "subj":      table["SBJV"]
-       }
-    table.clear()
-    table.update(t)
+    #t = {
+    #    "pres":      table["IND"]["PRS"]["IPFV"],
+    #    "pres_perf": table["IND"]["PRS"]["PRF"],
+    #    "past":      table["IND"]["PST"]["PFV"],
+    #    "past_perf": table["IND"]["PST"]["PRF"],
+    #    "past_prog": table["IND"]["PST"]["PROG"],
+    #    "cond_past": table["COND"]["PST"],
+    #    "cond_perf": table["COND"]["PRF"],
+    #    "imp":       table["IMP"],
+    #    "subj":      table["SBJV"]
+    #   }
+    #table.clear()
+   # table.update(t)

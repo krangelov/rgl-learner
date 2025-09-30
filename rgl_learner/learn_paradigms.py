@@ -528,10 +528,13 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
        #     pattern = None
         return pattern
 
-    def rewrite_forms(forms, p1, p2):
+    def rewrite_forms(forms, pats):
         new_forms = []
         for form, _ in forms:
-            new_forms.append(form.replace(p1, "pat_1").replace(p2, "pat_2"))
+            f = form
+            for num, pat in enumerate(pats):
+                f = f.replace(pat, f"pat_{num+1}")
+            new_forms.append(f)
         return new_forms
     
 
@@ -556,17 +559,39 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
                 p = re.compile(f"base_1.*{last_base}")
                 pat1 = re.match(p, forms[index])
                 if pat1:
+                    patterns = []
+                    i = 0
                     for num, form in enumerate(forms):
                         pat2 = re.match(rf"base_1.*{last_base}", form)
                         #if pat2:
                         #  print(pat2.group(0))
                         if pat2 and pat1.group(0) != pat2.group(0):
-                        #  print(pat2.group(0))
-                            second_forms.append(num)
+                            pat2 = pat2.group(0) 
+                            if pat2 not in patterns:
+                                patterns.append(pat2)
+                                if len(second_forms) > i:
+                                    second_forms[i].append(num)
+                                else:
+                                    second_forms.append([num,])
+                                i += 1 
+                            else: 
+                                idx = patterns.index(pat2)
+                                second_forms[idx].append(num)
+                        
 
         if second_forms:
-            second_index = Counter(second_forms).most_common(1)[0][0]
-            second_form = reverse_forms[second_index]
+            second_index = []
+            second_form = []
+            for f in second_forms[:3]:
+                i = 0
+                counts = Counter(f).most_common(10)
+                idx = counts[0][0]
+                while idx in second_index and i < len(counts):
+                    idx = counts[i][0]
+                    i += 1
+                if i < len(counts):
+                    second_index.append(idx)
+                    second_form.append(reverse_forms[idx])
         else:
             second_index = None
     else:
@@ -602,32 +627,41 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
         reverse_forms = reverse_dict(paradigm.typ.linearize())
         if required_forms:
             index = get_index(reverse_forms, required_forms[cat])
+        elif level and os.path.exists(f"{lang}_forms_{level}.json"): # temporary file
+            with open(f"{lang}_forms_{level}.json") as f:
+                required_forms = json.load(f)
+            index = get_index(reverse_forms, required_forms[cat])
         elif os.path.exists(f"{lang}_forms.json"): # temporary file
             with open(f"{lang}_forms.json") as f:
                 required_forms = json.load(f)
             index = get_index(reverse_forms, required_forms[cat])
         else:
             index = 0
+        
+      #  required_forms = {cat: [required_forms[cat][0],],}
 
         patterns = []
         
-        if second_index != None and "base_2" in forms[index]:
+        if second_index != None and "base_2" in forms[index] :
             last_base = re.findall(r"base_\d", forms[index])[-1]
             r1 = re.match(fr"base_1.*{last_base}", forms[index])
-            r2 = re.match(fr"base_1.*{last_base}", forms[second_index])
-            if r1 and r2:
+            patterns = []
+            pats = []
+            if r1:
                 pat1 = r1.group(0)
-                pat2 = r2.group(0)
-            
                 form_0 = forms[index].replace(pat1, "pat_1")
-                form_1 = forms[second_index].replace(pat2, "pat_2")
-
-                patterns = [get_pattern(form_0, lens, mult_base_words=mult_base_words),
-                            get_pattern(form_1, lens, mult_base_words=mult_base_words)]
+                patterns.append(get_pattern(form_0, lens, mult_base_words=mult_base_words))
+                pats.append(pat1)
+            for num, i in enumerate(second_index):
+                r2 = re.match(fr"base_1.*{last_base}", forms[i])
+                if r2:
+                    pat2 = r2.group(0)
+                    form_1 = forms[i].replace(pat2, f"pat_{num+2}")
+                    patterns.append(get_pattern(form_1, lens, mult_base_words=mult_base_words))
+                    pats.append(pat2)
                 
                 
-                
-                paradigm.forms = list(zip(rewrite_forms(paradigm.forms, pat1, pat2), guessed))
+            paradigm.forms = list(zip(rewrite_forms(paradigm.forms, pats), guessed))
         if not patterns:
             patterns = [get_pattern(forms[index], lens, mult_base_words=mult_base_words), ]
     
@@ -635,17 +669,45 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
 
         if patterns:
             if second_index:
-                paradigm.var_insts = [[("base",table[index]), ("form", table[second_index])] for ident,table in paradigm.tables]
+                insts = []
+                for ident, table in paradigm.tables:
+                    inst = [("base", table[index]), ]
+                    for num, i in enumerate(second_index):
+                        inst.append((f"form_{num+1}", table[i]))
+                    insts.append(inst)
+                paradigm.var_insts = insts
             else:
                 paradigm.var_insts = [[("base",table[index])] for ident,table in paradigm.tables]
         paradigm.pattern = patterns
 
-    if second_index != None:
-        required_forms[cat].append(second_form)
+    if second_index:
+        for i in second_form:
+            if i not in required_forms[cat]:
+                required_forms[cat].append(i)
 
     if mult_base_words > 0:
         print(f"Number of {cat} paradigms with more than 1 base: {mult_base_words}")
-    return required_forms[cat]
+    
+    
+    if allow_second_forms:
+        new_paradigms = []
+        exclude = []
+        for i,p1 in enumerate(paradigms):
+            if i not in exclude:
+                tables = p1.tables
+                ints = p1.var_insts
+                for j,p2 in enumerate(paradigms):
+                    if i != j and j not in exclude:
+                        if p1.pattern == p2.pattern and p1.forms == p2.forms: 
+                          #  print(p1.pattern, p2.pattern)
+                            p1.var_insts.extend(p2.var_insts)
+                            p1.tables.extend(p2.tables)
+                            exclude.append(j)
+                exclude.append(i)
+                new_paradigms.append(p1)
+        return required_forms[cat], new_paradigms
+
+    return required_forms[cat], paradigms
 
 def convert_pattern(elements):
     patterns = []
@@ -679,7 +741,7 @@ def convert_pattern(elements):
     else:
         return None
 
-def write_paradigm(i, max_i, par, cat):
+def write_paradigm(i, max_i, par, cat, allow_second_forms=True):
     if par.pattern[0]:
         names = [name for name, val in par.var_insts[0]]
     else:
@@ -714,7 +776,7 @@ def write_lexicon(i, max_i, par, cat):
     return code
 
 
-def learn(lang, dirname="data", level=None, allow_second_forms=False):
+def learn(lang, dirname="data", level=None, allow_second_forms=True):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         langcode, source, lexicon = pickle.load(f)
 
@@ -732,8 +794,11 @@ def learn(lang, dirname="data", level=None, allow_second_forms=False):
             paradigms = learnparadigms(typ,lexemes)
             req_forms = correct_paradigms(lang, lang_plugin, cat_name, paradigms, 
                                           level=level, allow_second_forms=allow_second_forms)
-            required_forms[cat_name] = req_forms
+            
+            required_forms[cat_name], paradigms = req_forms
             tables[cat_name].extend(paradigms)
+
+            
 
 
     print("Writing output files..")
@@ -742,18 +807,23 @@ def learn(lang, dirname="data", level=None, allow_second_forms=False):
 
     with open(f"{dirname}/{lang}/paradigms.pickle", "wb") as f:
         pickle.dump((source, langcode, tables), f)
-    with open(f"{lang}_forms.json", "w") as f: # temporary file
-        json.dump(required_forms, f)
-
-    with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
-        dct.write(
-            f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Morpho{langcode}, Prelude in {{\n\n""")
-        para.write(f"""resource Morpho{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")
-
-        for cat, table in tables.items():
-            for i, par in enumerate(table):
-                dct.write(write_lexicon(i+1, len(table), par, cat))
-                para.write("\n\n" + write_paradigm(i+1, len(table), par, cat))
-
-        dct.write("\n}")
-        para.write("\n}")
+    if level:
+        with open(f"{lang}_forms_{level}.json", "w") as f: # temporary file
+            json.dump(required_forms, f)
+    else:
+        with open(f"{lang}_forms.json", "w") as f: # temporary file
+            json.dump(required_forms, f)
+    
+   # with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
+   #     dct.write(
+   #         f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Morpho{langcode}, Prelude in {{\n\n""")
+   #     para.write(f"""resource Morpho{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")
+#
+   #     for cat, table in tables.items():
+   #         for i, par in enumerate(table):
+   #             dct.write(write_lexicon(i+1, len(table), par, cat))
+    #            para.write("\n\n" + write_paradigm(i+1, len(table), par, cat, allow_second_forms))
+    
+   #     dct.write("\n}")
+    #    para.write("\n}")
+#
