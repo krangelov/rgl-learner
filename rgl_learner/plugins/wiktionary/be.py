@@ -1,5 +1,7 @@
 iso3 = "Bel"
 
+vars = []
+
 params = {
   'infinitive': None,
   'nominative': ('Nom','Case'),
@@ -30,11 +32,18 @@ def preprocess(record):
         return False
     if 'Belarusian participles' in categories:
         return False
+    if 'Belarusian abbreviations' in categories:
+        return False
     for sense in record["senses"]:
         if 'Belarusian non-lemma forms' in sense.get("categories",[]):
             return False
         if 'Belarusian participles' in sense.get("categories",[]):
             return False
+        if 'Belarusian abbreviations' in sense.get("categories",[]):
+            return False
+
+    if " " in record["word"]:
+        return False
 
     record["word"] = record["word"].replace("́","")
     for form in record.get("forms",[]):
@@ -81,12 +90,9 @@ def patchPOS(lemma,tag,table):
 
 def patchN(lemma,table):
     noCase = table.pop("noCase",{})
-    sg = noCase.get("singular")
-    if sg != "-":
-        table["nominative"]["singular"] = sg
-    pl = noCase.get("plural")
-    if pl != "-":
-        table["nominative"]["plural"] = pl
+    sg = table.get("nominative",{}).get("singular","-")
+    if sg == "-":
+        table["nominative"]["singular"] = lemma
     table["s"] = {}
     for case in ["nominative","accusative","dative","genitive","instrumental","locative"]:
         table["s"][case] = table.pop(case)
