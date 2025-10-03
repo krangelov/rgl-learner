@@ -36,12 +36,19 @@ def preprocess(record):
         return False
     if 'Ukrainian participles' in categories:
         return False
+    if 'Ukrainian abbreviations' in categories:
+        return False
     for sense in record["senses"]:
         if 'Ukrainian non-lemma forms' in sense.get("categories",[]):
             return False
         if 'Ukrainian participles' in sense.get("categories",[]):
             return False
+        if 'Ukrainian abbreviations' in sense.get("categories",[]):
+            return False
 
+    if " " in record["word"]:
+        return False
+́
     record["word"] = record["word"].replace("́","")
     for form in record.get("forms",[]):
         form["form"] = form["form"].replace("́","")
@@ -112,12 +119,9 @@ required_forms = {
 
 def patchN(lemma,table):
     noCase = table.pop("noCase",{})
-    sg = noCase.get("singular")
-    if sg != "-":
-        table["nominative"]["singular"] = sg
-    pl = noCase.get("plural")
-    if pl != "-":
-        table["nominative"]["plural"] = pl
+    sg = table.get("nominative",{}).get("singular","-")
+    if sg == "-":
+        table["nominative"]["singular"] = lemma
     table["s"] = {}
     for case in ["nominative","accusative","dative","genitive","instrumental","locative"]:
         table["s"][case] = table.pop(case)
