@@ -148,7 +148,7 @@ def patchV(lemma, table):
     if "[" in table["indicative"]["future"]["impersonal"]:
         table["indicative"]["future"]["impersonal"] = table["indicative"]["future"]["impersonal"].split("[")[0]
 
-    table["indicative"].pop("noTense")
+    table["indicative"].pop("noTense",None)
    # table["passive"] = {"conditional": table["passive"].pop("conditional"),
   #                      "future": table["passive"]["indicative"].pop("future", "-"),
   ##                      "present": table["passive"]["indicative"].pop("present", "-"),
