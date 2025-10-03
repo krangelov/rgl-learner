@@ -2,6 +2,8 @@ import sys
 import os.path
 import importlib.util
 
+from collections import defaultdict
+
 class PluginWrapper:
     def __init__(self,module):
         self.module = module
@@ -11,8 +13,10 @@ class PluginWrapper:
         self.params_order = module.get("params_order", {})
         self.ignore_tags = module.get("ignore_tags", [])
         self.default_params = module.get("default_params", {})
-        self.required_forms = module.get("required_forms", {})
+        self.required_forms = module.get("required_forms", defaultdict())
         self.separate_values = module.get("separate_values", {})
+        self.vars = module.get("vars", {})
+        self.rules = module.get("rules", {})
 
     def preprocess(self,*args):
         fn = self.module.get("preprocess")
