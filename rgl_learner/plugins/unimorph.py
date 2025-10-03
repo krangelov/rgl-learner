@@ -2,6 +2,8 @@ import sys
 import re
 import glob
 import rgl_learner.plugins as plugins
+import pickle
+from tqdm.auto import tqdm
 
 ignore_tags = ["LGSPEC1", "LGSPEC2"]
 
@@ -31,7 +33,7 @@ params = {
     "COP": ("Copula", "Copula"),
     "PCTP": ("Participle", "Verbform"),
     "MSDR": ("Masdar", "Verbform"),
-    "PTCP": ("Particle", "Verbform"),
+    "PTCP": ("Participle", "Verbform"),
     "IND": ("Indicative", "Mood"),
     "ADM": ("Admirative", "Mood"),
     "AUNPRP": ("Non_Purposive", "Mood"),
@@ -300,7 +302,10 @@ def extract(lang, filename=None):
                 line = line.strip()
                 if line == "":
                     continue
-                lemma, form, tags = line.split("\t")
+                line = line.split("\t")
+                lemma = line[0]
+                form = line[1].split(",")[0]
+                tags = line[2]
                 tags = tags.replace(":", ";").replace(".", ";")
                 tags = tags.replace("V;V", "V")
                 tags = filter_tags(tags)
@@ -316,7 +321,7 @@ def extract(lang, filename=None):
         d = {}
         datasets = glob.glob(f"data/{lang}/{lang}*")
         for dataset in datasets:
-            if "derivations" not in dataset and "segmentations" not in dataset:
+            if "derivations" not in dataset and "segmentations" not in dataset and "args" not in dataset:
                 d.update(open_file(dataset))
 
     res = []
@@ -331,6 +336,7 @@ def extract(lang, filename=None):
                         gender_set.add(gender)
             tags = list(gender_set)
         res.append((lemma, pos, forms, tags))
+   
     return res
 
 
