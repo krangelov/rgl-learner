@@ -477,7 +477,7 @@ def learnparadigms(typ,inflectiontables):
 
 
 def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None, 
-                      allow_second_forms=True):
+                      allow_second_forms=True, n=1):
     def get_index(reverse_forms, required_forms):
         if reverse_forms[0].startswith("s;") and not required_forms[0].startswith("s;"):
             return reverse_forms.index("s;" + required_forms[0])
@@ -582,7 +582,7 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
         if second_forms:
             second_index = []
             second_form = []
-            for f in second_forms[:3]:
+            for f in second_forms[:n]:
                 i = 0
                 counts = Counter(f).most_common(10)
                 idx = counts[0][0]
@@ -741,7 +741,7 @@ def convert_pattern(elements):
     else:
         return None
 
-def write_paradigm(i, max_i, par, cat, allow_second_forms=True):
+def write_paradigm(i, max_i, par, cat, allow_second_forms=False):
     if par.pattern[0]:
         names = [name for name, val in par.var_insts[0]]
     else:
@@ -776,7 +776,7 @@ def write_lexicon(i, max_i, par, cat):
     return code
 
 
-def learn(lang, dirname="data", level=None, allow_second_forms=True):
+def learn(lang, dirname="data", level=None, allow_second_forms=False, n=1):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         langcode, source, lexicon = pickle.load(f)
 
@@ -793,7 +793,7 @@ def learn(lang, dirname="data", level=None, allow_second_forms=True):
             typ,lexemes = next(iter(table.items()))
             paradigms = learnparadigms(typ,lexemes)
             req_forms = correct_paradigms(lang, lang_plugin, cat_name, paradigms, 
-                                          level=level, allow_second_forms=allow_second_forms)
+                                          level=level, allow_second_forms=allow_second_forms, n=n)
             
             required_forms[cat_name], paradigms = req_forms
             tables[cat_name].extend(paradigms)
@@ -814,16 +814,15 @@ def learn(lang, dirname="data", level=None, allow_second_forms=True):
         with open(f"{lang}_forms.json", "w") as f: # temporary file
             json.dump(required_forms, f)
     
-   # with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
-   #     dct.write(
-   #         f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Morpho{langcode}, Prelude in {{\n\n""")
-   #     para.write(f"""resource Morpho{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")
-#
-   #     for cat, table in tables.items():
-   #         for i, par in enumerate(table):
-   #             dct.write(write_lexicon(i+1, len(table), par, cat))
-    #            para.write("\n\n" + write_paradigm(i+1, len(table), par, cat, allow_second_forms))
+    with open(f"{dirname}/{lang}/Dict{langcode}.gf", "w") as dct, open(f"{dirname}/{lang}/Morpho{langcode}.gf", "w") as para:
+        dct.write(
+            f"""concrete Dict{langcode} of Dict{langcode}Abs = Cat{langcode} ** open Morpho{langcode}, Prelude in {{\n\n""")
+        para.write(f"""resource Morpho{langcode} = open Cat{langcode}, Res{langcode}, Predef in {{\n\noper""")
+
+        for cat, table in tables.items():
+            for i, par in enumerate(table):
+                dct.write(write_lexicon(i+1, len(table), par, cat))
+                para.write("\n\n" + write_paradigm(i+1, len(table), par, cat, allow_second_forms))
     
-   #     dct.write("\n}")
-    #    para.write("\n}")
-#
+        dct.write("\n}")
+        para.write("\n}")
