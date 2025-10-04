@@ -23,10 +23,9 @@ order = {"V": ["Polarity", "Verbform", "Converb", "PartType", "Finiteness", "Voi
          "N": ["Possession", "Case", "Species", "Number"], 
          "A": ["Possession", "Case", "Species", "Number"]}
 
-#required_forms = {"V": ["Affirm;Nonfinite"], "N": ["s;Nom;Indef;Sg"], "A": ["s;Nom;Indef;Sg"]}
-
-required_forms = {"V": ["Affirm;Nonfinite"], "N": ["s;Nom;Indef;Sg", "s;Dat;Indef;Sg"], 
-                  "A": ["s;Nom;Indef;Sg"]}
+required_forms = {"V": ["s"],
+                  "N": ["s;Nom;Sg", "s;Dat;Sg"], 
+                  "A": ["s;Nom;Sg"]}
 
 rules = {"N": {
     (("s;Nom;Indef;Sg", ("ի",)), ("s;Dat;Indef;Sg", ("ու",))) : 3,
@@ -58,61 +57,68 @@ def filter_lemma(lemma,tag,table):
     return False
 
 def patchV(lemma, table):
+
+    table.pop("NEG")
+    table.update(table.pop("POS"))
+
+    table.update(table.pop("noVerbform"))
+    table.update(table.pop("noFiniteness"))
+
+    table["PTCP"]["SBJ"] = table["PTCP"]["SBJ"].pop("SUB")
+
+    table["CVB"]["LGSPEC02"] = table["CVB"]["LGSPEC02"].pop("FUT")
+    table["CVB"]["LGSPEC03"] = table["CVB"]["LGSPEC03"].pop("FUT")
+
+    table["CVB"].update(table["CVB"].pop("noConverb"))
+    table["CVB"].pop("PRF")
+    table["s"] = table.pop("NFIN")
+    if table["s"] == "-":
+        table["s"] = lemma
+
+    table["CVB"]["Negative"] = table["CVB"].pop("noAspect")
+
+    table.update(table.pop("ACT"))
+    table.update(table.pop("noMood"))
     
-    table["POS"].update(table["POS"].pop("noVerbform"))
-    table["NEG"].update(table["NEG"].pop("noVerbform"))
-    table["POS"].update(table["POS"].pop("noFiniteness"))
-    table["NEG"].update(table["NEG"].pop("noFiniteness"))
-
-    table["POS"]["PTCP"]["SBJ"] = table["POS"]["PTCP"]["SBJ"].pop("SUB")
-    table["NEG"]["PTCP"]["SBJ"] = table["NEG"]["PTCP"]["SBJ"].pop("SUB")
-
-    table["POS"]["CVB"]["LGSPEC02"] = table["POS"]["CVB"]["LGSPEC02"].pop("FUT")
-    table["POS"]["CVB"]["LGSPEC03"] = table["POS"]["CVB"]["LGSPEC03"].pop("FUT")
-
-    table["POS"]["CVB"].update(table["POS"]["CVB"].pop("noConverb"))
-   # table["POS"]["CVB"].update(table["POS"]["CVB"].pop("noMood"))
-   # table["NEG"]["CVB"]["LGSPEC02"] = table["NEG"]["CVB"]["LGSPEC02"].pop("FUT")
-
-    table["POS"].update(table["POS"].pop("ACT"))
-    table["POS"].update(table["POS"].pop("noMood"))
-    
-    table["POS"]["IMP"] = table["POS"]["IMP"].pop("2") # only exists for 2nd person so eliminate person info
-    table["NEG"]["IMP"] = table["NEG"]["IMP"].pop("2") 
+    table["IMP"] = table["IMP"].pop("2") # only exists for 2nd person so eliminate person info
    
     # Tense
     
-    for i in ["POS", "NEG"]:
-        table[i]["COND"] = table[i]["COND"].pop("FUT") 
-        table[i]["SBJV"] = table[i]["SBJV"].pop("FUT") 
+    table["COND"] = table["COND"].pop("FUT") 
+    table["SBJV"] = table["SBJV"].pop("FUT") 
 
-        table[i]["COND"]["NPRS"] = table[i]["COND"].pop("noAspect")
-        table[i]["SBJV"]["NPRS"] = table[i]["SBJV"].pop("noAspect")
+    table["COND"]["NPRS"] = table["COND"].pop("noAspect")
+    table["SBJV"]["NPRS"] = table["SBJV"].pop("noAspect")
+    
+    table["COND"].pop("IPFV")
+    table["COND"].pop("PFV")
+    table["SBJV"].pop("IPFV")
+    table["SBJV"].pop("PFV")
 
-        table[i]["IND"]["PST-IMPF"] = table[i]["IND"]["noTense"].pop("IPFV")
-        table[i]["IND"].pop("noTense")
-        
-        table[i]["IND"]["FUT-PERF"] = table[i]["IND"]["FUT"].pop("PRF")
-        table[i]["IND"]["FUT"] = table[i]["IND"]["FUT"].pop("noAspect")
-
-        table[i]["IND"]["PRS-PERF"] = table[i]["IND"]["PRS"].pop("PRF")
-        table[i]["IND"]["PRS"] = table[i]["IND"]["PRS"].pop("noAspect")
-
-        table[i]["IND"]["PST-PERF"] = table[i]["IND"]["PST"].pop("PRF")
-        table[i]["IND"]["PST"] = table[i]["IND"]["PST"].pop("noAspect")
-
-
-
-
+    table["PST"] = table["IND"]["PST"].pop("noAspect")
+    table.pop("IND")
 
 
 def patchN(lemma, table):
     table["s"] = table.pop("noPossession")
-    table["poss"] = {"PSS1S": table.pop("PSS1S"),
-                     "PSS2S": table.pop("PSS2S")}
-    
+    table["def_nom"] = table["s"]["NOM"].pop("DEF")
+    table["def_dat"] = table["s"]["DAT"].pop("DEF")
+    table["s"]["NOM"] = table["s"]["NOM"].pop("INDF")
+    table["s"]["DAT"] = table["s"]["DAT"].pop("INDF")
+    table["s"].pop("SUB")
+    table["poss1"] = table.pop("PSS1S")
+    table["poss2"] = table.pop("PSS2S")
+    table["poss1"].pop("SUB")
+    table["poss2"].pop("SUB")
+
 def patchA(lemma, table):
     table["s"] = table.pop("noPossession")
-    table["poss"] = {"PSS1S": table.pop("PSS1S"),
-                     "PSS2S": table.pop("PSS2S")}
-    
+    table["def_nom"] = table["s"]["NOM"].pop("DEF")
+    table["def_dat"] = table["s"]["DAT"].pop("DEF")
+    table["s"]["NOM"] = table["s"]["NOM"].pop("INDF")
+    table["s"]["DAT"] = table["s"]["DAT"].pop("INDF")
+    table["s"].pop("SUB")
+    table["poss1"] = table.pop("PSS1S")
+    table["poss2"] = table.pop("PSS2S")
+    table["poss1"].pop("SUB")
+    table["poss2"].pop("SUB")
