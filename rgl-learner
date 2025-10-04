@@ -6,6 +6,7 @@ import rgl_learner.morpho_cats
 import rgl_learner.morpho_cats_3
 import rgl_learner.learn_paradigms
 import rgl_learner.smart_dictionary
+import rgl_learner.light_syntax
 import rgl_learner.documentation
 import rgl_learner.paradigm_builder
 import rgl_learner.build_wordnet
@@ -51,6 +52,8 @@ elif len(sys.argv) >= 3 and sys.argv[1] == "smart-paradigms":
                                                 input_json=args.json)
 elif len(sys.argv) == 3 and sys.argv[1] == "smart-dictionary":
     rgl_learner.smart_dictionary.rewrite(sys.argv[2])
+elif len(sys.argv) == 3 and sys.argv[1] == "light-syntax":
+    rgl_learner.light_syntax.write(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "documentation":
     rgl_learner.documentation.learn(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "build-wordnet":
@@ -61,5 +64,6 @@ else:
     print(f"          {sys.argv[0]} learn-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-dictionary <lang-code>")
+    print(f"          {sys.argv[0]} light-syntax <lang-code>")
     print(f"          {sys.argv[0]} documentation <lang-code>")
     print(f"          {sys.argv[0]} build-wordnet <lang-code>")
