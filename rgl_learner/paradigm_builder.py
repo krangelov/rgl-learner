@@ -6,14 +6,15 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from rgl_learner.utils import *
 from rgl_learner.json_utils import *
-from scipy.stats import entropy
+from scipy.stats import entropy as entropy_function
 import re
 from random import shuffle, choice, seed
 import random
 from pprint import pprint
 import rgl_learner.plugins as plugins
+from rgl_learner.error_analysis import error_analysis
 
-evaluate = False
+evaluate = True
 normalize = lambda x: re.sub(r"^s;", "",x).lower() if evaluate else x
 
 get_typ = lambda x: x.typ_dict if x.typ_dict else reverse_dict(x.typ.linearize())
@@ -25,7 +26,7 @@ def format_unimorph(tokens):
         for (tag, form), true_form in zip(forms.items(), true_forms):
             um_tag = ";".join(
                 [pos,]
-                + [gf2unimorph[t] for t in tag.split(";") if t in gf2unimorph]
+                + [gf2unimorph[t.title()] for t in tag.split(";") if t.title() in gf2unimorph]
             )
             unimorph.append("\t".join([lemma, true_form, form, um_tag, tag]))
     return "\n".join(unimorph)
@@ -51,7 +52,7 @@ class LemmaTree:
         mc_lemma_form: str = None,
         shuffle_data: str = True,
         rules: dict = None,
-        vars: dict = None,
+        vars: dict = {},
         required_forms: list = None,
     ):
 
@@ -105,12 +106,17 @@ class LemmaTree:
 
         self.test, self.tokens = list(zip(*test))
 
+       # self.placeholders = [x for x, form in enumerate(self.forms) if form.pattern[0] == ['base_1',]]
 
+        self.placeholders = [form.pattern[0] for x, form in enumerate(self.forms)]
 
         if stopping == "max_length":
             self.max_depth = max([len(x[0]) for x in self.train]) + 1
         else:
             self.max_depth = max_depth
+
+
+
 
         self.min_sample_leaf = min_sample_leaf
         self.rules = defaultdict()
@@ -123,7 +129,7 @@ class LemmaTree:
                     for elem in subrule:
                         if elem.startswith("#"):
                             if elem in vars:
-                                regexp += "(" + "|".join(vars[elem].strip('"')) + ")"
+                                regexp += "(" + "|".join(vars[elem]) + ")"
                             else:
                                 raise AttributeError (f"{elem} is not in variables list")
                         else:
@@ -147,9 +153,9 @@ class LemmaTree:
         """Form tokens based on predicted forms by
         matching patterns"""
         token_dict = {}
-        
         if pattern and None not in pattern:
             full_match, base_dict, new_pattern, stem_name = parse_pattern(stem, pattern)
+
             if not test or full_match[0]:
                 base_dict = {} # overwrite base_dict
                 for match in full_match:
@@ -200,8 +206,12 @@ class LemmaTree:
                     if "pat_1" in base_dict:
                         base_dict[pat] = base_dict["pat_1"]
                     else:
-                        base_dict[pat] = base_dict["base_1"]
-                        base_dict["pat_1"]  = base_dict["base_1"]
+                        ps = [v for x, v in base_dict.items() if x.startswith("pat")]
+                        if ps:
+                            base_dict[pat] = ps[0]
+                        else:
+                            base_dict[pat] = base_dict["base_1"]
+                            base_dict["pat_1"]  = base_dict["base_1"]
 
         for label, form in labels.items():
             label = normalize(label)
@@ -213,7 +223,6 @@ class LemmaTree:
                 token_dict[label] = form.replace("+", "").replace('"', "")
             else:
                 token_dict[label] = "-"
-
         return token_dict
 
     def define_affixation(self):
@@ -245,7 +254,7 @@ class LemmaTree:
                 if form in self.form_distribution[d]:
                     possible_forms.append(self.form_distribution[d][form].replace("s;", ""))
             form_prob = [possible_forms.count(f)/len(possible_forms) for f in set(possible_forms)]
-            return form, entropy(form_prob)
+            return form, entropy_function(form_prob)
 
         return ""
 
@@ -258,12 +267,14 @@ class LemmaTree:
             if value != "-" and form != "lemma":
                 if forms.get(form) == value:
                     coverage.append(1)
+                    #print(forms.get(form), value)
                 else:
                     coverage.append(0)
                     if forms.get(form) != "-":
                         errors_by_token = self.calculate_error_rate(form, value, forms.get(form), dist)
                         errors.append(errors_by_token)
-        
+                      #  print(forms.get(form), value)
+                        
         return coverage, errors
 
 
@@ -284,29 +295,59 @@ class LemmaTree:
                      break
             return found
 
+        #
         if prefix:
-            if self.rules.get(tuple(prefix)) and self.rules[tuple(prefix)][0] != value and not check_one_form(cur_form, label, value, prefix):
-                rule = prefix + [(cur_form, label),]
-                self.rules[tuple(rule)] = (value, entropy, class_dist)
+            rule = tuple(prefix + [(cur_form, label),])
+           # if rule in self.rules:
+#
+           #     self.rules[rule] = (value, entropy, class_dist)
+          #  elif self.rules.get(tuple(prefix)) and self.rules[tuple(prefix)][0] != value and not check_one_form(cur_form, label, value, prefix):
+                    
+            self.rules[rule] = (value, entropy, class_dist)
         else:
-            if not check_one_form(cur_form, label, value):
-                self.rules[((cur_form, label),)] = (value, entropy, class_dist)
+           # if ((cur_form, label),) in self.rules:
+                #print(cur_form, label, self.rules[((cur_form, label),)], value)
+            self.rules[((cur_form, label),)] = (value, entropy, class_dist)
+
+            #elif not check_one_form(cur_form, label, value):
+            #        self.rules[((cur_form, label),)] = (value, entropy, class_dist)
+    
+    def match_pattern(self, ending, pattern):
+ 
+        pattern = pattern[0]
+        if self.how == "suffix":
+            pattern = pattern[-1]
+        else:
+            pattern = pattern[0]
+
+        
+        if isinstance(pattern, list):
+            pattern = [x.strip('"') for x in pattern]
+            if len(pattern) == 1 and (pattern[0].startswith("base") or pattern[0].startswith("pat")):
+                return True                                          
+            elif ending in pattern:
+                return True
+        elif pattern.strip('"') in ending:
+            return True
+        
+        return False
+
 
     def calculate_entropy(self, labels):
         """Calculate entropy of given label"""
         label2entropy = defaultdict(list)
         for label, tags in labels.items():
+           # tags = [(l, f) for l, f in tags if self.match_pattern(label, self.forms[f].pattern)]
             lemmas, classes = list(zip(*tags))
             classes = Counter(classes)
             class_dist = {
-                class_name: one_class / sum(classes.values())
-                for class_name, one_class in classes.items()
-            }
+                    class_name: one_class / sum(classes.values())
+                    for class_name, one_class in classes.items()
+                }
             label2entropy[label] = (
-                entropy(list(class_dist.values())),
-                dict(sorted(class_dist.items(), key=lambda x: -x[1]))
-            )
-
+                    entropy_function(list(class_dist.values())),
+                    dict(sorted(class_dist.items(), key=lambda x: -x[1]))
+                )
         return label2entropy
 
     def build_node(self, lemmas, position):
@@ -324,39 +365,39 @@ class LemmaTree:
                    add_all=True, entropy=10000):
         "Building a tree for a given form"
         entropy_scores, label2classes = self.build_node(lemmas, position)
-
         position += 1
         for label, (entropy_score, class_dist) in entropy_scores.items():
-            if entropy_score < 0.05:
-                self.update_rules(label, label2classes[label][0][1],
-                                  class_dist=list(class_dist.keys()),
-                                  prefix=prefix, cur_form=cur_form,
-                                  entropy=entropy_score)
-            else:
-                if add_all and entropy_score <= entropy:
-                    maxval = next(iter(class_dist.values()))
-                    res = list(filter(lambda x: class_dist[x] == maxval, class_dist))
-                    if len(res) == 1:
-                        self.update_rules(label, res[0], prefix=prefix,
-                                          class_dist=list(class_dist.keys()),
-                                          cur_form=cur_form, entropy=entropy_score)
-                    else:
-                        classes = Counter([x[1] for x in lemmas if x[1] in res])
-                        maxval = max(classes.values())
+                if entropy_score == 0:
+                    self.update_rules(label, label2classes[label][0][1],
+                                    class_dist=list(class_dist.keys()),
+                                    prefix=prefix, cur_form=cur_form,
+                                    entropy=entropy_score)
+                else:
+                    if add_all and entropy_score <= entropy:
+                        maxval = next(iter(class_dist.values()))
+                        res = list(filter(lambda x: class_dist[x] == maxval, class_dist))
+                        if len(res) == 1:
+                            self.update_rules(label, res[0], prefix=prefix,
+                                            class_dist=list(class_dist.keys()),
+                                            cur_form=cur_form, entropy=entropy_score)
+                        else:
+                            classes = Counter([x[1] for x in lemmas if x[1] in res])
+                            maxval = max(classes.values())
 
-                        for i in res:
-                            if classes[i] == maxval:
-                                self.update_rules(label, i, prefix=prefix,
-                                                  class_dist=list(class_dist.keys()),
-                                                  cur_form=cur_form, entropy=entropy_score)
-                                break
-                
-                    if (
-                        position <= self.max_depth
-                        and len(label2classes[label]) >= self.min_sample_leaf
-                    ):
-                        self.build_tree(label2classes[label], position, prefix=prefix,
-                                        cur_form=cur_form, add_all=True, entropy=entropy_score)
+                            for i in res:
+                                if classes[i] == maxval:
+                                    self.update_rules(label, i, prefix=prefix,
+                                                    class_dist=list(class_dist.keys()),
+                                                    cur_form=cur_form, entropy=entropy_score)
+                                    break
+                    
+                        if (
+                            position <= self.max_depth
+                            and len(label2classes[label]) >= self.min_sample_leaf
+                        ):
+                            self.build_tree(label2classes[label], position, prefix=prefix,
+                                            cur_form=cur_form, add_all=True, entropy=entropy_score)
+        
 
                     
     def rewrite_rules(self):
@@ -382,23 +423,22 @@ class LemmaTree:
 
             if self.how == "suffix":
                 pattern = self.forms[tag].pattern[-1]
+                
                 if isinstance(pattern, str):
                     pattern = pattern.strip('"')
                     diff = len(ending) - len(pattern)
-                    rest = self.forms[tag].pattern[:-1]
                 else:
-                    diff = len(ending)
-                    rest = self.forms[tag].pattern
-                
+                   diff = len(ending)
+                rest = self.forms[tag].pattern[0]
                 if_var = any([isinstance(x, str) for x in rest])
                 ending = get_ending(pattern, ending)
-                
                 beginning = []
                 if if_var:
                     for i in rest[::-1]:
                         if isinstance(i, str):
-                            if  diff > 0:
-                                beginning.append(i.strip('"')[:-diff])
+                            if diff > 0:
+                                i = i.strip('"')
+                                beginning.append(i[:-diff])
                                 diff -= len(i)
                             else:
                                 beginning.append(i.strip('"'))
@@ -409,16 +449,19 @@ class LemmaTree:
                                 if diff > 0:
                                     if i[1]-diff > 0:
                                         regexp.append(f".{i[1]-diff}")
-                                        diff -= i[1]
+                                    diff -= i[1]
+                                    
                                 else:
                                     regexp.append(f".{i[1]}")
                             else:
                                 for x in i[1]:
                                     if isinstance(x, int):
                                         if diff > 0:
+                                            
                                             if x-diff > 0:
                                                 regexp.append(f".{x-diff}")
-                                                diff -= x
+                                            diff -= x
+                                                
                                         else:
                                             regexp.append(f".{x}")
                                     elif  diff > 0:
@@ -432,8 +475,8 @@ class LemmaTree:
                                 beginning.append("(" + "|".join(regexp) +  ")")
                                 
                         else:
+                            
                             beginning.append(".*")
-
 
                 ending = "".join(beginning[::-1]) + ending
                 
@@ -442,10 +485,11 @@ class LemmaTree:
                 if isinstance(pattern, str):
                     pattern = pattern.strip('"')
                     diff = len(ending) - len(pattern)
-                    rest = self.forms[tag].pattern[1:]
+                    
                 else:
                     diff = len(ending)
                     rest = self.forms[tag].pattern
+                rest = self.forms[tag].pattern[0]
                 if_var = any([isinstance(x, str) for x in rest])
                 ending = get_ending(pattern, ending)
                 beginning = []
@@ -454,7 +498,7 @@ class LemmaTree:
                         if isinstance(i, str):
                             if  diff > 0:
                                 beginning.append(i.strip('"')[diff:])
-                                diff -= len(i)
+                                diff -= len(i.strip('"'))
                             else:
                                 beginning.append(i.strip('"'))
                             
@@ -464,7 +508,7 @@ class LemmaTree:
                                 if diff > 0:
                                     if i[1]-diff > 0:
                                         regexp.append(f".{i[1]+diff}")
-                                        diff -= i[1]
+                                    diff -= i[1]
                                 else:
                                     regexp.append(f".{i[1]}")
                             else:
@@ -473,7 +517,7 @@ class LemmaTree:
                                         if diff > 0:
                                             if x-diff > 0:
                                                 regexp.append(f".{x+diff}")
-                                                diff -= x
+                                            diff -= x
                                         else:
                                             regexp.append(f".{x}")
                                     elif  diff > 0:
@@ -494,7 +538,7 @@ class LemmaTree:
     
         self.rules = rules
 
-
+    
 
     def fit(self, forms=None, start=0, prefix=[], new_form=None,
             required_forms=[]):
@@ -502,18 +546,20 @@ class LemmaTree:
         score = []
         cov = []
         code = ""
+        f2args = {}
         train_cov = 0
         possible_forms = list(self.train_tokens[0].keys())
         self.required_forms = required_forms
+
         for i in range(self.iters):
             if i == 0:
                 prefix = []
                 self.build_tree(lemmas=self.train, prefix=prefix, cur_form=self.other_forms[0])
                 self.rewrite_rules()
-                #print(self.rules)
                 preds, train_scores, avg, length, errors, forms = self.evaluate(i, test=False)
             else:
                 all_forms = {}
+               
                 for (affix, entropy), form in forms.items():
                     if len(form) > 1:
                         lemma2class = [
@@ -523,14 +569,13 @@ class LemmaTree:
                         if self.train:
                             self.build_tree(self.train, prefix=list(affix),
                                                 cur_form=new_form, entropy=entropy)
-
                             preds, train_scores, avg, length, errors, new_forms = self.evaluate(i, test=False)
                             cov.extend(avg)
                             all_forms.update(new_forms)
                 forms = all_forms
             
 
-            if train_scores["coverage"] < train_cov:
+            if train_scores["coverage"] and train_scores["coverage"] < train_cov:
                 break
             else:
                 train_cov = train_scores["coverage"]
@@ -539,7 +584,8 @@ class LemmaTree:
             preds, scores, avg, length, errors_test = self.evaluate(i)
             if self.dev:
                 errors = errors_test
-            code += write_gf_code(self.pos, self.sort_rules(self.rules, i), self.other_forms, self.how)
+            c, f2args = write_gf_code(self.pos, self.sort_rules(self.rules, i),  self.other_forms, self.how, self.forms, f2args)
+            code += c
             score.append(scores["coverage"])
             if errors: # and i < self.iters-1 and forms:
                 if i+1 < len(required_forms):
@@ -559,9 +605,9 @@ class LemmaTree:
             else:
                 break
             if not new_form:
-                return score, preds, code
+                return score, preds, (code, f2args)
 
-        return score, preds, code
+        return score, preds, (code, f2args)
 
     def sort_rules(self, rules, iteration):
         def gen_list(x, i):
@@ -591,8 +637,6 @@ class LemmaTree:
         cur_rules = self.sort_rules(self.rules, i)
 
 
-        #print(cur_rules)
-
         forms_by_tag = defaultdict(list)
 
         if data:
@@ -606,13 +650,14 @@ class LemmaTree:
 
 
         # find a suitable paradigm
-        #most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else 0
-        most_common = 0
+        most_common = Counter([x for _, x in self.train]).most_common(1)[0][0] if self.train else 0
+
+        #most_common = -1
         common_dist = [x for _, x in self.train]
         for (lemma, tag), token in zip(lemmas, tokens):
             #print(token.keys())
             y_true.append(tag)
-            pred = most_common
+            pred = -1
             pred_dist = common_dist
             for rule, (pred_tag, entropy, dist) in cur_rules:
                 passes = []
@@ -621,8 +666,6 @@ class LemmaTree:
                     
                     val = False
                     word = token.get(form, "-")
-                    #print(form)
-                    #print(token["noVerbform;Nonfinite"])
                  
                     val = match_token(word, subrule)
                     passes.append(val)
@@ -634,20 +677,29 @@ class LemmaTree:
                         forms_by_tag[(rule, entropy)].append((token, tag))
                     break
 
+            if pred == -1 :
+                pred = most_common
+                forms_by_tag[(((self.other_forms[0], ""),), 100)].append((token, tag))
+
+
             y_pred.append(pred)
             distribution.append(pred_dist)
+            
 
         coverage = []
         preds = []
         errors = []
 
+        #print(lemmas)
+
         # compare and calculate coverage score
         for (lemma, tag), token, pred, pred_dist in zip(lemmas, tokens, y_pred, distribution):
-            table = self.forms[pred]
             pred_labels = self.form_distribution[pred]
-            
+
+            table = self.forms[pred]
             base = [token[normalize(x)] if normalize(x) in token else "-" for x in self.required_forms]
             pred_forms = self.form_token(base, table.pattern, pred_labels, test=form_pattern, iter=i)
+                
             true_values = [token.get(v, "-") for v in pred_forms]
 
             preds.append((self.pos, lemma, pred_forms, true_values, pred, tag))
@@ -674,12 +726,14 @@ class LemmaTree:
         else:
             error_list = []
 
+    
+
         scores = {
                 "accuracy": accuracy_score(y_true, y_pred),
                 "f1": f1_score(y_true, y_pred, average="micro"),
                 "precision": precision_score(y_true, y_pred, average="micro"),
                 "recall": recall_score(y_true, y_pred, average="micro"),
-                "coverage": sum(coverage) / len(coverage),
+                "coverage": sum(coverage) / len(coverage) if coverage else None,
             }
 
         if test:
@@ -687,37 +741,59 @@ class LemmaTree:
         else:
             return preds, scores, coverage, len(coverage), error_list, forms_by_tag
 
-def write_gf_code(pos_tag, rules, other_forms, how):
-    strings = " -> ".join(["Str",] * len(other_forms))
-    if len(other_forms) == 1:
-        args = ["form"]
-        tupl = "form"
-    else:
-        args = [f"form{num+1}" for num in range(len(other_forms))]
-        tupl = "<"+", ".join(args)+">"
-    gf_code = f"""  reg{len(other_forms) if len(other_forms) > 1 else ""}{pos_tag} : {strings} -> {pos_tag}   -- {"  ".join(other_forms)}\n    = \\{", ".join(args)} -> case {tupl} of {{\n"""
+def write_gf_code(pos_tag, rules, other_forms, how, forms, f2args ): # add paradigm
+    gf_code =  ""
+    m = len(other_forms)
+    if len(other_forms) > 1:
+        fname2 = f"reg{len(other_forms)-1 if len(other_forms) > 2 else ''}{pos_tag}"
+        if m < f2args[fname2]:
+            m = f2args[fname2]
     for rule, (class_tag, entropy, _) in rules:
         rule_string = []
         if len(rule) == len(other_forms):
             for form, subrule in rule:
                 if how == "suffix":
-                    rule_string.append(f"_ + \"{subrule}\"")
+                    if subrule.startswith(".*"):
+                        subrule = subrule.replace(".*", "")
+                    rule_string.append(f"_ + \"{subrule.replace(".", "_")}\"")
                 else:
-                    rule_string.append(f"\"{subrule}\" + _")
+                    if subrule.endswith(".*"):
+                        subrule = subrule.replace(".*", "")
+                    rule_string.append(f"\"{subrule.replace(".", "_")}\" + _")
 
             tag = str(class_tag + 1).zfill(3)
+            pat = len(forms[class_tag].pattern)
+            if pat > m: 
+                m = pat
             if len(other_forms) > 1:
-                gf_code += f"""\t\t<{", ".join(rule_string)}> => mk{pos_tag}{tag} form1;\n"""
+                gf_code += f"""\t\t<{", ".join(rule_string)}> => mk{pos_tag}{tag} {" ".join([f"form{num+1}" for num in range(pat)])};\n"""
+            elif pat > 1: 
+                gf_code += f"""\t\t{", ".join(rule_string)} => mk{pos_tag}{tag} {" ".join([f"form{num+1}" for num in range(pat)])};\n"""
             else:
-                gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form;\n"""
+                gf_code += f"""\t\t{" ".join(rule_string)} => mk{pos_tag}{tag} form1;\n"""
+    
+    
+
+    strings = " -> ".join(["Str",] * m)
+    if m == 1:
+        args = ["form1"]
+        tupl = "form1"
+    else:
+        args = [f"form{num+1}" for num in range(m)]
+        tupl = "<"+", ".join(args)+">"
+    f = f"reg{len(other_forms) if len(other_forms) > 1 else ''}{pos_tag}"
+    f2args[f] = m
+    intro = f""" {f} : {strings} -> {pos_tag}   -- {"  ".join(other_forms)}\n    = \\{", ".join(args)} -> case {tupl} of {{\n"""
     if len(other_forms) > 1:
-        gf_code += f"""\t\t_ => reg{len(other_forms)-1 if len(other_forms) > 2 else ""}{pos_tag} {" ".join(args[:-1])}\n"""
+        args = [f"form{num+1}" for num in range(f2args[fname2])]
+        gf_code += f"""\t\t_ => {fname2} {" ".join(args)}\n"""
     else:
         gf_code += f"""\t\t_ => error \"Cannot find an inflection rule\"\n"""
     gf_code += "  } ;\n\n"
     gf_code = gf_code.replace(";\n}", "\t\n}")
     gf_code = gf_code.replace(";\n} ;", "\n} ;")
-    return gf_code
+
+    return intro + gf_code, f2args
 
 
 def filter_tokens(tag, table, morphoforms, paradigm, required=None, train=False):
@@ -824,19 +900,22 @@ def guess_by_lemma(
             required_forms = json.load(f)
     vars = lang_plugin.vars
 
+
     if input_json:
         tables = read_json_data(lang, langcode)
 
 
     tokens = []
+    f2args = {}
     code = ""
     overload_code = ""
+    analysis = ""
 
     all_rules = {}
 
     get_t = lambda x: reverse_dict(x.typ.linearize()) if x.typ else x.typ_dict
 
-
+    
     for pos, forms in tables.items():
         if len(forms) > 1:
             print(f"=={pos}==")
@@ -848,7 +927,8 @@ def guess_by_lemma(
                 for table in paradigm.tables
             ]
 
-
+           # print(lang_plugin.rules[pos])
+            
             tree = LemmaTree(
                 pos,
                 lemmas=lemma2class,
@@ -862,68 +942,29 @@ def guess_by_lemma(
                 sampling=sampling,
                 iters=iters,
                 shuffle_data=shuffle,
-                vars = vars
+                vars = vars,
+                rules = lang_plugin.rules.get(pos, {})
             )
             score, preds, pos_code = tree.fit(required_forms=required_forms.get(pos,[]))
-            code += pos_code
+            code += pos_code[0]
+            f2args.update(pos_code[1])
             tokens.extend(preds)
             print("\n".join([f"N={i+1}: {s}" for i, s in enumerate(score)]))
 
+            analysis += f"=={pos}==\n"
+            analysis += error_analysis(preds, forms)
+
             all_rules[pos] = tree.rules
 
-            overload_code += f"  mk{pos} = overload {{\n"
-            for num in range(1, len(tree.other_forms)+1):
-                overload_code += f"    mk{pos} : {(' -> '.join(['Str',]*num))} -> {pos} = reg{num if num > 1 else ''}{pos}"
-                overload_code += f'{";" if num < len(tree.other_forms) else ""}   -- {"  ".join(tree.other_forms[:num])}\n'
-            overload_code += "  } ;\n\n"
-
-            if pos == "N":
-                overload_code +=\
-                    "  mkN2 = overload {\n"+\
-                    "     mkN2 : N -> N2 = \\n -> n ** {c2 = noPrep} ;\n"+\
-                    "     mkN2 : N -> Prep -> N2 = \\n,p -> n ** {c2 = p} ;\n"+\
-                    "  } ;\n\n"
-                overload_code +=\
-                    "  mkN3 = overload {\n"+\
-                    "     mkN3 : N -> N3 = \\n -> n ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkN3 : N -> Prep -> Prep -> N3 = \\n,p1,p2 -> n ** {c2 = p1; c3 = p2} ;\n"+\
-                    "  } ;\n\n"
-            elif pos == "A":
-                overload_code +=\
-                    "  mkA2 = overload {\n"+\
-                    "     mkA2 : A -> A2 = \\a -> a ** {c2 = noPrep} ;\n"+\
-                    "     mkA2 : A -> Prep -> A2 = \\a,p -> a ** {c2 = p} ;\n"+\
-                    "  } ;\n\n"
-            elif pos == "V":
-                overload_code +=\
-                    "  mkVV,mkVS,mkVQ,mkVA = \\v -> v ;\n\n"
-                overload_code +=\
-                    "  mkV2 = overload {\n"+\
-                    "     mkV2 : V -> V2 = \\v -> v ** {c2 = noPrep} ;\n"+\
-                    "     mkV2 : V -> Prep -> V2 = \\v,p -> v ** {c2 = p} ;\n"+\
-                    "  } ;\n\n"
-                overload_code +=\
-                    "  mkV3 = overload {\n"+\
-                    "     mkV3 : V -> V3 = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkV3 : V -> Prep -> Prep -> V3 = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
-                    "  } ;\n\n"+\
-                    "  mkV2A = overload {\n"+\
-                    "     mkV2A : V -> V2A = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkV2A : V -> Prep -> Prep -> V2A = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
-                    "  } ;\n\n"+\
-                    "  mkV2S = overload {\n"+\
-                    "     mkV2S : V -> V2S = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkV2S : V -> Prep -> Prep -> V2S = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
-                    "  } ;\n\n"+\
-                    "  mkV2Q = overload {\n"+\
-                    "     mkV2Q : V -> V2Q = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkV2Q : V -> Prep -> Prep -> V2Q = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
-                    "  } ;\n\n"+\
-                    "  mkV2V = overload {\n"+\
-                    "     mkV2V : V -> V2V = \\v -> v ** {c2 = noPrep; c3 = noPrep} ;\n"+\
-                    "     mkV2V : V -> Prep -> Prep -> V2V = \\v,p1,p2 -> v ** {c2 = p1; c3 = p2} ;\n"+\
-                    "  } ;\n\n"
-
+            overload_code += f"mk{pos} = overload {{\n"
+            latest = 10000
+            for num in range(len(tree.other_forms), 0, -1):
+                fname = f"reg{num if num > 1 else ''}{pos}"
+                if fname in code and f2args[fname] < latest:
+                    overload_code += f"  mk{pos} : {(' -> '.join(['Str',]*f2args[fname]))} -> {pos} = {fname}"
+                    overload_code += f'{";" if num > 1 else ""}   -- {"  ".join(tree.other_forms[:num])}\n'
+                    latest = f2args[fname]
+            overload_code += "} ;\n\n"
            # overload_code += boilerplate.get(pos,"")
 
    # overload_code+=boilerplate.get("Adv","")
@@ -939,18 +980,13 @@ def guess_by_lemma(
         f.write(overload_code)
         f.write("}")
 
-    with open(f"data/{lang}/Lexicon{langcode}.gf", "w") as f:
-        f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
-        f.write("}")
-
-    with open(f"data/{lang}/Grammar{langcode}.gf", "w") as f:
-        f.write(f"concrete Grammar{langcode} of Grammar = TenseX ** {{\n")
-        f.write("}")
+    #with open(f"data/{lang}/Lexicon{langcode}.gf", "w") as f:
+    #    f.write(f"concrete Lexicon{langcode} of Lexicon = Cat{langcode} ** open Paradigms{langcode} in {{\n")
+    #    f.write("}")
 
     with open(f"data/{lang}/Lang{langcode}.gf", "w") as f:
         f.write("--# -path=.:../abstract\n")
         f.write(f"concrete Lang{langcode} of Lang =\n")
-        f.write(f"  Grammar{langcode},\n")
         f.write(f"  Lexicon{langcode}\n")
         f.write("  ** {\n")
         f.write("\n")
@@ -976,6 +1012,9 @@ def guess_by_lemma(
 
     with open(f"data/{lang}/rules.pickle", "wb") as f:
         pickle.dump((how,all_rules),f)
+
+    with open(f"data/{lang}/errors.txt", "w") as f:
+        f.write(analysis)
 
     return score
 
