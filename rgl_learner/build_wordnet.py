@@ -25,7 +25,7 @@ def build(lang):
         for line in f:
             fields = line.split("\t")
             if fields[1] == parse:
-                predictions[fields[0]] = (fields[2],eval(fields[3]))
+                predictions[fields[0]] = (fields[2].replace("́",""),eval(fields[3]))
 
     print(f"Generate ../gf-wordnet/WordNet{langcode}.gf")
     with open("../gf-wordnet/WordNet.gf", "r") as f, open(f"../gf-wordnet/WordNet{langcode}.gf", "w") as out:
