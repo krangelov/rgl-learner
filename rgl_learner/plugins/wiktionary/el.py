@@ -96,6 +96,8 @@ def filter_lemma(lemma, pos, tags):
         return True
     if pos == "pron":
         return True
+    if pos == "name":
+        return True
     if lemma == "στριμμένος":
         return True
     if " " in lemma:
@@ -147,6 +149,7 @@ def patchN(lemma,table):
     table.pop("masculine",None)
     table.pop("feminine",None)
     table.pop("neuter",None)
+    
     t = table.pop("noGender",{})
     t2 = t["singular"].pop("noCase",None)
     t2 = t["plural"].pop("noCase",None)
@@ -155,6 +158,7 @@ def patchN(lemma,table):
         table["singular"]["nominative"] = lemma
     if table["plural"]["nominative"] == "-":
         table["plural"]["nominative"] = t2.get('first-person','-')
+    #table.pop("noNumber")
     return {"s": table}
 
 def patchPN(lemma,table):
@@ -181,6 +185,7 @@ def patchA(lemma,table):
             p[gender][number].pop("noCase",None)
             for case in ["nominative","accusative","genitive","vocative"]:
                 c.setdefault(gender,{}).setdefault(number,{}).setdefault(case,"-")
+    table["positive"]["masculine"]["singular"]["nominative"] = lemma
     p.pop("noGender",None)
 
 def patchAdv(lemma,table):
@@ -209,10 +214,17 @@ def patchV(lemma,table):
         for person in ["first-person", "second-person", "third-person"]:
             for voice in ["active", "passive"]:
                 t[number][person][voice].setdefault("imperfective", "-")
+                t[number][person][voice].pop("progressive")
 
     t = table.pop("indicative")
+    
     if t["present"]["singular"]["first-person"]["active"]["imperfective"] == "-":
         t["present"]["singular"]["first-person"]["active"]["imperfective"] = lemma
+
+    for number in ["singular","plural"]:
+        for person in ["first-person", "second-person", "third-person"]:
+            for voice in ["active", "passive"]:
+                t["present"][number][person][voice].pop("progressive")
     table["vpres"]=t["present"]
     table["vpast"]=t["past"]
     table["vnonfinite"]=table.pop("infinitive-aorist")
@@ -222,3 +234,5 @@ def patchV(lemma,table):
     p = table.pop("participle")
     table["vgerund"] = p.get("present").get("active")
     table["vparticiple"] = p.get("past").get("passive")
+   # table.update(table.pop("noMood"))
+   # table.pop("future")

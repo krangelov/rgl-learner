@@ -1,6 +1,7 @@
 import codecs
 import json
 import sys
+import copy
 import os
 import itertools
 import re
@@ -528,14 +529,23 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
        #     pattern = None
         return pattern
 
-    def rewrite_forms(forms, pats):
+    def rewrite_forms(forms, guessed, pats):
         new_forms = []
+        found = None
         for form, _ in forms:
-            f = form
-            for num, pat in enumerate(pats):
-                f = f.replace(pat, f"pat_{num+1}")
+            if form != "-":
+                f = copy.copy(form)
+                for num, pat in pats:
+                    if pat:
+                        n = f"pat_{num}"
+                        
+                        f = f.replace(pat, n)
+                        if (not found or found < num) and n in f:
+                            found = num
+            if "base" in f:
+                return forms, None
             new_forms.append(f)
-        return new_forms
+        return list(zip(new_forms, guessed)), found-1
     
 
     mult_base_words = 0
@@ -557,16 +567,16 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
             if "base_2" in forms[index]:
                 last_base = re.findall(r"base_\d", forms[index])[-1]
                 p = re.compile(f"base_1.*{last_base}")
-                pat1 = re.match(p, forms[index])
+                pat1 = re.findall(p, forms[index])
                 if pat1:
                     patterns = []
                     i = 0
                     for num, form in enumerate(forms):
-                        pat2 = re.match(rf"base_1.*{last_base}", form)
+                        pat2 = re.findall(rf"base_1.*{last_base}", form)
                         #if pat2:
                         #  print(pat2.group(0))
-                        if pat2 and pat1.group(0) != pat2.group(0):
-                            pat2 = pat2.group(0) 
+                        if pat2 and pat1[0] != pat2[0]:
+                            pat2 = pat2[0]
                             if pat2 not in patterns:
                                 patterns.append(pat2)
                                 if len(second_forms) > i:
@@ -640,45 +650,52 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
         
       #  required_forms = {cat: [required_forms[cat][0],],}
 
-        patterns = []
+        patterns, pats = [], []
+        latest = None
         
-        if second_index != None and "base_2" in forms[index] :
+        if second_index != None and "base_2" in forms[index]:
             last_base = re.findall(r"base_\d", forms[index])[-1]
-            r1 = re.match(fr"base_1.*{last_base}", forms[index])
-            patterns = []
-            pats = []
+            r1 = re.findall(fr"base_1.*{last_base}", forms[index])
             if r1:
-                pat1 = r1.group(0)
+                pat1 = r1[0]
                 form_0 = forms[index].replace(pat1, "pat_1")
                 patterns.append(get_pattern(form_0, lens, mult_base_words=mult_base_words))
-                pats.append(pat1)
-            for num, i in enumerate(second_index):
-                r2 = re.match(fr"base_1.*{last_base}", forms[i])
-                if r2:
-                    pat2 = r2.group(0)
-                    form_1 = forms[i].replace(pat2, f"pat_{num+2}")
-                    patterns.append(get_pattern(form_1, lens, mult_base_words=mult_base_words))
-                    pats.append(pat2)
+                pats.append((1, pat1))
+                for num, i in enumerate(second_index):
+                    r2 = re.findall(fr"base_1.*{last_base}", forms[i])
+                    if r2 and r2[0] not in pats:
+                        pat2 = r2[0]
+                        form_1 = forms[i].replace(pat2, f"pat_{num+2}")
+                        patterns.append(get_pattern(form_1, lens, mult_base_words=mult_base_words))
+                        pats.append((num+2,pat2))
+                    else:
+                        patterns.append(["_"])
+                        pats.append((num+2, None))
                 
-                
-            paradigm.forms = list(zip(rewrite_forms(paradigm.forms, pats), guessed))
+            new_forms, latest = rewrite_forms(paradigm.forms, guessed, pats)
+            if not latest: 
+                patterns = paradigm.pattern
+            else:
+                patterns = patterns[:latest+1]
+            paradigm.forms = new_forms
         if not patterns:
             patterns = [get_pattern(forms[index], lens, mult_base_words=mult_base_words), ]
-    
-        #if second_index:
+
+  
 
         if patterns:
-            if second_index:
+            if second_index and latest:
                 insts = []
                 for ident, table in paradigm.tables:
                     inst = [("base", table[index]), ]
-                    for num, i in enumerate(second_index):
+                    for num, i in enumerate(second_index[:latest]):
                         inst.append((f"form_{num+1}", table[i]))
                     insts.append(inst)
                 paradigm.var_insts = insts
             else:
                 paradigm.var_insts = [[("base",table[index])] for ident,table in paradigm.tables]
         paradigm.pattern = patterns
+
 
     if second_index:
         for i in second_form:
@@ -742,14 +759,16 @@ def convert_pattern(elements):
         return None
 
 def write_paradigm(i, max_i, par, cat, allow_second_forms=False):
-    if par.pattern[0]:
+    if par.pattern:
         names = [name for name, val in par.var_insts[0]]
     else:
         names = ["base"]
     s = "" if max_i == 1 else f"{i:03d}"
     code = f"""mk{cat}{s} : {len(names) * "Str -> "}{cat} ;\nmk{cat}{s} {" ".join(names)} =\n  """
+ 
     if par.pattern[0]:
         pattern = convert_pattern(par.pattern)
+
         if pattern:
             if len(pattern) == 1:
                 code += "case base of {\n    "+pattern[0]+f" => lin {cat}\n      "
@@ -757,11 +776,13 @@ def write_paradigm(i, max_i, par, cat, allow_second_forms=False):
                 code += form_code
                 code += ";\n    _ => error \"Can't apply paradigm mk"+cat+s+"\"\n  } ;"
             else:
-                code += "case <base, form> of {\n    <"+pattern[0] + ", " + pattern[1] +f"> => lin {cat}\n      "
+                code += "case <base, " + ", ".join([f"form_{n+1}" for n in range(len(names)-1)]) +  "> of {\n    <"+", ".join(pattern[:len(names)]) +f"> => lin {cat}\n      "
+                
                 form_code = par.typ.renderOper(6,par.forms)
                 code += form_code
                 code += ";\n    _ => error \"Can't apply paradigm mk"+cat+s+"\"\n  } ;"
     else:
+        
         code += f"lin {cat}\n  "
         form_code = par.typ.renderOper(2,par.forms)
         code += form_code + " ;"

@@ -136,6 +136,7 @@ def learn(source, lang, filename=None,
 
     pos_order = defaultdict(dict)
     corrected_lexicon = []
+    param2gf = {}
 
    
     for word, pos, forms, gtags in lexicon:
@@ -344,6 +345,7 @@ def learn(source, lang, filename=None,
             lin_types.setdefault(pos, (pos, {}))[1].setdefault(typ, []).append((word, forms))
 
     cat2idx = {}
+    pr2gf = {}
     for tag, (cat_name, types) in lin_types.items():
         counts = {}
         for typ, lexemes in types.items():
@@ -351,6 +353,10 @@ def learn(source, lang, filename=None,
                 counts[lemma] = counts.get(lemma, 0) + 1
         counts = {lemma: 1 for lemma, count in counts.items() if count > 1}
         for typ, lexemes in types.items():
+            pdefs = defaultdict(set)
+            typ.printParamDefs(None, pdefs)
+            
+            pr2gf.update(pdefs)
             for i, (lemma, forms) in enumerate(lexemes):
                 index = counts.get(lemma)
                 if not index:
@@ -359,6 +365,14 @@ def learn(source, lang, filename=None,
                     ident = lemma + "_" + str(index) + "_" + cat_name
                     counts[lemma] = index + 1
                 lexemes[i] = (ident, forms)
+    for pr, val in pr2gf.items():
+        if pr in param2gf:
+            for v in val:
+                if v not in param2gf[pr]:
+                    param2gf[pr].append(v)
+        else:
+            param2gf[pr] = val
+
 
     def to_value(form):
         if type(form) == GFParamValue:
@@ -378,6 +392,7 @@ def learn(source, lang, filename=None,
             noun_type = GFRecord(tuple(((name, typ if name != "g" else new_gender_typ) for name, typ in noun_type.fields)))
             noun_types[noun_type] = lexemes
 
+   
 
     lang_code = lang_plugin.iso3
     path = f"{dirname}/{lang}/"
@@ -396,6 +411,10 @@ def learn(source, lang, filename=None,
         fa.write('\n')
 
         cat2idx = defaultdict(list)
+        
+        fr.write("\n".join(
+                    ["param " + name + " = " + " | ".join(str(constructor) for constructor in constructors) + " ;" for
+                     name, constructors in param2gf.items()]) + "\n")
         for tag, (cat_name, types) in lin_types.items():
             pdefs = defaultdict(set)
             fc.write('lincat ' + cat_name + ' = ' + tag.title() + ' ;\n')
@@ -430,9 +449,6 @@ def learn(source, lang, filename=None,
 
                 typ.printParamDefs(fr, pdefs)
 
-                fr.write("\n".join(
-                    ["param " + name + " = " + " | ".join(str(constructor) for constructor in constructors) + " ;" for
-                     name, constructors in pdefs.items()]) + "\n")
                 fr.write('oper ' + type_name + ' = ' + str(typ) + ' ; -- ' + str(len(lexemes)) + '\n')
                 fr.write('oper mk' + type_name + ' : ')
                 if n_forms == 1:
