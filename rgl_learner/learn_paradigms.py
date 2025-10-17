@@ -11,7 +11,7 @@ import pickle
 from collections import defaultdict, Counter
 import math
 import rgl_learner.plugins as plugins
-from rgl_learner.utils import escape, reverse_dict
+from rgl_learner.utils import escape, reverse_dict, read_json_paradigms
 from pprint import  pprint
 # Wordgraph class to extract LCS
 
@@ -797,12 +797,14 @@ def write_lexicon(i, max_i, par, cat):
     return code
 
 
-def learn(lang, dirname="data", level=None, allow_second_forms=False, n=1):
+def learn(lang, dirname="data", level=None, allow_second_forms=False, n=1, input_json=False):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         langcode, source, lexicon = pickle.load(f)
+    if input_json: 
+        lexicon = read_json_paradigms(langcode, source)
 
     lang_plugin = plugins[source,lang]
-
+ 
 
 
     print("Learning paradigms..")

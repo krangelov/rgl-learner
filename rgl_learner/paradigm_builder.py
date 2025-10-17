@@ -273,7 +273,6 @@ class LemmaTree:
                     if forms.get(form) != "-":
                         errors_by_token = self.calculate_error_rate(form, value, forms.get(form), dist)
                         errors.append(errors_by_token)
-                      #  print(forms.get(form), value)
                         
         return coverage, errors
 
@@ -445,6 +444,7 @@ class LemmaTree:
                             
                         elif len(i) > 1:
                             regexp = []
+                            
                             if isinstance(i[1], int):
                                 if diff > 0:
                                     if i[1]-diff > 0:
@@ -457,22 +457,26 @@ class LemmaTree:
                                 for x in i[1]:
                                     if isinstance(x, int):
                                         if diff > 0:
-                                            
                                             if x-diff > 0:
                                                 regexp.append(f".{x-diff}")
                                             diff -= x
                                                 
-                                        else:
-                                            regexp.append(f".{x}")
+                                        #else:
+                                        #    regexp.append(f".{x}")
                                     elif  diff > 0:
-                                        if len(x) > diff and (x in ending or ending in x):
+                                        if len(x) > diff and (x in ending or '"'+ending+'"' in x):
                                             regexp.append(x.strip('"')[:-diff])
                                             diff -= len(x.strip('"'))
+                                            
                                     else:
                                         regexp.append(x.strip('"'))
                             regexp = [x.strip('"') for x in regexp if x != ""]
                             if regexp:
-                                beginning.append("(" + "|".join(regexp) +  ")")
+                                if len(regexp) > 1:
+
+                                    beginning.append("(" + "|".join(regexp) +  ")")
+                                else:
+                                    beginning.append(regexp[0])
                                 
                         else:
                             
@@ -587,7 +591,7 @@ class LemmaTree:
             c, f2args = write_gf_code(self.pos, self.sort_rules(self.rules, i),  self.other_forms, self.how, self.forms, f2args)
             code += c
             score.append(scores["coverage"])
-            if errors: # and i < self.iters-1 and forms:
+            if errors: 
                 if i+1 < len(required_forms):
                     new_form = required_forms[i+1]
                     self.other_forms.append(new_form)
@@ -753,13 +757,23 @@ def write_gf_code(pos_tag, rules, other_forms, how, forms, f2args ): # add parad
         if len(rule) == len(other_forms):
             for form, subrule in rule:
                 if how == "suffix":
-                    if subrule.startswith(".*"):
+                    subrule = subrule.replace("^", "")
+                    if subrule.startswith("."):
                         subrule = subrule.replace(".*", "")
-                    rule_string.append(f"_ + \"{subrule.replace(".", "_")}\"")
+                        subrule = re.sub("\.\{.\}", "", subrule)
+                    if subrule == "":
+                        rule_string.append("_")
+                    else:
+                        rule_string.append(f"_ + \"{subrule.replace(".*", "+ _ +")}\"")
                 else:
+                    subrule = subrule.replace("$", "")
                     if subrule.endswith(".*"):
                         subrule = subrule.replace(".*", "")
-                    rule_string.append(f"\"{subrule.replace(".", "_")}\" + _")
+                        subrule = re.sub("\.\{.\}", "", subrule)
+                    if subrule == "":
+                        rule_string.append("_")
+                    else:
+                        rule_string.append(f"\"{subrule.replace(".*", "\" + _ + \"")}\" + _")
 
             tag = str(class_tag + 1).zfill(3)
             pat = len(forms[class_tag].pattern)
@@ -780,7 +794,7 @@ def write_gf_code(pos_tag, rules, other_forms, how, forms, f2args ): # add parad
         tupl = "form1"
     else:
         args = [f"form{num+1}" for num in range(m)]
-        tupl = "<"+", ".join(args)+">"
+        tupl = "<"+", ".join(args[:len(other_forms)])+">"
     f = f"reg{len(other_forms) if len(other_forms) > 1 else ''}{pos_tag}"
     f2args[f] = m
     intro = f""" {f} : {strings} -> {pos_tag}   -- {"  ".join(other_forms)}\n    = \\{", ".join(args)} -> case {tupl} of {{\n"""
@@ -887,7 +901,8 @@ def guess_by_lemma(
     sampling="oracle",
     iters=4,
     shuffle=True,
-    input_json=False
+    input_json=False,
+    init_json=False
 ):
     print("Reading data..")
     print(f"Parameters\nNumber of examples: {t}\nSplit: {split}\nIterations: {iters}\nShuffle: {shuffle}")
@@ -915,6 +930,10 @@ def guess_by_lemma(
 
     get_t = lambda x: reverse_dict(x.typ.linearize()) if x.typ else x.typ_dict
 
+    if init_json:
+        rules = read_rules(langcode, required_forms)
+    else:
+        rules = lang_plugin.rules
     
     for pos, forms in tables.items():
         if len(forms) > 1:
@@ -943,7 +962,7 @@ def guess_by_lemma(
                 iters=iters,
                 shuffle_data=shuffle,
                 vars = vars,
-                rules = lang_plugin.rules.get(pos, {})
+                rules = rules.get(pos, {})
             )
             score, preds, pos_code = tree.fit(required_forms=required_forms.get(pos,[]))
             code += pos_code[0]

@@ -6,7 +6,6 @@ import rgl_learner.morpho_cats
 import rgl_learner.morpho_cats_3
 import rgl_learner.learn_paradigms
 import rgl_learner.smart_dictionary
-import rgl_learner.light_syntax
 import rgl_learner.documentation
 import rgl_learner.paradigm_builder
 import rgl_learner.build_wordnet
@@ -24,6 +23,7 @@ parser.add_argument("--max_depth", default=3)
 parser.add_argument("--threshold", default=None)
 parser.add_argument("--split", action="store_true")
 parser.add_argument("--json", action="store_true")
+parser.add_argument("--json_init", action="store_true")
 
 if len(sys.argv) == 4 and sys.argv[1] == "morpho-cats-1":
     rgl_learner.morpho_cats.learn(sys.argv[2], sys.argv[3])
@@ -31,8 +31,12 @@ elif len(sys.argv) == 4 and sys.argv[1] == "morpho-cats":
     rgl_learner.morpho_cats_3.learn(sys.argv[2], sys.argv[3])
 elif len(sys.argv) == 3 and sys.argv[1] == "learn-paradigms":
     rgl_learner.learn_paradigms.learn(sys.argv[2], allow_second_forms=False)
+elif len(sys.argv) == 4 and sys.argv[1] == "learn-paradigms" and sys.argv[3] == "--json":
+    rgl_learner.learn_paradigms.learn(sys.argv[2], allow_second_forms=False, input_json=True)
 elif len(sys.argv) == 4 and sys.argv[1] == "learn-paradigms":
     rgl_learner.learn_paradigms.learn(sys.argv[2], allow_second_forms=True, n=int(sys.argv[3]))
+elif len(sys.argv) == 5 and sys.argv[1] == "learn-paradigms" and sys.argv[4] == "--json":
+    rgl_learner.learn_paradigms.learn(sys.argv[2], allow_second_forms=True, n=int(sys.argv[3]), input_json=True)
 elif len(sys.argv) >= 3 and sys.argv[1] == "smart-paradigms":
     args = parser.parse_args()
     if args.threshold:
@@ -49,11 +53,10 @@ elif len(sys.argv) >= 3 and sys.argv[1] == "smart-paradigms":
                                                 max_depth=int(args.max_depth),
                                                 t=t,
                                                 split=args.split,
-                                                input_json=args.json)
+                                                input_json=args.json,
+                                                init_json=args.json_init)
 elif len(sys.argv) == 3 and sys.argv[1] == "smart-dictionary":
     rgl_learner.smart_dictionary.rewrite(sys.argv[2])
-elif len(sys.argv) == 3 and sys.argv[1] == "light-syntax":
-    rgl_learner.light_syntax.write(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "documentation":
     rgl_learner.documentation.learn(sys.argv[2])
 elif len(sys.argv) == 3 and sys.argv[1] == "build-wordnet":
@@ -64,6 +67,5 @@ else:
     print(f"          {sys.argv[0]} learn-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-paradigms <lang-code>")
     print(f"          {sys.argv[0]} smart-dictionary <lang-code>")
-    print(f"          {sys.argv[0]} light-syntax <lang-code>")
     print(f"          {sys.argv[0]} documentation <lang-code>")
     print(f"          {sys.argv[0]} build-wordnet <lang-code>")

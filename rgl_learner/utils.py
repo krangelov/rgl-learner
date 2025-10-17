@@ -8,6 +8,7 @@ import pandas as pd
 import pickle
 import re
 import json
+from rgl_learner.gf_types import *
 
 cat2tag = {
   'N': 'Noun',
@@ -244,6 +245,108 @@ gf2unimorph = {'Indicative': 'IND',
  'Tr': 'TRI',
  'Pl': 'PL'}
 
+def reverse_fun(fun, paramTypes=None):
+    forms = []
+    funname = None
+    if isinstance(fun["arg"], list):
+        forms.append(" ".join(fun["arg"]).lower())
+    elif isinstance(fun["arg"], dict):
+        if "qc" in fun["arg"]:
+            forms.append(GFParamValue(value=fun["arg"]["qc"], typ=paramTypes["Gender"]))
+        if "q" in fun["arg"] and fun["arg"]["q"] == "nonExist":
+            forms.append("-")
+    else:
+        forms.append(fun["arg"].lower())
+    if "q" in fun["fun"]:
+        funname = fun["fun"]["q"]
+    else:
+        forms_, funname = reverse_fun(fun["fun"])
+        forms = forms + forms_
+    return forms, funname
+
+
+
+def get_type(k, v):
+    if "rectype" in v:
+        d = defaultdict(dict)
+        for k1, v1 in v["rectype"].items():
+            d[k].update(get_type(k1, v1))
+        return d
+    elif "sort" in v:
+        return {k: ('', GFStr)}
+    elif "tblhypo" in v:
+        v1 = v["tblhypo"]
+        return {k:v["tblhypo"]["qc"]}
+    
+
+def get_tables(x, paramTypes):
+    if "tblcases" in x:
+        constructors = []
+        for name, args in x["tblcases"]:
+            constructors.append(GFParamConstr(name["pc"], tuple(name["args"])))
+        param = paramTypes[name["pc"]]
+        new_param = GFParamType(param.name, tuple(constructors))
+        sub_param = get_tables(args, paramTypes)
+        table = GFTable(new_param, sub_param)
+        return table
+    elif "vr" in x:
+        s = GFStr()
+        return s
+    elif "record" in x: 
+        record = []
+        for name, v in x["record"].items():
+            
+            sub_param = get_tables(v, paramTypes)
+            record.append((name, sub_param))
+        r = GFRecord(tuple(record))
+        return r
+    
+
+
+def get_body(x):
+    if "body" in x:
+        return get_body(x["body"])
+    else: return x
+
+
+def read_json_paradigms(langcode, source, dir="data"):
+    with open(f"data/{langcode.lower()}/Res{langcode}.json") as f:
+        morpho = json.load(f)
+    with open(f"data/{langcode.lower()}/Dict{langcode}Abs.json") as f:
+        lexicon = json.load(f)
+
+    params = defaultdict(list)
+
+    for k,v in morpho[f"Res{langcode}"]["jments"].items():
+        if "paramtype" in v:
+            if "res" in v["paramtype"]:
+                
+                paramname = v["paramtype"]["res"]["qc"]
+            else:
+                paramname = v["paramtype"]["qc"]
+            
+            params[paramname].append(k)
+
+    paramTypes = defaultdict()
+    for k, v in params.items():
+        p = GFParamType(k, constructors=v)
+        for v1 in v:
+            paramTypes[v1] = p
+
+    data = {}
+    for k,v in morpho[f"Res{langcode.title()}"]["jments"].items():
+        if k.startswith("mk"):
+            pos = k.replace("mk", "")
+            record = get_tables(get_body(v["operdef"]), paramTypes)
+            lexemes = []
+            for word, v in lexicon[f"Lexicon{langcode.title()}"]["jments"].items():
+                if f"_A" in word:
+                    words = reverse_fun(v["lin"], paramTypes)[0][::-1]
+
+                    lexemes.append((word, words))
+            data[pos] = (pos, {record: lexemes})
+    return data 
+
 def read_data(lang, dir="data"):
     with open(f"{dir}/{lang}/paradigms.pickle", "rb") as f:
         return pickle.load(f)
@@ -254,6 +357,7 @@ def parse_pattern(words, patterns):
     pat_dict = {}
     full_match = []
     for num, pattern in enumerate(patterns):
+      #  print(words, patterns)
         word = words[num]
         after = False
         start = 0
@@ -299,6 +403,7 @@ def parse_pattern(words, patterns):
             else:
                 start += char
 
+        regexp = regexp.replace('"', "")
         temp_regexp = "^" + regexp + "$" 
 
     

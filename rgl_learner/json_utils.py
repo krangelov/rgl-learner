@@ -4,24 +4,57 @@ import json
 from collections import defaultdict
 from rgl_learner.utils import *
 
-def reverse_fun(fun):
-    forms = []
-    funname = None
-    if isinstance(fun["arg"], list):
-        forms.append(" ".join(fun["arg"]).lower())
-    elif isinstance(fun["arg"], dict):
-        if "qc" in fun["arg"]:
-            forms.append(GFParamValue(value=fun["arg"]["qc"], typ=paramTypes["Gender"]))
-        if "q" in fun["arg"] and fun["arg"]["q"] == "nonExist":
-            forms.append("-")
-    else:
-        forms.append(fun["arg"].lower())
-    if "q" in fun["fun"]:
-        funname = fun["fun"]["q"]
-    else:
-        forms_, funname = reverse_fun(fun["fun"])
-        forms.extend(forms_)
-    return forms, funname
+
+
+def get_regexp(p):
+    regexp = ""
+    for i in p:
+        if i == []:
+            regexp += ".*"
+        elif isinstance(i, str):
+            regexp += i.strip('"').replace("+ _ +", ".*")
+
+    return regexp
+
+
+def read_rules(langcode, required_forms, dir="data"):
+    with open(f"data/{langcode}/Paradigms{langcode.title()}.json") as f:
+        rules = json.load(f)
+    pos_rules = defaultdict(dict)
+    for i, v in rules[f"Paradigms{langcode.title()}"]["jments"].items():
+        if i.startswith("reg"):
+            i = re.findall(r"reg[0-9]*(.*)", i)
+            pos = i[0]
+            rules = {}
+            data = v["operdef"]["body"]
+       
+            while "body" in data:
+                data = data["body"]
+            for rule in data["select"]["tblcases"]:
+                subrules = []
+           
+                if "p1" not in rule[0]:
+                    x = get_regexp(parse_json_pattern(rule[0])[0])
+    
+                    if x != "":
+                        subrules.append(x)
+                else:
+                    for n, i in rule[0].items():
+                        if n.startswith("p"):
+                            #print(n, i)
+                            #print(get_regexp(parse_json_pattern(i)[0]))
+                            subrules.append(get_regexp(parse_json_pattern(i)[0]))
+ 
+                if len(subrules) > len(required_forms[pos]):
+                   # print("Cannot map rules to required forms")
+                    pass
+                elif subrules:
+                    num = rule[1]["fun"]
+                    while "fun" in num:
+                        num = num["fun"]
+                    rules[tuple(zip(required_forms[pos], subrules))] = int(num["q"][-3:])
+            pos_rules[pos].update(rules)
+    return pos_rules
     
 
 def read_json_data(lang, langcode, dir="data"):
@@ -29,7 +62,7 @@ def read_json_data(lang, langcode, dir="data"):
         morpho = json.load(f)
     with open(f"data/{lang}/Dict{langcode}Abs.json") as f:
         d = json.load(f)
-    with open(f"data/{lang}/Dict{langcode}.json") as f:
+    with open(f"data/{lang}/Lexicon{langcode}.json") as f:
         lexicon = json.load(f)
 
     params = defaultdict(list)
@@ -75,14 +108,30 @@ def read_json_data(lang, langcode, dir="data"):
 
             forms_2 = [("+".join(x), False) for x in get_values(forms)]
             
-            #print(forms_2)
 
             words = get_words(d, funname, get_values(forms), langcode)
             
             t2 = dict(words)
             tables2 = []
-            for word in t2:
-                words = reverse_fun(lexicon[f"Dict{langcode}"]["jments"][word]["lin"])[0][::-1]
+            for word, form in t2.items():
+                form_dict = dict(zip(reverse_dict(forms), get_values(forms)))
+      
+                full_match, base_dict, *_ = parse_pattern(list(form.values()), pattern2)
+
+                if full_match[0]:
+                    base_dict = {} # overwrite base_dict
+                    for match in full_match:
+                            if match and "base_1" in match and isinstance(match["base_1"], tuple):
+                                base_dict = base_dict | {f"base_{i+1}": base for i, base in enumerate(match["base_1"])}
+                            elif match and "pat_1" in match and isinstance(match["pat_1"], tuple):
+                                new_dict = {"pat_1": match["pat_1"][0]}
+                                base_dict = base_dict | {f"base_{i+1}": base for i, base in enumerate(match["pat_1"][1:])}
+                            else:
+                                base_dict = base_dict | match
+                
+                words = ["".join([base_dict[x] if x.startswith("base") or x.startswith("pat") else x.strip('"') for x in f]) for f in get_values(forms)]
+
+                words = [x if x else "-" for x in words]
                 tables2.append((word, words))
     
 
@@ -106,7 +155,7 @@ def find_pattern(par):
             pattern = []
             for k, v in p.items():
                 if isinstance(v, dict) or isinstance(v, str):
-                    pattern.extend(parse_pattern(v))
+                    pattern.extend(parse_json_pattern(v))
         else:
             pattern = parse_json_pattern(p)
         return pattern
@@ -304,10 +353,14 @@ def get_words(d, par, forms, langcode):
                 ws.append((word, base))
 
     dictionary = []
+
     for (lemma, word) in ws:
         all_forms = []
         if isinstance(word, list):
-            bases = {f"base_{i+1}": w for i, w in enumerate(word)}
+            if any(["pat_1" in x for x in forms]):
+                bases = {f"pat_{i+1}": w for i, w in enumerate(word[::-1])}
+            else:
+                bases = {f"base_{i+1}": w for i, w in enumerate(word)}
         elif "base_1" in forms[0]: 
             bases = {"base_1" : word}
         else:
