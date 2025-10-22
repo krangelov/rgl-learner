@@ -15,7 +15,7 @@ def nested_key_exists(d, keys):
 iso3 = "Gle"
 source_plugin = plugins["wiktionary"]
 
-order = {"N": ["Vocative", "Species", "Case", "Number"], 
+order = {"N": ["Vocative", "Species", "Case", "Number"],
          "A": ["Comparison",  "Number", "Gender", "Case",], 
          "V": ["Participle", "Mood", "Tense", "Dependency","Relative_Form", "Person", "Number"], 
          "Prep": ["Number", "Gender", "Person"]}

@@ -325,14 +325,13 @@ def learn(source, lang, filename=None,
            # table["lemma"] = word
                 
 
-                
             if pos in ["N","PN"]:
-                    for tag in gtags:
-                        res = get_gtag(source_plugin, lang_plugin, tag)
-                        if res and res[1] == "Gender":
-                            table["g"] = GFParamValue(res[0],GFParamType(res[1],()))
-                            noun_genders.add(res[0])
-                            break
+                for tag in gtags:
+                    res = get_gtag(source_plugin, lang_plugin, tag)
+                    if res and res[1] == "Gender":
+                        table["g"] = GFParamValue(res[0],GFParamType(res[1],()))
+                        noun_genders.add(res[0])
+                        break
                 
                 
                 #print(table)
@@ -418,18 +417,15 @@ def learn(source, lang, filename=None,
                      name, constructors in param2gf.items()]) + "\n")
         for tag, (cat_name, types) in lin_types.items():
             pdefs = defaultdict(set)
-            if source == "wiktionary":
-                cat_oper_name = tag.title()
-            else:
-                match tag:
-                    case "V":
-                        cat_oper_name = "Verb"
-                    case "N":
-                        cat_oper_name = "Noun"
-                    case "A":
-                        cat_oper_name = "Adj"
-                    case _:
-                        cat_oper_name = tag
+            match tag:
+                case "V":
+                    cat_oper_name = "Verb"
+                case "N":
+                    cat_oper_name = "Noun"
+                case "A":
+                    cat_oper_name = "Adj"
+                case _:
+                    cat_oper_name = tag
 
             fc.write('lincat ' + cat_name + ' = ' + cat_oper_name + ' ;\n')
             if cat_name == "V":

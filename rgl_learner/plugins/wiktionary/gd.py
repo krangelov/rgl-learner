@@ -12,7 +12,12 @@ params = {#"positive": ("Pos", "Polarity"),
           "int-affirm": ("Int-Affirm", "Verbform"),
           "int-neg": ("Int-Neg", "Verbform"),
           "active": ("Active", "Voice"),
-          "impersonal": ("Impersonal", "Person")
+          "impersonal": ("Impersonal", "Person"),
+          'aform-singular': ('ASg',['Case','Gender'],'AForm'),
+          'aform-plural': ('APl','AForm'),
+          'lenition': ('lenition','Mutation'),
+          'masculine': ('Masc', 'Gender'),
+          'feminine': ('Fem', 'Gender')
           }
 
 default_params = {"Number": "singular", "Species": "indefinite", 
@@ -24,28 +29,32 @@ default_params = {"Number": "singular", "Species": "indefinite",
 
 required_forms = {"N": ["s;Nom;Indef;Sg"], "V": ["lemma"], "Prep": ["s;Sg;P1"], "A": ["Posit;Nom;Sg;masciline"]}
 
-order = {"N": ["Gender", "Case", "Species",   "Number"], 
+order = {"N": ["Gender", "Case", "Species", "Number"], 
          "Prep": ["Gender", "Number", "Person"], 
          "V": ["Participle", "Voice", "Mood", "Tense", "Polarity", "Verbform", "Person", "Degree", "Number"], 
          "A": ["Degree","Case", "Number", "Gender"]}
 
 def preprocess(record):
-    if record.get("pos") == "noun":
-        categories = record.get("categories",[])
+    categories = record.get("categories",[])
+    if 'Scottish Gaelic non-lemma forms' in categories:
+        return False
 
+    for sense in record["senses"]:
+        if 'Scottish Gaelic non-lemma forms' in sense.get("categories",[]):
+            return False
+
+
+    if record.get("pos") == "noun":
         found = False
 
         def extract_gender(categories):
             nonlocal found
-            if 'Irish masculine nouns' in categories:
+            if 'Scottish Gaelic masculine nouns' in categories:
                 found = True
                 return ["masculine"]
-            elif 'Irish feminine nouns' in categories:
+            elif 'Scottish Gaelic feminine nouns' in categories:
                 found = True
                 return ["feminine"]
-            elif 'Irish neuter nouns' in categories:
-                found = True
-                return ["neuter"]
             return []
 
         record["tags"] = extract_gender(categories)
@@ -111,6 +120,7 @@ def patchN(lemma,table):
                     if form == "no-table-tags":
                         continue
                     tbl[case].setdefault("indefinite",{}).setdefault(tag,form)
+    tbl.pop("possessive")
     noCase = tbl.pop("noCase",{})
     if noCase:
         if type(noCase) == str:
@@ -123,8 +133,6 @@ def patchN(lemma,table):
     table["voc"] = tbl.pop("vocative",{}).pop("definite",{"singular": "-", "plural": "-"})
 
 
-
-
 #def preprocess(record):
 #    for form in record.get("forms",[]):
 #        form["form"] = form["form"].split("¹")[0]
@@ -135,26 +143,18 @@ def patchV(lemma, table):
     #table["positive"].update(table["positive"].pop("noParticiple"))
     table.update(table.pop("noParticiple"))
 
-
     table["conditional"] = table["conditional"]["noPolarity"].pop("independent")
+    table["conditional"] = table["conditional"]["first-person"]
+    if table["conditional"]["plural"].endswith(" sinn"):
+        table["conditional"]["plural"] = table["conditional"]["plural"][:-5]
 
-    table["conditional"].pop("impersonal") # wikiextract mistake
-    if "[" in table["imperative"]["impersonal"]:
-        table["imperative"]["impersonal"] = table["imperative"]["impersonal"].split("[")[0]
+    table["imperative"].pop("impersonal")
 
     for i in table["indicative"]:
-        table["indicative"][i] =  table["indicative"][i]["noPolarity"].pop("independent")
-    
-    if "[" in table["indicative"]["future"]["impersonal"]:
-        table["indicative"]["future"]["impersonal"] = table["indicative"]["future"]["impersonal"].split("[")[0]
+        table["indicative"][i] = table["indicative"][i]["noPolarity"]["noVerbform"]["impersonal"]
 
-    table["indicative"].pop("noTense",None)
-   # table["passive"] = {"conditional": table["passive"].pop("conditional"),
-  #                      "future": table["passive"]["indicative"].pop("future", "-"),
-  ##                      "present": table["passive"]["indicative"].pop("present", "-"),
-  #                      "past": table["passive"]["indicative"].pop("past", "-")}
     table["participle"] = table["participle"].pop("past")
-    table["lemma"] = lemma
+    table["s"] = lemma
     return table
 
 def patchPrep(lemma, table):
@@ -164,12 +164,30 @@ def patchPrep(lemma, table):
     return table
 
 def patchA(lemma, table):
-    if table["positive"]["nominative"]["singular"]["masculine"] == "-":
-        table["positive"]["nominative"]["singular"]["masciline"] = table["positive"]["nominative"]["singular"]["noGender"]
+    positive = table.pop("positive")
+    if positive["nominative"]["singular"]["masculine"] == "-":
+        positive["nominative"]["singular"]["masculine"] = positive["nominative"]["singular"]["noGender"]
 
-    if table["positive"]["genitive"]["singular"]["masculine"] == "-":
-        table["positive"]["genitive"]["singular"]["masculine"] = table["positive"]["genitive"]["singular"]["noGender"]
+    if positive["genitive"]["singular"]["masculine"] == "-":
+        positive["genitive"]["singular"]["masculine"] = positive["genitive"]["singular"]["noGender"]
 
-    table["positive"]["genitive"]["singular"].pop("noGender")
-    table["positive"]["nominative"]["singular"].pop("noGender")
+    positive["genitive"]["singular"].pop("noGender")
+    positive["nominative"]["singular"].pop("noGender")
+
+    positive.pop("possessive")
+
+    positive["aform-singular"] = {}
+    positive["aform-plural"]   = "-"
+    for case in ["nominative","dative","genitive"]:
+        c = positive.pop(case)
+        positive["aform-singular"][case] = c["singular"]
+        if c["plural"] != "-":
+            positive["aform-plural"] = c["plural"]
+    table["s"] = positive
+
+    c = positive.pop("vocative")
+    table["voc"] = c["singular"]
+
+    table.pop("superlative")
+
     return table
