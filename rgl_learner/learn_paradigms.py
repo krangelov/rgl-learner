@@ -724,7 +724,7 @@ def correct_paradigms(lang, lang_plugin,cat,paradigms, level=None,
                 new_paradigms.append(p1)
         return required_forms[cat], new_paradigms
 
-    return required_forms[cat], paradigms
+    return lang_plugin.required_forms[cat], paradigms
 
 def convert_pattern(elements):
     patterns = []
@@ -800,8 +800,9 @@ def write_lexicon(i, max_i, par, cat):
 def learn(lang, dirname="data", level=None, allow_second_forms=False, n=1, input_json=False):
     with open(f"{dirname}/{lang}/lexicon.pickle", "rb") as f:
         langcode, source, lexicon = pickle.load(f)
+
     if input_json: 
-        lexicon = read_json_paradigms(langcode, source)
+        lexicon = read_json_paradigms(lang, langcode, source)
 
     lang_plugin = plugins[source,lang]
  

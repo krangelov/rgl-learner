@@ -245,16 +245,17 @@ gf2unimorph = {'Indicative': 'IND',
  'Tr': 'TRI',
  'Pl': 'PL'}
 
-def reverse_fun(fun, paramTypes=None):
+def reverse_fun(fun, params=None):
     forms = []
     funname = None
     if isinstance(fun["arg"], list):
         forms.append(" ".join(fun["arg"]).lower())
     elif isinstance(fun["arg"], dict):
-        if "qc" in fun["arg"]:
-            forms.append(GFParamValue(value=fun["arg"]["qc"], typ=paramTypes["Gender"]))
-        if "q" in fun["arg"] and fun["arg"]["q"] == "nonExist":
-            forms.append("-")
+        if "q" in fun["arg"]:
+            if fun["arg"]["q"] == "nonExist":
+                forms.append("-")
+            else:
+                forms.append(GFParamValue(value=fun["arg"]["q"], typ=params["Gender"]))
     else:
         forms.append(fun["arg"].lower())
     if "q" in fun["fun"]:
@@ -266,86 +267,73 @@ def reverse_fun(fun, paramTypes=None):
 
 
 
-def get_type(k, v):
-    if "rectype" in v:
-        d = defaultdict(dict)
-        for k1, v1 in v["rectype"].items():
-            d[k].update(get_type(k1, v1))
-        return d
-    elif "sort" in v:
-        return {k: ('', GFStr)}
-    elif "tblhypo" in v:
-        v1 = v["tblhypo"]
-        return {k:v["tblhypo"]["qc"]}
-    
+def get_type(x, params):
+    if "tblhypo" in x:
+        return GFTable(params[x["tblhypo"]["q"]], get_type(x["tblres"],params))
+    elif x.get("sort") == "Str":
+        return GFStr()
+    elif rec := x.get("rectype"):
+        record = [(name, get_type(v, params)) for name, v in rec.items()]
+        return GFRecord(tuple(record))
+    elif q := x.get("q"):
+        return params[q]
 
-def get_tables(x, paramTypes):
-    if "tblcases" in x:
+def read_json_paradigms(lang, langcode, source, dir="data"):
+    with open(f"data/{lang}/Dict{langcode}Abs.json") as f:
+        grammar = json.load(f)
+
+    params = {}
+    for k,v in grammar[f"Res{langcode.title()}"]["jments"].items():
         constructors = []
-        for name, args in x["tblcases"]:
-            constructors.append(GFParamConstr(name["pc"], tuple(name["args"])))
-        param = paramTypes[name["pc"]]
-        new_param = GFParamType(param.name, tuple(constructors))
-        sub_param = get_tables(args, paramTypes)
-        table = GFTable(new_param, sub_param)
-        return table
-    elif "vr" in x:
-        s = GFStr()
-        return s
-    elif "record" in x: 
-        record = []
-        for name, v in x["record"].items():
-            
-            sub_param = get_tables(v, paramTypes)
-            record.append((name, sub_param))
-        r = GFRecord(tuple(record))
-        return r
-    
+        for param in v.get("params",[]):
+            args = []
+            for hypo in param["context"]:
+                ty = hypo["type"]
+                while res := ty.get("res"):
+                    ty = res
+                args.append(ty["qc"])
+            constructors.append((param["id"],args))
+        if constructors:
+            params[k] = constructors
 
+    def to_gf(k):
+        x = params[k]
+        if type(x) != GFParamType:
+            gf_constructors = []
+            for con_name, con_args in x:
+                gf_constructors.append(GFParamConstr(con_name, tuple(map(to_gf,con_args))))
+            x = GFParamType(k,tuple(gf_constructors))
+            params[k] = x
+        return x
 
-def get_body(x):
-    if "body" in x:
-        return get_body(x["body"])
-    else: return x
-
-
-def read_json_paradigms(langcode, source, dir="data"):
-    with open(f"data/{langcode.lower()}/Res{langcode}.json") as f:
-        morpho = json.load(f)
-    with open(f"data/{langcode.lower()}/Dict{langcode}Abs.json") as f:
-        lexicon = json.load(f)
-
-    params = defaultdict(list)
-
-    for k,v in morpho[f"Res{langcode}"]["jments"].items():
-        if "paramtype" in v:
-            if "res" in v["paramtype"]:
-                
-                paramname = v["paramtype"]["res"]["qc"]
-            else:
-                paramname = v["paramtype"]["qc"]
-            
-            params[paramname].append(k)
-
-    paramTypes = defaultdict()
-    for k, v in params.items():
-        p = GFParamType(k, constructors=v)
-        for v1 in v:
-            paramTypes[v1] = p
+    for k in list(params.keys()):
+        to_gf(k)
 
     data = {}
-    for k,v in morpho[f"Res{langcode.title()}"]["jments"].items():
-        if k.startswith("mk"):
-            pos = k.replace("mk", "")
-            record = get_tables(get_body(v["operdef"]), paramTypes)
-            lexemes = []
-            for word, v in lexicon[f"Lexicon{langcode.title()}"]["jments"].items():
-                if f"_A" in word:
-                    words = reverse_fun(v["lin"], paramTypes)[0][::-1]
+    for k,v in grammar[f"Res{langcode.title()}"]["jments"].items():
+        if "operdef" in v and not k.startswith("mk"):
+            match k:
+                case "Verb":
+                    pos = "V"
+                case "Noun":
+                    pos = "N"
+                case "Adj":
+                    pos = "A"
+                case "Compl":
+                    pos = "Prep"
+                case "noPrep":
+                    continue
+                case _:
+                    pos = k
 
+            record = get_type(v["operdef"], params)
+            lexemes = []
+            for word, v in grammar[f"Dict{langcode.title()}"]["jments"].items():
+                if word.endswith(f"_{pos}"):
+                    words = reverse_fun(v["lin"], params)[0][::-1]
                     lexemes.append((word, words))
             data[pos] = (pos, {record: lexemes})
-    return data 
+    return data
 
 def read_data(lang, dir="data"):
     with open(f"{dir}/{lang}/paradigms.pickle", "rb") as f:
