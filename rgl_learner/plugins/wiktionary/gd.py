@@ -27,7 +27,7 @@ default_params = {"Number": "singular", "Species": "indefinite",
                   "Person": "impersonal",
                   "Degree": "positive"}
 
-required_forms = {"N": ["s;Nom;Indef;Sg"], "V": ["lemma"], "Prep": ["s;Sg;P1"], "A": ["Posit;Nom;Sg;masciline"]}
+required_forms = {"N": ["s;Nom;Indef;Sg"], "V": ["s"], "Prep": ["s;Sg;P1"], "A": ["s;('ASg', Nom, Masc)"]}
 
 order = {"N": ["Gender", "Case", "Species", "Number"], 
          "Prep": ["Gender", "Number", "Person"], 
