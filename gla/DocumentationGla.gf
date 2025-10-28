@@ -51,17 +51,19 @@ lin
   InflectionA,InflectionA2 = \x -> {
       t="a" ;
       s1="" ;
-      s2=frameTable (
-           tr (intagAttr "th" "rowspan=\"7\"" "s" ++ th "ASg Nom Masc" ++ td (x.s ! ASg Nom Masc)) ++
-           tr (th "ASg Nom Fem" ++ td (x.s ! ASg Nom Fem)) ++
-           tr (th "ASg Dat Masc" ++ td (x.s ! ASg Dat Masc)) ++
-           tr (th "ASg Dat Fem" ++ td (x.s ! ASg Dat Fem)) ++
-           tr (th "ASg Gen Masc" ++ td (x.s ! ASg Gen Masc)) ++
-           tr (th "ASg Gen Fem" ++ td (x.s ! ASg Gen Fem)) ++
-           tr (th "APl" ++ td (x.s ! APl)) ++
-           tr (th "Compar" ++ td (x.compar)) ++
-           tr (intagAttr "th" "rowspan=\"2\"" "voc" ++ th "Masc" ++ td (x.voc ! Masc)) ++
-           tr (th "Fem" ++ td (x.voc ! Fem))) ;
+      s2=heading1 "Adjective" ++
+         frameTable (
+           tr (intagAttr "th" "rowspan=\"2\"" "" ++ 
+                           th "masculine" ++ th "feminine") ++
+           tr (intagAttr "th" "colspan=\"2\"" "singular") ++
+           tr (th "Nom" ++ td (x.s ! ASg Nom Masc) ++ td (x.s ! ASg Nom Fem)) ++
+           tr (th "Dat" ++ td (x.s ! ASg Dat Masc) ++ td (x.s ! ASg Dat Fem)) ++
+           tr (th "Gen" ++ td (x.s ! ASg Gen Masc) ++ td (x.s ! ASg Gen Fem)) ++
+           tr (th "Voc" ++ td (x.voc ! Masc)       ++ td (x.voc ! Fem)) ++
+           tr (intagAttr "th" "rowspan=\"2\"" "" ++ intagAttr "th" "colspan=\"2\"" "plural") ++
+           tr (                                     intagAttr "td" "colspan=\"2\""  (x.s ! APl))) ++
+         heading2 "Comparative" ++
+         paragraph (x.compar) ;
       s3=[]
     } ;
 
