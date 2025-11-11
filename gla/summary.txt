@@ -1,0 +1,503 @@
+Mapping
+-------
+
+Nom Indef Sg             n.base
+Nom Indef Pl             fm n.pl n.palatised
+Nom Def Sg               n.base
+Nom Def Pl               n.pl
+Dat Indef Sg             n.dat
+Dat Indef Pl             fm n.pl n.palatised
+Dat Def Sg               fm n.palatised n.lenited
+Dat Def Pl               n.pl
+Gen Indef Sg             n.gen
+Gen Indef Pl             n.lenited
+Gen Def Sg               fm n.gen n.lenited_palatised
+Gen Def Pl               n.base
+voc Sg                   fm n.lenited n.lenited_palatised
+voc Pl                   glue n.lenited “a”
+
+
+
+
+
+
+
+Hypothesis 1: s Nom Indef Sg == s Nom Def Sg == s Gen Def Pl
+----------------------------------------------------
+
+- For 3458 nouns Wiktionary lists only 's Nom Indef Sg'.
+
+- For 46 nouns the three forms are the same.
+
+Èireannach_N    {'Èireannach':  ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+àilean_N        {'àilean':      ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+Albannach_N     {'Albannach':   ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+Cuimreach_N     {'Cuimreach':   ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+Hearach_N       {'Hearach':     ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+Sasannach_N     {'Sasannach':   ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+bàrd_1_N        {'bàrd':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+balach_N        {'balach':      ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+boireannach_N   {'boireannach': ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+broc_N          {'broc':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+cànan_N         {'cànan':       ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+càrn_N          {'càrn':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+cat_N           {'cat':         ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+clag_N          {'clag':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+coineanach_N    {'coineanach':  ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+crann_N         {'crann':       ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+critheann_N     {'critheann':   ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+darach_N        {'darach':      ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+dia_N           {'dia':         ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+dubhan_N        {'dubhan':      ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+each_N          {'each':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+fear_N          {'fear':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+fiadh_N         {'fiadh':       ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+gèadh_N         {'gèadh':       ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+gaol_N          {'gaol':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+giuthas_N       {'giuthas':     ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+iasg_N          {'iasg':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+làmh_N          {'làmh':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+laogh_N         {'laogh':       ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+laoghan_N       {'laoghan':     ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+leamhan_N       {'leamhan':     ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+luchag_N        {'luchag':      ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+mèirleach_N     {'mèirleach':   ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+mac_N           {'mac':         ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+matamataic_N    {'matamataic':  ['s Nom Indef Sg', 's Nom Def Sg']}
+matamataig_N    {'matamataig':  ['s Nom Indef Sg', 's Nom Def Sg']}
+ràmh_N          {'ràmh':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+radan_N         {'radan':       ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+sionnach_N      {'sionnach':    ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+slat_N          {'slat':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+smeòrach_N      {'smeòrach':    ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+sròn_N          {'sròn':        ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+tartan_N        {'tartan':      ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+tuagh_N         {'tuagh':       ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+tunnag_N        {'tunnag':      ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+uinneag_N       {'uinneag':     ['s Nom Indef Sg', 's Nom Def Sg', 's Gen Def Pl']}
+
+
+
+- Differences are in lenition for 's Nom Def Sg'. Inari's grammar contains both lenited and non-lenited forms
+for nominative. Why Wiktionary lists only one of them?
+
+bò_N            {'bò':         ['s Nom Indef Sg', 's Gen Def Pl'], 'bhò':          ['s Nom Def Sg']}
+beann_N         {'beann':      ['s Nom Indef Sg', 's Gen Def Pl'], 'bheann':       ['s Nom Def Sg']}
+bròg_N          {'bròg':       ['s Nom Indef Sg', 's Gen Def Pl'], 'bhròg':        ['s Nom Def Sg']}
+bruach_N        {'bruach':     ['s Nom Indef Sg', 's Gen Def Pl'], 'bhruach':      ['s Nom Def Sg']}
+clann_N         {'clann':      ['s Nom Indef Sg', 's Gen Def Pl'], 'chlann':       ['s Nom Def Sg']}
+craobh_N        {'craobh':     ['s Nom Indef Sg', 's Gen Def Pl'], 'chraobh':      ['s Nom Def Sg']}
+gainmheach_N    {'gainmheach': ['s Nom Indef Sg', 's Gen Def Pl'], 'ghainmheach':  ['s Nom Def Sg']}
+gaoth_N         {'gaoth':      ['s Nom Indef Sg', 's Gen Def Pl'], 'ghaoth':       ['s Nom Def Sg']}
+glas_N          {'glas':       ['s Nom Indef Sg', 's Gen Def Pl'], 'ghlas':        ['s Nom Def Sg']}
+gràineag_N      {'gràineag':   ['s Nom Indef Sg', 's Gen Def Pl'], 'ghràineag':    ['s Nom Def Sg']}
+muc_N           {'muc':        ['s Nom Indef Sg', 's Gen Def Pl'], 'mhuc':         ['s Nom Def Sg']}
+maigheach_N     {'maigheach':  ['s Nom Indef Sg', 's Gen Def Pl'], 'mhaigheach':   ['s Nom Def Sg']}
+
+
+
+- Form 's Gen Def Pl' is genuinely different
+
+àird_N          {'àird':       ['s Nom Indef Sg', 's Nom Def Sg'], 'àirdean':      ['s Gen Def Pl']}
+àth_2_N         {'àth':        ['s Nom Indef Sg', 's Nom Def Sg'], 'àthan':        ['s Gen Def Pl']}
+aigne_N         {'aigne':      ['s Nom Indef Sg', 's Nom Def Sg'], 'aignean':      ['s Gen Def Pl']}
+ailm_1_N        {'ailm':       ['s Nom Indef Sg', 's Nom Def Sg'], 'ailmean':      ['s Gen Def Pl']}
+ailm_2_N        {'ailm':       ['s Nom Indef Sg', 's Nom Def Sg'], 'ailmean':      ['s Gen Def Pl']}
+aimsir_N        {'aimsir':     ['s Nom Indef Sg', 's Nom Def Sg'], 'aimsirean':    ['s Gen Def Pl']}
+bàthach_N       {'bàthach':    ['s Nom Indef Sg', 's Nom Def Sg'], 'bàthaichean':  ['s Gen Def Pl']}
+bacadh_N        {'bacadh':     ['s Nom Indef Sg', 's Nom Def Sg'], 'bacaidhean':   ['s Gen Def Pl']}
+balla_N         {'balla':      ['s Nom Indef Sg', 's Nom Def Sg'], 'ballachan':    ['s Gen Def Pl']}
+bochd_N         {'bochd':      ['s Nom Indef Sg', 's Nom Def Sg'], 'bochdan':      ['s Gen Def Pl']}
+bràigh_N        {'bràigh':     ['s Nom Indef Sg', 's Nom Def Sg'], 'bràigheachan': ['s Gen Def Pl']}
+bràthair_N      {'bràthair':   ['s Nom Indef Sg', 's Nom Def Sg'], 'bràithrean':   ['s Gen Def Pl']}
+càr_N           {'càr':        ['s Nom Indef Sg', 's Nom Def Sg'], 'càraichean':   ['s Gen Def Pl']}
+cù_N            {'cù':         ['s Nom Indef Sg', 's Nom Def Sg'], 'con':          ['s Gen Def Pl']}
+cangaru_N       {'cangaru':    ['s Nom Indef Sg', 's Nom Def Sg'], 'cangaruthan':  ['s Gen Def Pl']}
+carbad_N        {'carbad':     ['s Nom Indef Sg', 's Nom Def Sg'], 'carbadan':     ['s Gen Def Pl']}
+cluigean_N      {'cluigean':   ['s Nom Indef Sg', 's Nom Def Sg'], 'cluigeanan':   ['s Gen Def Pl']}
+coinean_N       {'coinean':    ['s Nom Indef Sg', 's Nom Def Sg'], 'coineanan':    ['s Gen Def Pl']}
+craoladh_N      {'craoladh':   ['s Nom Indef Sg', 's Nom Def Sg'], 'craolaidhean': ['s Gen Def Pl']}
+cumhachd_N      {'cumhachd':   ['s Nom Indef Sg', 's Nom Def Sg'], 'cumhachdan':   ['s Gen Def Pl']}
+dùthaich_N      {'dùthaich':   ['s Nom Indef Sg', 's Nom Def Sg'], 'dùthchannan':  ['s Gen Def Pl']}
+dealan_N        {'dealan':     ['s Nom Indef Sg', 's Nom Def Sg'], 'dealanan':     ['s Gen Def Pl']}
+doilgheas_N     {'doilgheas':  ['s Nom Indef Sg', 's Nom Def Sg'], 'doilgheasan':  ['s Gen Def Pl']}
+draibhear_N     {'draibhear':  ['s Nom Indef Sg', 's Nom Def Sg'], 'draibhearan':  ['s Gen Def Pl']}
+druma_N         {'druma':      ['s Nom Indef Sg', 's Nom Def Sg'], 'drumaichean':  ['s Gen Def Pl']}
+eaglais_N       {'eaglais':    ['s Nom Indef Sg', 's Nom Def Sg'], 'eaglaisean':   ['s Gen Def Pl']}
+fàileadh_N      {'fàileadh':   ['s Nom Indef Sg', 's Nom Def Sg'], 'fàilidhean':   ['s Gen Def Pl']}
+faobhar_N       {'faobhar':    ['s Nom Indef Sg', 's Nom Def Sg'], 'faobharan':    ['s Gen Def Pl']}
+fuachd_N        {'fuachd':     ['s Nom Indef Sg', 's Nom Def Sg'], 'fuachdan':     ['s Gen Def Pl']}
+gath_N          {'gath':       ['s Nom Indef Sg', 's Nom Def Sg'], 'gathan':       ['s Gen Def Pl']}
+gearradh_N      {'gearradh':   ['s Nom Indef Sg', 's Nom Def Sg'], 'gearraidhean': ['s Gen Def Pl']}
+gobha_N         {'gobha':      ['s Nom Indef Sg', 's Nom Def Sg'], 'goibhnean':    ['s Gen Def Pl']}
+guth_N          {'guth':       ['s Nom Indef Sg', 's Nom Def Sg'], 'guthan':       ['s Gen Def Pl']}
+hamstair_N      {'hamstair':   ['s Nom Indef Sg', 's Nom Def Sg'], 'hamstairean':  ['s Gen Def Pl']}
+iolair_N        {'iolair':     ['s Nom Indef Sg', 's Nom Def Sg'], 'iolairean':    ['s Gen Def Pl']}
+làraidh_N       {'làraidh':    ['s Nom Indef Sg', 's Nom Def Sg'], 'làraidhean':   ['s Gen Def Pl']}
+lagh_N          {'lagh':       ['s Nom Indef Sg', 's Nom Def Sg'], 'laghannan':    ['s Gen Def Pl']}
+leabhar_N       {'leabhar':    ['s Nom Indef Sg', 's Nom Def Sg'], 'leabhraichean':['s Gen Def Pl']}
+luch_N          {'luch':       ['s Nom Indef Sg', 's Nom Def Sg'], 'luchan':       ['s Gen Def Pl']}
+madadh_N        {'madadh':     ['s Nom Indef Sg', 's Nom Def Sg'], 'madaidhean':   ['s Gen Def Pl']}
+magh_N          {'magh':       ['s Nom Indef Sg', 's Nom Def Sg'], 'maghan':       ['s Gen Def Pl']}
+manaidsear_N    {'manaidsear': ['s Nom Indef Sg', 's Nom Def Sg'], 'manaidsearan': ['s Gen Def Pl']}
+matamataicear_N {'matamataicear':['s Nom Indef Sg', 's Nom Def Sg'],'matamataicearan':['s Gen Def Pl']}
+matamataigear_N {'matamataigear':['s Nom Indef Sg', 's Nom Def Sg'],'matamataigearan':['s Gen Def Pl']}
+oidhche_N       {'oidhche':    ['s Nom Indef Sg', 's Nom Def Sg'], 'oidhcheannan': ['s Gen Def Pl']}
+prìosan_N       {'prìosan':    ['s Nom Indef Sg', 's Nom Def Sg'], 'prìosanan':    ['s Gen Def Pl']}
+pròiseact_N     {'pròiseact':  ['s Nom Indef Sg', 's Nom Def Sg'], 'pròiseactan':  ['s Gen Def Pl']}
+rabaid_N        {'rabaid':     ['s Nom Indef Sg', 's Nom Def Sg'], 'rabaidean':    ['s Gen Def Pl']}
+saoghal_N       {'saoghal':    ['s Nom Indef Sg', 's Nom Def Sg'], 'saoghalan':    ['s Gen Def Pl']}
+seanair_N       {'seanair':    ['s Nom Indef Sg', 's Nom Def Sg'], 'seanairean':   ['s Gen Def Pl']}
+soillsean_N     {'soillsean':  ['s Nom Indef Sg', 's Nom Def Sg'], 'soillseanan':  ['s Gen Def Pl']}
+solas_N         {'solas':      ['s Nom Indef Sg', 's Nom Def Sg'], 'solasan':      ['s Gen Def Pl']}
+sruth_N         {'sruth':      ['s Nom Indef Sg', 's Nom Def Sg'], 'sruthan':      ['s Gen Def Pl']}
+staidhir_N      {'staidhir':   ['s Nom Indef Sg', 's Nom Def Sg'], 'staidhrichean':['s Gen Def Pl']}
+tablaid_N       {'tablaid':    ['s Nom Indef Sg', 's Nom Def Sg'], 'tablaidean':   ['s Gen Def Pl']}
+taigh_N         {'taigh':      ['s Nom Indef Sg', 's Nom Def Sg'], 'taighean':     ['s Gen Def Pl']}
+talamh_N        {'talamh':     ['s Nom Indef Sg', 's Nom Def Sg'], 'talamhan':     ['s Gen Def Pl']}
+teadaidh_N      {'teadaidh':   ['s Nom Indef Sg', 's Nom Def Sg'], 'teadaidhean':  ['s Gen Def Pl']}
+teadhair_N      {'teadhair':   ['s Nom Indef Sg', 's Nom Def Sg'], 'teadhraichean':['s Gen Def Pl']}
+teanga_N        {'teanga':     ['s Nom Indef Sg', 's Nom Def Sg'], 'teangannan':   ['s Gen Def Pl']}
+tidsear_N       {'tidsear':    ['s Nom Indef Sg', 's Nom Def Sg'], 'tidsearan':    ['s Gen Def Pl']}
+tighearna_N     {'tighearna':  ['s Nom Indef Sg', 's Nom Def Sg'], 'tighearnan':   ['s Gen Def Pl']}
+tiodhlac_N      {'tiodhlac':   ['s Nom Indef Sg', 's Nom Def Sg'], 'tiodhlacan':   ['s Gen Def Pl']}
+tràigh_N        {'tràigh':     ['s Nom Indef Sg', 's Nom Def Sg'], 'tràighean':    ['s Gen Def Pl']}
+tràill_N        {'tràill':     ['s Nom Indef Sg', 's Nom Def Sg'], 'tràillean':    ['s Gen Def Pl']}
+uisge_N         {'uisge':      ['s Nom Indef Sg', 's Nom Def Sg'], 'uisgeachan':   ['s Gen Def Pl']}
+aba_N           {'aba':        ['s Nom Indef Sg', 's Nom Def Sg'], 'abachan':      ['s Gen Def Pl']}
+ailbhean_N      {'ailbhean':   ['s Nom Indef Sg', 's Nom Def Sg'], 'ailbheanan':   ['s Gen Def Pl']}
+athair_N        {'athair':     ['s Nom Indef Sg', 's Nom Def Sg'], 'athraichean':  ['s Gen Def Pl']}
+sìdh_N          {'sìdh':       ['s Nom Indef Sg', 's Nom Def Sg'], 'sìdhean':      ['s Gen Def Pl']}
+sìth_N          {'sìth':       ['s Nom Indef Sg', 's Nom Def Sg'], 'sìthean':      ['s Gen Def Pl']}
+sìthiche_N      {'sìthiche':   ['s Nom Indef Sg', 's Nom Def Sg'], 'sìthichean':   ['s Gen Def Pl']}
+sùil_N          {'sùil':       ['s Nom Indef Sg', 's Nom Def Sg'], 'sùilean':      ['s Gen Def Pl']}
+seanmhair_N     {'seanmhair':  ['s Nom Indef Sg', 's Nom Def Sg'], 'seanmhairean': ['s Gen Def Pl']}
+slige_N         {'slige':      ['s Nom Indef Sg', 's Nom Def Sg'], 'sligean':      ['s Gen Def Pl']}
+
+
+
+- Difference in lennition for 's Nom Def Sg'. Form 's Gen Def Pl' is still different
+
+màthair_N       {'màthair':    ['s Nom Indef Sg'], 'mhàthair':   ['s Nom Def Sg'], 'màthraichean': ['s Gen Def Pl']}
+baintighearna_N {'baintighearna':['s Nom Indef Sg'],'bhaintighearna':['s Nom Def Sg'], 'baintighearnan': ['s Gen Def Pl']}
+bean_N          {'bean':       ['s Nom Indef Sg'], 'bhean':      ['s Nom Def Sg'], 'ban':          ['s Gen Def Pl']}
+being_N         {'being':      ['s Nom Indef Sg'], 'bheing':     ['s Nom Def Sg'], 'beingean':     ['s Gen Def Pl']}
+beinn_N         {'beinn':      ['s Nom Indef Sg'], 'bheinn':     ['s Nom Def Sg'], 'beann':        ['s Gen Def Pl']}
+beithe_N        {'beithe':     ['s Nom Indef Sg'], 'bheithe':    ['s Nom Def Sg'], 'beithean':     ['s Gen Def Pl']}
+brà_N           {'brà':        ['s Nom Indef Sg'], 'bhrà':       ['s Nom Def Sg'], 'bràthntan':    ['s Gen Def Pl']}
+brù_N           {'brù':        ['s Nom Indef Sg'], 'bhrù':       ['s Nom Def Sg'], 'bronn':        ['s Gen Def Pl']}
+cìobair_N       {'cìobair':    ['s Nom Indef Sg'], 'chìobair':   ['s Nom Def Sg'], 'cìobairean':   ['s Gen Def Pl']}
+còir_N          {'còir':       ['s Nom Indef Sg'], 'chòir':      ['s Nom Def Sg'], 'còraichean':   ['s Gen Def Pl']}
+cùirt_N         {'cùirt':      ['s Nom Indef Sg'], 'chùirt':     ['s Nom Def Sg'], 'cùirtean':     ['s Gen Def Pl']}
+cabhsair_N      {'cabhsair':   ['s Nom Indef Sg'], 'chabhsair':  ['s Nom Def Sg'], 'cabhsairean':  ['s Gen Def Pl']}
+cainnt_N        {'cainnt':     ['s Nom Indef Sg'], 'chainnt':    ['s Nom Def Sg'], 'cainntean':    ['s Gen Def Pl']}
+caora_N         {'caora':      ['s Nom Indef Sg'], 'chaora':     ['s Nom Def Sg'], 'caorach':      ['s Gen Def Pl']}
+cathair_1_N     {'cathair':    ['s Nom Indef Sg'], 'chathair':   ['s Nom Def Sg'], 'cathraichean': ['s Gen Def Pl']}
+clòimh_N        {'clòimh':     ['s Nom Indef Sg'], 'chlòimh':    ['s Nom Def Sg'], 'clòimhean':    ['s Gen Def Pl']}
+coille_N        {'coille':     ['s Nom Indef Sg'], 'choille':    ['s Nom Def Sg'], 'coilltean':    ['s Gen Def Pl']}
+companaidh_N    {'companaidh': ['s Nom Indef Sg'], 'chompanaidh':['s Nom Def Sg'], 'companaidhean':['s Gen Def Pl']}
+craoladair_N    {'craoladair': ['s Nom Indef Sg'], 'chraoladair':['s Nom Def Sg'], 'craoladairean':['s Gen Def Pl']}
+cuid_N          {'cuid':       ['s Nom Indef Sg'], 'chuid':      ['s Nom Def Sg'], 'codaichean':   ['s Gen Def Pl']}
+failm_N         {'failm':      ['s Nom Indef Sg'], 'fhailm':     ['s Nom Def Sg'], 'failmean':     ['s Gen Def Pl']}
+falmadair_N     {'falmadair':  ['s Nom Indef Sg'], 'fhalmadair': ['s Nom Def Sg'], 'falmadairean': ['s Gen Def Pl']}
+feòil_N         {'feòil':      ['s Nom Indef Sg'], 'fheòil':     ['s Nom Def Sg'], 'feòilean':     ['s Gen Def Pl']}
+fuil_N          {'fuil':       ['s Nom Indef Sg'], 'fhuil':      ['s Nom Def Sg']}
+gabhail_N       {'gabhail':    ['s Nom Indef Sg'], 'ghabhail':   ['s Nom Def Sg'], 'gabhalaichean':['s Gen Def Pl']}
+geàrr_1_N       {'geàrr':      ['s Nom Indef Sg'], 'gheàrr':     ['s Nom Def Sg'], 'geàrran':      ['s Gen Def Pl']}
+geàrr_2_N       {'geàrr':      ['s Nom Indef Sg'], 'gheàrr':     ['s Nom Def Sg'], 'geàrran':      ['s Gen Def Pl']}
+geas_N          {'geas':       ['s Nom Indef Sg'], 'gheas':      ['s Nom Def Sg'], 'geasan':       ['s Gen Def Pl']}
+gille_N         {'gille':      ['s Nom Indef Sg'], 'ghille':     ['s Nom Def Sg'], 'gillean':      ['s Gen Def Pl']}
+gruagaire_N     {'gruagaire':  ['s Nom Indef Sg'], 'ghruagaire': ['s Nom Def Sg'], 'gruagairean':  ['s Gen Def Pl']}
+guala_N         {'guala':      ['s Nom Indef Sg'], 'ghuala':     ['s Nom Def Sg'], 'guailnean':    ['s Gen Def Pl']}
+gualann_N       {'gualann':    ['s Nom Indef Sg'], 'ghualann':   ['s Nom Def Sg'], 'guailnean':    ['s Gen Def Pl']}
+muir_N          {'muir':       ['s Nom Indef Sg'], 'mhuir':      ['s Nom Def Sg'], 'marannan':     ['s Gen Def Pl']}
+peantair_N      {'peantair':   ['s Nom Indef Sg'], 'pheantair':  ['s Nom Def Sg'], 'peantairean':  ['s Gen Def Pl']}
+piuthar_N       {'piuthar':    ['s Nom Indef Sg'], 'phiuthar':   ['s Nom Def Sg'], 'peathraichean':['s Gen Def Pl']}
+plàigh_N        {'plàigh':     ['s Nom Indef Sg'], 'phlàigh':    ['s Nom Def Sg'], 'plàighean':    ['s Gen Def Pl']}
+prìomhaid_N     {'prìomhaid':  ['s Nom Indef Sg'], 'phrìomhaid': ['s Nom Def Sg'], 'prìomhaidean': ['s Gen Def Pl']}
+
+
+- Conclusion: add one more form for 's Gen Def Pl' in Inari's grammar.
+
+
+
+Hypothesis 2: s Nom Def Pl == s Dat Def Pl
+----------------------------------------
+
+- For 3461 nouns both forms are missing
+- For 165 nouns the two forms are identical
+
+- For these two nouns the forms are different
+
+brù_N {'brùthan': ['s Nom Def Pl'], 'bronnaibh': ['s Dat Def Pl']}
+caora_N {'caoraich': ['s Nom Def Pl'], 'caoraibh': ['s Dat Def Pl']}
+
+- Conclusion add one more form for 's Dat Def Pl'
+
+
+Hypothesis 3: s Gen Indef Pl == voc Pl + "a"
+--------------------------------------------
+
+- For 3447 nouns both forms are missing
+- For 15 nouns only 's Gen Indef Pl' is known
+
+- For 55 nouns s Gen Indef Pl == voc Pl + "a" is true:
+
+Èireannach_N   {'s Gen Indef Pl': 'Èireannach', 'voc Pl': 'Èireannacha'}
+àilean_N       {'s Gen Indef Pl': 'àilean', 'voc Pl': 'àileana'}
+Albannach_N    {'s Gen Indef Pl': 'Albannach', 'voc Pl': 'Albannacha'}
+Cuimreach_N    {'s Gen Indef Pl': 'Chuimreach', 'voc Pl': 'Chuimreacha'}
+Hearach_N      {'s Gen Indef Pl': 'Hearach', 'voc Pl': 'Hearacha'}
+Sasannach_N    {'s Gen Indef Pl': 'Shasannach', 'voc Pl': 'Shasannacha'}
+bàrd_1_N       {'s Gen Indef Pl': 'bhàrd', 'voc Pl': 'bhàrda'}
+balach_N       {'s Gen Indef Pl': 'bhalach', 'voc Pl': 'bhalacha'}
+beann_N        {'s Gen Indef Pl': 'bheann', 'voc Pl': 'bheanna'}
+boireannach_N  {'s Gen Indef Pl': 'bhoireannach', 'voc Pl': 'bhoireannacha'}
+bròg_N         {'s Gen Indef Pl': 'bhròg', 'voc Pl': 'bhròga'}
+broc_N         {'s Gen Indef Pl': 'bhroc', 'voc Pl': 'bhroca'}
+bruach_N       {'s Gen Indef Pl': 'bhruach', 'voc Pl': 'bhruacha'}
+cànan_N        {'s Gen Indef Pl': 'chànan', 'voc Pl': 'chànana'}
+càrn_N         {'s Gen Indef Pl': 'chàrn', 'voc Pl': 'chàrna'}
+cù_N           {'s Gen Indef Pl': 'chon', 'voc Pl': 'chona'}
+cat_N          {'s Gen Indef Pl': 'chat', 'voc Pl': 'chata'}
+clag_N         {'s Gen Indef Pl': 'chlag', 'voc Pl': 'chlaga'}
+clann_N        {'s Gen Indef Pl': 'chlann', 'voc Pl': 'chlanna'}
+coineanach_N   {'s Gen Indef Pl': 'choineanach', 'voc Pl': 'choineanacha'}
+crann_N        {'s Gen Indef Pl': 'chrann', 'voc Pl': 'chranna'}
+craobh_N       {'s Gen Indef Pl': 'chraobh', 'voc Pl': 'chraobha'}
+critheann_N    {'s Gen Indef Pl': 'chritheann', 'voc Pl': 'chritheanna'}
+darach_N       {'s Gen Indef Pl': 'dharach', 'voc Pl': 'dharacha'}
+dubhan_N       {'s Gen Indef Pl': 'dhubhan', 'voc Pl': 'dhubhana'}
+each_N         {'s Gen Indef Pl': 'each', 'voc Pl': 'eacha'}
+fear_N         {'s Gen Indef Pl': 'fhear', 'voc Pl': 'fheara'}
+fiadh_N        {'s Gen Indef Pl': 'fhiadh', 'voc Pl': 'fhiadha'}
+gèadh_N        {'s Gen Indef Pl': 'ghèadh', 'voc Pl': 'ghèadha'}
+gainmheach_N   {'s Gen Indef Pl': 'ghainmheach', 'voc Pl': 'ghainmheacha'}
+gaol_N         {'s Gen Indef Pl': 'ghaol', 'voc Pl': 'ghaola'}
+gaoth_N        {'s Gen Indef Pl': 'ghaoth', 'voc Pl': 'ghaotha'}
+giuthas_N      {'s Gen Indef Pl': 'ghiuthas', 'voc Pl': 'ghiuthasa'}
+glas_N         {'s Gen Indef Pl': 'ghlas', 'voc Pl': 'ghlasa'}
+gràineag_N     {'s Gen Indef Pl': 'ghràineag', 'voc Pl': 'ghràineaga'}
+iasg_N         {'s Gen Indef Pl': 'iasg', 'voc Pl': 'iasga'}
+làmh_N         {'s Gen Indef Pl': 'làmh', 'voc Pl': 'làmha'}
+laogh_N        {'s Gen Indef Pl': 'laogh', 'voc Pl': 'laogha'}
+laoghan_N      {'s Gen Indef Pl': 'laoghan', 'voc Pl': 'laoghana'}
+leamhan_N      {'s Gen Indef Pl': 'leamhan', 'voc Pl': 'leamhana'}
+luchag_N       {'s Gen Indef Pl': 'luchag', 'voc Pl': 'luchaga'}
+mèirleach_N    {'s Gen Indef Pl': 'mhèirleach', 'voc Pl': 'mhèirleacha'}
+mac_N          {'s Gen Indef Pl': 'mhac', 'voc Pl': 'mhaca'}
+maigheach_N    {'s Gen Indef Pl': 'mhaigheach', 'voc Pl': 'mhaigheacha'}
+muc_N          {'s Gen Indef Pl': 'mhuc', 'voc Pl': 'mhuca'}
+ràmh_N         {'s Gen Indef Pl': 'ràmh', 'voc Pl': 'ràmha'}
+radan_N        {'s Gen Indef Pl': 'radan', 'voc Pl': 'radana'}
+sionnach_N     {'s Gen Indef Pl': 'shionnach', 'voc Pl': 'shionnacha'}
+slat_N         {'s Gen Indef Pl': 'shlat', 'voc Pl': 'shlata'}
+smeòrach_N     {'s Gen Indef Pl': 'smeòrach', 'voc Pl': 'smeòracha'}
+sròn_N         {'s Gen Indef Pl': 'shròn', 'voc Pl': 'shròna'}
+tartan_N       {'s Gen Indef Pl': 'thartan', 'voc Pl': 'thartana'}
+tuagh_N        {'s Gen Indef Pl': 'thuagh', 'voc Pl': 'thuagha'}
+tunnag_N       {'s Gen Indef Pl': 'thunnag', 'voc Pl': 'thunnaga'}
+uinneag_N      {'s Gen Indef Pl': 'uinneag', 'voc Pl': 'uinneaga'}
+
+
+- For 101 nouns the forms are actually identical
+
+àird_N          {'s Gen Indef Pl': 'àirdean', 'voc Pl': 'àirdean'}
+àth_2_N         {'s Gen Indef Pl': 'àthan', 'voc Pl': 'àthan'}
+aba_N           {'s Gen Indef Pl': 'abachan', 'voc Pl': 'abachan'}
+aigne_N         {'s Gen Indef Pl': 'aignean', 'voc Pl': 'aignean'}
+ailbhean_N      {'s Gen Indef Pl': 'ailbheanan', 'voc Pl': 'ailbheanan'}
+ailm_1_N        {'s Gen Indef Pl': 'ailmean', 'voc Pl': 'ailmean'}
+ailm_2_N        {'s Gen Indef Pl': 'ailmean', 'voc Pl': 'ailmean'}
+aimsir_N        {'s Gen Indef Pl': 'aimsirean', 'voc Pl': 'aimsirean'}
+athair_N        {'s Gen Indef Pl': 'athraichean', 'voc Pl': 'athraichean'}
+bàthach_N       {'s Gen Indef Pl': 'bhàthaichean', 'voc Pl': 'bhàthaichean'}
+bacadh_N        {'s Gen Indef Pl': 'bhacaidhean', 'voc Pl': 'bhacaidhean'}
+baintighearna_N {'s Gen Indef Pl': 'bhaintighearnan', 'voc Pl': 'bhaintighearnan'}
+balla_N         {'s Gen Indef Pl': 'bhallachan', 'voc Pl': 'bhallachan'}
+being_N         {'s Gen Indef Pl': 'bheingean', 'voc Pl': 'bheingean'}
+beithe_N        {'s Gen Indef Pl': 'bheithean', 'voc Pl': 'bheithean'}
+bochd_N         {'s Gen Indef Pl': 'bhochdan', 'voc Pl': 'bhochdan'}
+brà_N           {'s Gen Indef Pl': 'bhràthntan', 'voc Pl': 'bhràthntan'}
+bràigh_N        {'s Gen Indef Pl': 'bhràigheachan', 'voc Pl': 'bhràigheachan'}
+bràthair_N      {'s Gen Indef Pl': 'bhràithrean', 'voc Pl': 'bhràithrean'}
+càr_N           {'s Gen Indef Pl': 'chàraichean', 'voc Pl': 'chàraichean'}
+cìobair_N       {'s Gen Indef Pl': 'chìobairean', 'voc Pl': 'chìobairean'}
+cùirt_N         {'s Gen Indef Pl': 'chùirtean', 'voc Pl': 'chùirtean'}
+cabhsair_N      {'s Gen Indef Pl': 'chabhsairean', 'voc Pl': 'chabhsairean'}
+cainnt_N        {'s Gen Indef Pl': 'chainntean', 'voc Pl': 'chainntean'}
+cangaru_N       {'s Gen Indef Pl': 'changaruthan', 'voc Pl': 'changaruthan'}
+carbad_N        {'s Gen Indef Pl': 'charbadan', 'voc Pl': 'charbadan'}
+cathair_1_N     {'s Gen Indef Pl': 'chathraichean', 'voc Pl': 'chathraichean'}
+clòimh_N        {'s Gen Indef Pl': 'chlòimhean', 'voc Pl': 'chlòimhean'}
+cluigean_N      {'s Gen Indef Pl': 'chluigeanan', 'voc Pl': 'chluigeanan'}
+coille_N        {'s Gen Indef Pl': 'coilltean', 'voc Pl': 'coilltean'}
+coinean_N       {'s Gen Indef Pl': 'choineanan', 'voc Pl': 'choineanan'}
+companaidh_N    {'s Gen Indef Pl': 'chompanaidhean', 'voc Pl': 'chompanaidhean'}
+craoladair_N    {'s Gen Indef Pl': 'chraoladairean', 'voc Pl': 'chraoladairean'}
+craoladh_N      {'s Gen Indef Pl': 'chraolaidhean', 'voc Pl': 'chraolaidhean'}
+cumhachd_N      {'s Gen Indef Pl': 'chumhachdan', 'voc Pl': 'chumhachdan'}
+dùthaich_N      {'s Gen Indef Pl': 'dhùthchannan', 'voc Pl': 'dhùthchannan'}
+dealan_N        {'s Gen Indef Pl': 'dhealanan', 'voc Pl': 'dhealanan'}
+doilgheas_N     {'s Gen Indef Pl': 'dhoilgheasan', 'voc Pl': 'dhoilgheasan'}
+draibhear_N     {'s Gen Indef Pl': 'dhraibhearan', 'voc Pl': 'dhraibhearan'}
+druma_N         {'s Gen Indef Pl': 'dhrumaichean', 'voc Pl': 'dhrumaichean'}
+eaglais_N       {'s Gen Indef Pl': 'eaglaisean', 'voc Pl': 'eaglaisean'}
+fàileadh_N      {'s Gen Indef Pl': 'fhàilidhean', 'voc Pl': 'fhàilidhean'}
+failm_N         {'s Gen Indef Pl': 'fhailmean', 'voc Pl': 'fhailmean'}
+falmadair_N     {'s Gen Indef Pl': 'fhalmadairean', 'voc Pl': 'fhalmadairean'}
+faobhar_N       {'s Gen Indef Pl': 'fhaobharan', 'voc Pl': 'fhaobharan'}
+fuachd_N        {'s Gen Indef Pl': 'fhuachdan', 'voc Pl': 'fhuachdan'}
+gabhail_N       {'s Gen Indef Pl': 'ghabhalaichean', 'voc Pl': 'ghabhalaichean'}
+gath_N          {'s Gen Indef Pl': 'ghathan', 'voc Pl': 'ghathan'}
+geàrr_1_N       {'s Gen Indef Pl': 'gheàrran', 'voc Pl': 'gheàrran'}
+geàrr_2_N       {'s Gen Indef Pl': 'gheàrran', 'voc Pl': 'gheàrran'}
+gearradh_N      {'s Gen Indef Pl': 'ghearraidhean', 'voc Pl': 'ghearraidhean'}
+geas_N          {'s Gen Indef Pl': 'gheasan', 'voc Pl': 'gheasan'}
+gille_N         {'s Gen Indef Pl': 'ghillean', 'voc Pl': 'ghillean'}
+gobha_N         {'s Gen Indef Pl': 'ghoibhnean', 'voc Pl': 'ghoibhnean'}
+gruagaire_N     {'s Gen Indef Pl': 'ghruagairean', 'voc Pl': 'ghruagairean'}
+guala_N         {'s Gen Indef Pl': 'ghuailnean', 'voc Pl': 'ghuailnean'}
+gualann_N       {'s Gen Indef Pl': 'ghuailnean', 'voc Pl': 'ghuailnean'}
+guth_N          {'s Gen Indef Pl': 'ghuthan', 'voc Pl': 'ghuthan'}
+hamstair_N      {'s Gen Indef Pl': 'hamstairean', 'voc Pl': 'hamstairean'}
+iolair_N        {'s Gen Indef Pl': 'iolairean', 'voc Pl': 'iolairean'}
+làraidh_N       {'s Gen Indef Pl': 'làraidhean', 'voc Pl': 'làraidhean'}
+lagh_N          {'s Gen Indef Pl': 'laghannan', 'voc Pl': 'laghannan'}
+leabhar_N       {'s Gen Indef Pl': 'leabhraichean', 'voc Pl': 'leabhraichean'}
+luch_N          {'s Gen Indef Pl': 'luchan', 'voc Pl': 'luchan'}
+màthair_N       {'s Gen Indef Pl': 'mhàthraichean', 'voc Pl': 'mhàthraichean'}
+madadh_N        {'s Gen Indef Pl': 'mhadaidhean', 'voc Pl': 'mhadaidhean'}
+magh_N          {'s Gen Indef Pl': 'mhaghan', 'voc Pl': 'mhaghan'}
+manaidsear_N    {'s Gen Indef Pl': 'mhanaidsearan', 'voc Pl': 'mhanaidsearan'}
+matamataicear_N {'s Gen Indef Pl': 'mhatamataicearan', 'voc Pl': 'mhatamataicearan'}
+matamataigear_N {'s Gen Indef Pl': 'mhatamataigearan', 'voc Pl': 'mhatamataigearan'}
+oidhche_N       {'s Gen Indef Pl': 'oidhcheannan', 'voc Pl': 'oidhcheannan'}
+peantair_N      {'s Gen Indef Pl': 'pheantairean', 'voc Pl': 'pheantairean'}
+piuthar_N       {'s Gen Indef Pl': 'pheathraichean', 'voc Pl': 'pheathraichean'}
+plàigh_N        {'s Gen Indef Pl': 'phlàighean', 'voc Pl': 'phlàighean'}
+prìomhaid_N     {'s Gen Indef Pl': 'phrìomhaidean', 'voc Pl': 'phrìomhaidean'}
+prìosan_N       {'s Gen Indef Pl': 'phrìosanan', 'voc Pl': 'phrìosanan'}
+pròiseact_N     {'s Gen Indef Pl': 'phròiseactan', 'voc Pl': 'phròiseactan'}
+rabaid_N        {'s Gen Indef Pl': 'rabaidean', 'voc Pl': 'rabaidean'}
+sìdh_N          {'s Gen Indef Pl': 'shìdhean', 'voc Pl': 'shìdhean'}
+sìth_N          {'s Gen Indef Pl': 'shìthean', 'voc Pl': 'shìthean'}
+sìthiche_N      {'s Gen Indef Pl': 'shìthichean', 'voc Pl': 'shìthichean'}
+saoghal_N       {'s Gen Indef Pl': 'shaoghalan', 'voc Pl': 'shaoghalan'}
+seanair_N       {'s Gen Indef Pl': 'sheanairean', 'voc Pl': 'sheanairean'}
+seanmhair_N     {'s Gen Indef Pl': 'sheanmhairean', 'voc Pl': 'sheanmhairean'}
+slige_N         {'s Gen Indef Pl': 'shligean', 'voc Pl': 'shligean'}
+soillsean_N     {'s Gen Indef Pl': 'shoillseanan', 'voc Pl': 'shoillseanan'}
+solas_N         {'s Gen Indef Pl': 'sholasan', 'voc Pl': 'sholasan'}
+sruth_N         {'s Gen Indef Pl': 'shruthan', 'voc Pl': 'shruthan'}
+staidhir_N      {'s Gen Indef Pl': 'staidhrichean', 'voc Pl': 'staidhrichean'}
+tablaid_N       {'s Gen Indef Pl': 'thablaidean', 'voc Pl': 'thablaidean'}
+taigh_N         {'s Gen Indef Pl': 'thaighean', 'voc Pl': 'thaighean'}
+talamh_N        {'s Gen Indef Pl': 'thalamhan', 'voc Pl': 'thalamhan'}
+teadaidh_N      {'s Gen Indef Pl': 'theadaidhean', 'voc Pl': 'theadaidhean'}
+teadhair_N      {'s Gen Indef Pl': 'theadhraichean', 'voc Pl': 'theadhraichean'}
+teanga_N        {'s Gen Indef Pl': 'theangannan', 'voc Pl': 'theangannan'}
+tidsear_N       {'s Gen Indef Pl': 'thidsearan', 'voc Pl': 'thidsearan'}
+tighearna_N     {'s Gen Indef Pl': 'thighearnan', 'voc Pl': 'thighearnan'}
+tiodhlac_N      {'s Gen Indef Pl': 'thiodhlacan', 'voc Pl': 'thiodhlacan'}
+tràigh_N        {'s Gen Indef Pl': 'thràighean', 'voc Pl': 'thràighean'}
+tràill_N        {'s Gen Indef Pl': 'thràillean', 'voc Pl': 'thràillean'}
+uisge_N         {'s Gen Indef Pl': 'uisgeachan', 'voc Pl': 'uisgeachan'}
+
+- For 11 nouns the forms are different
+
+bean_N          {'s Gen Indef Pl': 'ban', 'voc Pl': 'mhnathan'}
+bò_N            {'s Gen Indef Pl': 'bò', 'voc Pl': 'bhà'}
+beinn_N         {'s Gen Indef Pl': 'beann', 'voc Pl': 'bheannta'}
+brù_N           {'s Gen Indef Pl': 'bhronn', 'voc Pl': 'bhrùtha'}
+còir_N          {'s Gen Indef Pl': 'còraichean', 'voc Pl': 'chòraiche'}
+caora_N         {'s Gen Indef Pl': 'caorach', 'voc Pl': 'chaoraich'}
+cuid_N          {'s Gen Indef Pl': 'chodaichean', 'voc Pl': 'chodaiche'}
+dia_N           {'s Gen Indef Pl': 'dhia', 'voc Pl': 'dhiatha'}
+feòil_N         {'s Gen Indef Pl': 'fheòilean', 'voc Pl': 'fheòla'}
+muir_N          {'s Gen Indef Pl': 'mharannan', 'voc Pl': 'mhara'}
+sùil_N          {'s Gen Indef Pl': 'sùl', 'voc Pl': 'shùla'}
+
+- Conclusion add a field for 'voc Pl'
+
+
+Hypothesis 4: s Nom Indef Pl == s Dat Indef Pl
+----------------------------------------------
+
+- For 554 nouns both forms are missing
+- For 2905 nouns only 's Nom Indef Pl' is known
+- For 164 nouns the forms are the same
+
+- For 5 nouns the forms are different. For the last three,
+the alternative form is obsolete, i.e. using 's Nom Indef Pl' is also possible.
+
+brù_N {'brùthan': ['s Nom Indef Pl'], 'bronnaibh': ['s Dat Indef Pl']}
+caora_N {'caoraich': ['s Nom Indef Pl'], 'caoraibh': ['s Dat Indef Pl']}
+geàrr_1_N {'gearran': ['s Nom Indef Pl'], 'geàrran': ['s Dat Indef Pl']}
+làraidh_N {'làiraidhean': ['s Nom Indef Pl'], 'làraidhean': ['s Dat Indef Pl']}
+teanga_N {'teangan': ['s Nom Indef Pl'], 'teangannan': ['s Dat Indef Pl']}
+
+
+Hypothesis 5: s Nom Indef Pl != s Nom Def Pl for masculine nouns
+----------------------------------------------------------------
+
+- No counter examples
+
+
+Hypothesis 6: s Dat Def Sg == s Gen Indef Pl for masculine nouns
+----------------------------------------------------------------
+
+Counter examples:
+
+Sasannach_N {'t-Sasannach': ['s Dat Def Sg'], 'Shasannach': ['s Gen Indef Pl']}
+aba_N {'aba': ['s Dat Def Sg'], 'abachan': ['s Gen Indef Pl']}
+ailbhean_N {'ailbhean': ['s Dat Def Sg'], 'ailbheanan': ['s Gen Indef Pl']}
+athair_N {'athair': ['s Dat Def Sg'], 'athraichean': ['s Gen Indef Pl']}
+bacadh_N {'bhacadh': ['s Dat Def Sg'], 'bhacaidhean': ['s Gen Indef Pl']}
+
+
+Hypothesis 7: s Gen Indef Sg == s Gen Def Sg for masculine nouns
+----------------------------------------------------------------
+
+The only counter example:
+
+beann_N {'beinn': ['s Gen Indef Sg'], 'beinne': ['s Gen Def Sg']}
+
+but 'beinn' and 'beinne' are just alternative forms.
+
+
+
+Actions taken & Lessons learned
+-------------------------------
+
+- In the merged grammar, the lincats are the same as in the automatic
+grammar. Function mk5N is rewritteen to use the new lincat.
+
+- Function palatalise does not handle the mutation correctly when "ae"
+appears at the end of the root. What should be the correct pattern?
+
+- In the automatic grammar, many noun forms are missing because they are
+not mentioned in Wiktionary. These are filled in with the defaults
+in the manual grammar.
+
+- Nom and Dat take Mutation as an argument, but that is currently not
+used in the new grammar. What is the purpose of the mutation?
+
+- in the ResGla module operations N,H are renamed to n and h to avoid
+name clash with the category N in the abstract syntax.
+
+- The number of mkNxxx operations is slightly smaller. It looks
+like the automatic code generation produces a cartesian product of
+possibilities.
+
+- Compiling the grammar with the new rules seems to be slower since they
+do more pattern matching. On the other hand, the code is linguistically
+more intuitive. The compilation speed might be improved by avoiding
+calling lenition and palatalise several times. Use 'let' instead.
+
+- Added rules AdjCN, UttNP for fun
+
+- The grammar is now integrated with the GF WordNet
+    - morphology
+    - basic syntax
+    - the Documentation module
